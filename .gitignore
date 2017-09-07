@@ -1,0 +1,11 @@
+# dataset files
+*.dat
+
+# folders
+datasets
+test_data
+train_data
+checkpoints
+
+# python byte code
+*.pyc
