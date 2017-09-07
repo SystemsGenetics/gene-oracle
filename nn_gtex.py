@@ -15,26 +15,27 @@ def main():
     parser.add_argument('--h1', help='no. of neurons in hidden layer 1', type=int, default=512)
     parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
     parser.add_argument('--h3', help='no. of neurons in hidden layer 3', type=int, default=512)
+    parser.add_argument('--batch_size', help='batch size', type=int, default=16)
+    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=1)
+    parser.add_argument('--n_input', help='number of input features', type=int, default=56238)
+    parser.add_argument('--n_classes', help='number of classes', type=int, default=30)
+    parser.add_argument('--beta', help='hyperparemeter for l1 regularization of weights', type=float, default=0.01)
     args = parser.parse_args()
-
-    print args
 
     # Parameters
     learning_rate = args.lr
     training_epochs = args.epochs
-    batch_size = 16
-    display_step = 1
-    beta = 0.01
+    batch_size = args.batch_size
+    display_step = args.display_step
+    beta = args.beta
 
     # Network Parameters
     n_hidden_1 = args.h1 # 1st layer number of features
     n_hidden_2 = args.h2 # 2nd layer number of features
     n_hidden_3 = args.h3 # 3rd layer number of features
     #n_hidden_4 = 128 # 4th layer num neurons
-    n_input = 56238 # GTEx data input size
-    n_classes = 30 # GTEx total classes
-
-    print(args)
+    n_input = args.n_input # GTEx data input size
+    n_classes = args.n_classes # GTEx total classes
 
     # begin computational graph
     # tf Graph input
