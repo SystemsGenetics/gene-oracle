@@ -8,16 +8,16 @@ import tensorflow as tf
 import setup_gtex
 
 # Parameters
-learning_rate = 0.005
+learning_rate = 0.001
 training_epochs = 100
-batch_size = 32
-display_step = 5
+batch_size = 16
+display_step = 1
 beta = 0.01
 
 # Network Parameters
-n_hidden_1 = 512 # 1st layer number of features
-n_hidden_2 = 512 # 2nd layer number of features
-n_hidden_3 = 1024 # 3rd layer number of features
+n_hidden_1 = 8192 # 1st layer number of features
+n_hidden_2 = 4096 # 2nd layer number of features
+n_hidden_3 = 512 # 3rd layer number of features
 #n_hidden_4 = 128 # 4th layer num neurons
 n_input = 56238 # GTEx data input size
 n_classes = 30 # GTEx total classes
@@ -29,18 +29,18 @@ y = tf.placeholder("float", [None, n_classes])
 # Create model
 def multilayer_perceptron(x, weights, biases):
     # Hidden layer with RELU activation
-    #x = tf.nn.l2_normalize(x, [0,1])
+    #x = tf.nn.l1_normalize(x, 0)
     layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
     layer_1 = tf.nn.relu(layer_1)
-    layer_1 = tf.nn.dropout(layer_1, 0.75)
+    #layer_1 = tf.nn.dropout(layer_1, 0.50)
     # Hidden layer with RELU activation
     layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     layer_2 = tf.nn.relu(layer_2)
-    layer_2 = tf.nn.dropout(layer_2, 0.75)
+    #layer_2 = tf.nn.dropout(layer_2, 0.50)
     # Hidden layer with RELU activation
     layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
     layer_3 = tf.nn.relu(layer_3)
-    layer_3 = tf.nn.dropout(layer_3, 0.75)
+    #layer_3 = tf.nn.dropout(layer_3, 0.50)
     #layer_3 = tf.nn.l2_normalize(layer_3, [0,1])
 
 
@@ -76,10 +76,10 @@ pred = multilayer_perceptron(x, weights, biases)
 # Define loss and optimizer
 result = tf.nn.softmax(pred)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
-w = tf.trainable_variables()
-regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
-cost = tf.reduce_mean(cost + regularize_penalty)
+# l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
+# w = tf.trainable_variables()
+# regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
+# cost = tf.reduce_mean(cost + regularize_penalty)
 
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 saver = tf.train.Saver()
@@ -90,8 +90,6 @@ init = tf.global_variables_initializer()
 # Launch the graph
 sess = tf.Session()
 sess.run(init)
-
-#saver.restore(sess, './checkpoints/gtex_nn-l1_norm-180')
 
 # Training cycle
 for epoch in range(training_epochs):
@@ -110,7 +108,7 @@ for epoch in range(training_epochs):
         print("Epoch:", '%04d' % (epoch+1), "cost=", \
             "{:.9f}".format(avg_cost))
 print("Optimization Finished!")
-saver.save(sess, "./checkpoints/gtex_nn-l1_norm-do75-e120")
+saver.save(sess, "./checkpoints/gtex_nn")
 
 # Test model
 correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
