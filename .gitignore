@@ -1,11 +1,13 @@
-# dataset files
+# data and log files
 *.dat
+*.log
 
 # folders
 datasets
 test_data
 train_data
 checkpoints
+logs
 
 # python byte code
 *.pyc
