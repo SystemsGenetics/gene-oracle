@@ -1,6 +1,6 @@
 #PBS -N gtexspt
 #PBS -l select=1:ncpus=8:ngpus=2:mem=8gb:gpu_model=k40,walltime=02:00:00
 
-cd /home/ctargon/SciDAS/NeuralNet
+cd /home/ctargon/SciDAS/DeepGTEx
 module list
-singularity exec --nv -B /software:/software -B /scratch2:/scratch2 -B /local_scratch:/local_scratch /software/singularity-containers/ubuntu_dl_gpu.img /usr/bin/python  nn_gtex.py > gtex53_512x512x512_200e.log
+singularity exec --nv -B /software:/software -B /scratch2:/scratch2 -B /local_scratch:/local_scratch /software/singularity-containers/ubuntu_dl_gpu.img /usr/bin/python  nn_gtex.py > logs/gtex53_512x512x512_100e.log
