@@ -5,12 +5,13 @@
 
 import numpy as np 
 import tensorflow as tf 
+from sklearn import preprocessing
 import setup_gtex
 import sys, argparse
 
 def main():
     parser = argparse.ArgumentParser(description='Neural network to classify genetic data')
-    parser.add_argument('--lr', help='learning rate', type=float, default=0.001)
+    parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
     parser.add_argument('--epochs', help='no. of training epoch', type=int, default=100)
     parser.add_argument('--h1', help='no. of neurons in hidden layer 1', type=int, default=512)
     parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
@@ -33,7 +34,7 @@ def main():
     n_hidden_1 = args.h1 # 1st layer number of features
     n_hidden_2 = args.h2 # 2nd layer number of features
     n_hidden_3 = args.h3 # 3rd layer number of features
-    #n_hidden_4 = 128 # 4th layer num neurons
+    #n_hidden_4 = 256 # 4th layer num neurons
     n_input = args.n_input # GTEx data input size
     n_classes = args.n_classes # GTEx total classes
 
@@ -47,16 +48,16 @@ def main():
         # Hidden layer with RELU activation
         #x = tf.nn.l1_normalize(x, 0)
         layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
-        layer_1 = tf.nn.relu(layer_1)
-        #layer_1 = tf.nn.dropout(layer_1, 0.50)
+        layer_1 = tf.nn.elu(layer_1)
+        layer_1 = tf.nn.dropout(layer_1, 0.75)
         # Hidden layer with RELU activation
         layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
-        layer_2 = tf.nn.relu(layer_2)
-        #layer_2 = tf.nn.dropout(layer_2, 0.50)
+        layer_2 = tf.nn.elu(layer_2)
+        layer_2 = tf.nn.dropout(layer_2, 0.75)
         # Hidden layer with RELU activation
         layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
-        layer_3 = tf.nn.relu(layer_3)
-        #layer_3 = tf.nn.dropout(layer_3, 0.50)
+        layer_3 = tf.nn.elu(layer_3)
+        layer_3 = tf.nn.dropout(layer_3, 0.75)
         #layer_3 = tf.nn.l2_normalize(layer_3, [0,1])
 
 
@@ -84,7 +85,19 @@ def main():
     }
 
     # gather data
+    print('loading gtex data...')
     gtex = setup_gtex.GTEx('./datasets/GTEx_Data_30', './train_data', './test_data')
+
+    print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
+    print('epochs:        ' + str(args.epochs))
+    print('learning rate: ' + str(args.lr)) 
+
+    # preprocess data
+    maxabsscaler = preprocessing.MaxAbsScaler()
+    gtex.train.data = maxabsscaler.fit_transform(gtex.train.data)
+    gtex.test.data = maxabsscaler.fit_transform(gtex.test.data)
+    #gtex.train.data = preprocessing.normalize(gtex.train.data)
+    #gtex.test.data = preprocessing.normalize(gtex.test.data)
 
     # Construct model
     pred = multilayer_perceptron(x, weights, biases)
@@ -92,10 +105,10 @@ def main():
     # Define loss and optimizer
     result = tf.nn.softmax(pred)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-    # l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
-    # w = tf.trainable_variables()
-    # regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
-    # cost = tf.reduce_mean(cost + regularize_penalty)
+    l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
+    w = tf.trainable_variables()
+    regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
+    cost = tf.reduce_mean(cost + regularize_penalty)
 
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
     saver = tf.train.Saver()
@@ -106,6 +119,8 @@ def main():
     # Launch the graph
     sess = tf.Session()
     sess.run(init)
+
+    #saver.restore(sess, './checkpoints/gtex_nn')
 
     # Training cycle
     for epoch in range(training_epochs):
@@ -131,7 +146,12 @@ def main():
     # Calculate accuracy
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print("Accuracy:", accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess))
-
+    bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
+    bd = maxabsscaler.fit_transform(bd)
+    labels = np.zeros((331,30))
+    labels[:,5] = 1
+    print("Braincell Accuracy: ", accuracy.eval({x:bd, y:labels}, session=sess))
+    print(result.eval({x: gtex.test.data[0:5]}, session=sess))
 
     # res = tf.argmax(pred, 1)
 
