@@ -11,3 +11,8 @@ logs
 
 # python byte code
 *.pyc
+
+# genetic data
+*.npy
+*.gct
+*.gmt
