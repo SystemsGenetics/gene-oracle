@@ -59,10 +59,11 @@ class test_t(object):
 		return self.data[idx:n_idx, :], self.labels[idx:n_idx, :]
 
 class GTEx(object):
-	def __init__(self, dataset_path, train_path, test_path):
+	def __init__(self, dataset_path, train_path, test_path, n_features):
 		self.dataset_path = dataset_path
 		self.train_path = train_path
 		self.test_path = test_path
+		self.n_features = n_features
 		self.classes = self.get_classes(dataset_path)
 		self.train = self.get_train(train_path)
 		self.test = self.get_test(test_path)
@@ -72,7 +73,7 @@ class GTEx(object):
 		labels = np.zeros((len(files), len(self.classes)))
 
 		i = 0
-		data = np.zeros((56238, len(files)))
+		data = np.zeros((self.n_features, len(files)))
 
 		for file in files:
 			tmp = np.fromfile(os.path.join(train_path, file), dtype=np.float32)
@@ -92,7 +93,7 @@ class GTEx(object):
 		files = get_files(test_path)	
 		labels = np.zeros((len(files), len(self.classes)))
 
-		data = np.zeros((56238, len(files)))
+		data = np.zeros((self.n_features, len(files)))
 		i = 0
 		for file in files:
 			tmp = np.fromfile(os.path.join(test_path, file), dtype=np.float32)

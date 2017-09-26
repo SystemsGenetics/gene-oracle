@@ -75,8 +75,8 @@ class ORLDataset(Dataset):
 		return "%s_%s" % (class_name, filename)
 
 class GTEXDataset(Dataset):
-	def __init__(self, sorted_sub_dirs):
-		Dataset.__init__(self, "datasets/GTEx_Data", 8555, 53)
+	def __init__(self, sorted_sub_dirs, path):
+		Dataset.__init__(self, path, 8555, 53)
 		self.dirs = sorted_sub_dirs
 
 	def get_class_name(self, i):

@@ -21,6 +21,8 @@ def main():
     parser.add_argument('--n_input', help='number of input features', type=int, default=56238)
     parser.add_argument('--n_classes', help='number of classes', type=int, default=30)
     parser.add_argument('--beta', help='hyperparemeter for l1 regularization of weights', type=float, default=0.01)
+    parser.add_argument('--load', help='load weights from previous run', type=bool, default=0)
+    parser.add_argument('--confusion', help='generate confusion matrix (1) or no (0)', type=bool, default=0)
     args = parser.parse_args()
 
     # Parameters
@@ -86,7 +88,7 @@ def main():
 
     # gather data
     print('loading gtex data...')
-    gtex = setup_gtex.GTEx('./datasets/GTEx_Data_30', './train_data', './test_data')
+    gtex = setup_gtex.GTEx('./datasets/hallmark_subsets/HALLMARK_GLYCOLYSIS', './train_data', './test_data', args.n_input)
 
     print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
     print('epochs:        ' + str(args.epochs))
@@ -103,6 +105,11 @@ def main():
     pred = multilayer_perceptron(x, weights, biases)
 
     # Define loss and optimizer
+    g_step = tf.Variable(0, trainable=False)
+    #g_step = tf.contrib.framework.get_global_step()
+    starter_learning_rate = args.lr
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, g_step, 100000, 0.96, staircase=True)
+
     result = tf.nn.softmax(pred)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
     l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
@@ -110,7 +117,7 @@ def main():
     regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
     cost = tf.reduce_mean(cost + regularize_penalty)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost, global_step=g_step)
     saver = tf.train.Saver()
 
     # Initializing the variables
@@ -120,7 +127,8 @@ def main():
     sess = tf.Session()
     sess.run(init)
 
-    #saver.restore(sess, './checkpoints/gtex_nn')
+    if args.load:
+        saver.restore(sess, './checkpoints/gtex_nn')
 
     # Training cycle
     for epoch in range(training_epochs):
@@ -136,7 +144,7 @@ def main():
             avg_cost += c / total_batch
             
         if epoch % display_step == 0:
-            print("Epoch:", '%04d' % (epoch+1), "cost=", \
+            print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate), "cost=", \
                 "{:.9f}".format(avg_cost))
     print("Optimization Finished!")
     saver.save(sess, "./checkpoints/gtex_nn")
@@ -146,12 +154,29 @@ def main():
     # Calculate accuracy
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print("Accuracy:", accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess))
-    bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
-    bd = maxabsscaler.fit_transform(bd)
-    labels = np.zeros((331,30))
-    labels[:,5] = 1
-    print("Braincell Accuracy: ", accuracy.eval({x:bd, y:labels}, session=sess))
-    print(result.eval({x: gtex.test.data[0:5]}, session=sess))
+    # bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
+    # bd = maxabsscaler.fit_transform(bd)
+    # labels = np.zeros((331,30))
+    # labels[:,5] = 1
+    # print("Braincell Accuracy: ", accuracy.eval({x:bd, y:labels}, session=sess))
+    print(result.eval({x: gtex.test.data[0:3]}, session=sess))
+
+    if args.confusion:
+        # generate confusion matrices for brain data and gtex data
+        temp = pred.eval({x: gtex.test.data}, session=sess)
+        preds = np.argmax(temp, 1)
+        labs = np.argmax(gtex.test.labels, 1)
+        cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
+        mycm = cm.eval(feed_dict=None, session=sess)
+        np.savetxt('./confusion_matrix_gtex', mycm, fmt='%4d', delimiter=' ')
+
+        temp = pred.eval({x: bd}, session=sess)
+        preds = np.argmax(temp, 1)
+        labs = np.argmax(labels, 1)
+        cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
+        mycm = cm.eval(feed_dict=None, session=sess)
+        np.savetxt('./confusion_matrix_brain', mycm, fmt='%4d', delimiter=' ')
+
 
     # res = tf.argmax(pred, 1)
 

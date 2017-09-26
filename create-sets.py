@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--dataset", choices=["feret", "mnist", "orl", "gtex", "gtex_30", "brain"], required=True, help="name of dataset", dest="DATASET")
 parser.add_argument("-t", "--train", type=int, choices=range(1, 100), required=True, help="percentage of training set", metavar="N", dest="TRAIN")
 parser.add_argument("-r", "--test", type=int, choices=range(1, 100), required=True, help="percentage of test set", metavar="N", dest="TEST")
+parser.add_argument("-p", "--path", type=str, required=False, help="path to dataset", metavar="PATH", dest="PATH")
 
 args = parser.parse_args()
 
@@ -33,9 +34,9 @@ elif args.DATASET == "mnist":
 elif args.DATASET == "orl":
 	dataset = datasets.ORLDataset()
 elif args.DATASET == "gtex":
-	subs = get_sub_dirs('datasets/GTEx_Data')
+	subs = get_sub_dirs(args.PATH)
 	subs.sort()
-	dataset = datasets.GTEXDataset(subs)
+	dataset = datasets.GTEXDataset(subs, args.PATH)
 elif args.DATASET == "gtex_30":
 	subs = get_sub_dirs('datasets/GTEx_Data_30')
 	subs.sort()
