@@ -94,8 +94,8 @@ class GTEXDataset(Dataset):
 		return "%s_%s" % (class_name, filename)
 
 class GTEXDataset30(Dataset):
-	def __init__(self, sorted_sub_dirs):
-		Dataset.__init__(self, 'datasets/GTEx_Data_30', 8555, 30)
+	def __init__(self, sorted_sub_dirs, path):
+		Dataset.__init__(self, path, 8555, 30)
 		self.dirs = sorted_sub_dirs
 
 	def get_class_name(self, i):

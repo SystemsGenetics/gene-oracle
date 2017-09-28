@@ -38,9 +38,9 @@ elif args.DATASET == "gtex":
 	subs.sort()
 	dataset = datasets.GTEXDataset(subs, args.PATH)
 elif args.DATASET == "gtex_30":
-	subs = get_sub_dirs('datasets/GTEx_Data_30')
+	subs = get_sub_dirs(args.PATH)
 	subs.sort()
-	dataset = datasets.GTEXDataset30(subs)
+	dataset = datasets.GTEXDataset30(subs, args.PATH)
 elif args.DATASET == "brain":
 	subs = get_sub_dirs('datasets/Brain')
 	subs.sort()

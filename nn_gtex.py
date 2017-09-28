@@ -8,6 +8,7 @@ import tensorflow as tf
 from sklearn import preprocessing
 import setup_gtex
 import sys, argparse
+import os
 
 def main():
     parser = argparse.ArgumentParser(description='Neural network to classify genetic data')
@@ -17,7 +18,7 @@ def main():
     parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
     parser.add_argument('--h3', help='no. of neurons in hidden layer 3', type=int, default=512)
     parser.add_argument('--batch_size', help='batch size', type=int, default=16)
-    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=1)
+    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=10)
     parser.add_argument('--n_input', help='number of input features', type=int, default=56238)
     parser.add_argument('--n_classes', help='number of classes', type=int, default=30)
     parser.add_argument('--beta', help='hyperparemeter for l1 regularization of weights', type=float, default=0.01)
@@ -31,6 +32,8 @@ def main():
     batch_size = args.batch_size
     display_step = args.display_step
     beta = args.beta
+
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
     # Network Parameters
     n_hidden_1 = args.h1 # 1st layer number of features
@@ -50,16 +53,16 @@ def main():
         # Hidden layer with RELU activation
         #x = tf.nn.l1_normalize(x, 0)
         layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
-        layer_1 = tf.nn.elu(layer_1)
-        layer_1 = tf.nn.dropout(layer_1, 0.75)
+        layer_1 = tf.nn.relu(layer_1)
+        #layer_1 = tf.nn.dropout(layer_1, 0.75)
         # Hidden layer with RELU activation
         layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
-        layer_2 = tf.nn.elu(layer_2)
-        layer_2 = tf.nn.dropout(layer_2, 0.75)
+        layer_2 = tf.nn.relu(layer_2)
+        #layer_2 = tf.nn.dropout(layer_2, 0.75)
         # Hidden layer with RELU activation
         layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
-        layer_3 = tf.nn.elu(layer_3)
-        layer_3 = tf.nn.dropout(layer_3, 0.75)
+        layer_3 = tf.nn.relu(layer_3)
+        #layer_3 = tf.nn.dropout(layer_3, 0.75)
         #layer_3 = tf.nn.l2_normalize(layer_3, [0,1])
 
 
@@ -87,12 +90,12 @@ def main():
     }
 
     # gather data
-    print('loading gtex data...')
-    gtex = setup_gtex.GTEx('./datasets/hallmark_subsets/HALLMARK_GLYCOLYSIS', './train_data', './test_data', args.n_input)
+    #print('loading gtex data...')
+    gtex = setup_gtex.GTEx('./datasets/GTEx_Data', './train_data', './test_data', args.n_input)
 
-    print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
-    print('epochs:        ' + str(args.epochs))
-    print('learning rate: ' + str(args.lr)) 
+    #print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
+    #print('epochs:        ' + str(args.epochs))
+    #print('learning rate: ' + str(args.lr)) 
 
     # preprocess data
     maxabsscaler = preprocessing.MaxAbsScaler()
@@ -108,7 +111,7 @@ def main():
     g_step = tf.Variable(0, trainable=False)
     #g_step = tf.contrib.framework.get_global_step()
     starter_learning_rate = args.lr
-    learning_rate = tf.train.exponential_decay(starter_learning_rate, g_step, 100000, 0.96, staircase=True)
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step=g_step, decay_steps=500, decay_rate=0.96, staircase=True)
 
     result = tf.nn.softmax(pred)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
@@ -143,23 +146,22 @@ def main():
             # Compute average loss
             avg_cost += c / total_batch
             
-        if epoch % display_step == 0:
-            print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate), "cost=", \
-                "{:.9f}".format(avg_cost))
-    print("Optimization Finished!")
+        #if epoch % display_step == 0:
+            #print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
+    #print("Optimization Finished!")
     saver.save(sess, "./checkpoints/gtex_nn")
 
     # Test model
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     # Calculate accuracy
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-    print("Accuracy:", accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess))
+    print(str(accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)))
     # bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
     # bd = maxabsscaler.fit_transform(bd)
     # labels = np.zeros((331,30))
     # labels[:,5] = 1
     # print("Braincell Accuracy: ", accuracy.eval({x:bd, y:labels}, session=sess))
-    print(result.eval({x: gtex.test.data[0:3]}, session=sess))
+    #print(result.eval({x: gtex.test.data[0:3]}, session=sess))
 
     if args.confusion:
         # generate confusion matrices for brain data and gtex data
