@@ -16,8 +16,8 @@ h1 = [512, 256, 512, 128, 1024]
 h2 = [512, 256, 256, 128, 256]
 h3 = [512, 256, 128, 128, 64]
 
-for j in len(files)
-	for i in range(hall_subs):
+for j in range(len(files)):
+	for i in range(len(hall_subs)):
 	    os.system('./create-sets.py -d gtex -p ./datasets/hallmark_subsets/' + hall_subs[i] + ' -t 70 -r 30 ')
 	    #find features
 	    temp = np.fromfile('./datasets/hallmark_subsets/' + hall_subs[i] + '/Artery-Tibial/000_GTEX-111FC-0426-SM-5N9CV.dat', dtype=np.float32)
