@@ -8,15 +8,15 @@ import subprocess
 
 #top_dir = os.system("cd /home/csheare/DeepGTEx/datasets/hallmark_subsets")
 
-hall_subs = os.listdir("./datasets/hallmark_subsets")
+hall_subs = os.listdir("./datasets/hallmark_subsets_30")
 hall_subs.sort()
-out = []
-files = ['53_512x512x512_750e.txt', '53_256x256x256_750e.txt', '53_512x256x128_750e.txt', '53_128x128x128_750e.txt', '53_1024x256x64_750e.txt']
-h1 = [512, 256, 512, 128, 1024]
-h2 = [512, 256, 256, 128, 256]
-h3 = [512, 256, 128, 128, 64]
+files = ['53_2048x2028x2048_750e.txt']
+h1 = [2028]
+h2 = [2048]
+h3 = [2048]
 
 for j in range(len(files)):
+	out = []
 	for i in range(len(hall_subs)):
 	    os.system('./create-sets.py -d gtex -p ./datasets/hallmark_subsets/' + hall_subs[i] + ' -t 70 -r 30 ')
 	    #find features
