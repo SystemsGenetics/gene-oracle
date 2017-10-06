@@ -18,7 +18,7 @@ def main():
     parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
     parser.add_argument('--h3', help='no. of neurons in hidden layer 3', type=int, default=512)
     parser.add_argument('--batch_size', help='batch size', type=int, default=16)
-    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=10)
+    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=1)
     parser.add_argument('--n_input', help='number of input features', type=int, default=56238)
     parser.add_argument('--n_classes', help='number of classes', type=int, default=30)
     parser.add_argument('--beta', help='hyperparemeter for l1 regularization of weights', type=float, default=0.01)
@@ -146,9 +146,9 @@ def main():
             # Compute average loss
             avg_cost += c / total_batch
             
-        #if epoch % display_step == 0:
-            #print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
-    #print("Optimization Finished!")
+        if epoch % display_step == 0:
+            print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
+    print("Optimization Finished!")
     saver.save(sess, "./checkpoints/gtex_nn")
 
     # Test model
