@@ -73,20 +73,21 @@ def main():
         out_layer = tf.matmul(layer_3, weights['out']) + biases['out']
         return out_layer
 
+
     # Store layers weight & bias
     weights = {
-        'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
-        'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-        'h3': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3])),
+        'h1': tf.get_variable("h1", shape=[n_input, n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
+        'h2': tf.get_variable("h2", shape=[n_hidden_1, n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
+        'h3': tf.get_variable("h3", shape=[n_hidden_2, n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
         #'h4': tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4])),
-        'out': tf.Variable(tf.random_normal([n_hidden_3, n_classes]))
+        'out': tf.get_variable("out_w", shape=[n_hidden_3, n_classes], initializer=tf.contrib.layers.xavier_initializer())
     }
     biases = {
-        'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-        'b2': tf.Variable(tf.random_normal([n_hidden_2])),
-        'b3': tf.Variable(tf.random_normal([n_hidden_3])),
+        'b1': tf.get_variable("b1", shape=[n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
+        'b2': tf.get_variable("b2", shape=[n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
+        'b3': tf.get_variable("b3", shape=[n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
         #'b4': tf.Variable(tf.random_normal([n_hidden_4])),
-        'out': tf.Variable(tf.random_normal([n_classes]))
+        'out': tf.get_variable("out_b", shape=[n_classes], initializer=tf.contrib.layers.xavier_initializer())
     }
 
     # gather data
@@ -115,10 +116,10 @@ def main():
 
     result = tf.nn.softmax(pred)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-    l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
-    w = tf.trainable_variables()
-    regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
-    cost = tf.reduce_mean(cost + regularize_penalty)
+    # l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
+    # w = tf.trainable_variables()
+    # regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
+    # cost = tf.reduce_mean(cost + regularize_penalty)
 
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost, global_step=g_step)
     saver = tf.train.Saver()
