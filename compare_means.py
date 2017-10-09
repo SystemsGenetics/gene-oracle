@@ -7,13 +7,17 @@ import matplotlib.pyplot as plt
 from sklearn import preprocessing
 import json
 from sklearn.preprocessing import normalize
+import sys
+
 
 gene_count_dict = dict()
 with open("numsamples.json") as f:
     gene_count_dict = json.load(f)
 
-sample1 =  "Adipose-Subcutaneous"
-sample2 = "Adipose-Visceral"
+#Example: python compare_means.py "HALLMARK_ADIPOGENESIS" "Bladder" "Lung" will produce BladderLung.png
+process = sys.argv[1]
+sample1 = sys.argv[2] #"Adipose-Subcutaneous"
+sample2 = sys.argv[3]#"Adipose-Visceral"
 tissues = [sample1,sample2]
 maxabsscalar = preprocessing.MaxAbsScaler()
 
@@ -23,11 +27,11 @@ average_expressions2 = np.zeros(200)
 average_expressions = [average_expressions1,average_expressions2]
 
 for i in range(len(tissues)):#go through both samples
-    tissue_samples = os.listdir("./datasets/hallmark_subsets/HALLMARK_ADIPOGENESIS/"+ tissues[i])#get dat files/samples
+    tissue_samples = os.listdir("./datasets/hallmark_subsets/"+process+"/" + tissues[i])#get dat files/samples
 
     for j in range(gene_count_dict[tissues[i]]):
         #print(tissue_samples[0])
-        sample = np.fromfile("./datasets/hallmark_subsets/HALLMARK_ADIPOGENESIS/"+ tissues[i]+'/' + tissue_samples[j], dtype=np.float32)
+        sample = np.fromfile("./datasets/hallmark_subsets/" + process + "/" + tissues[i]+'/' + tissue_samples[j], dtype=np.float32)
         for d in range(200):
             average_expressions[i][d] += sample[d]
 
@@ -51,4 +55,4 @@ plt.title(sample1 + " vs "+ sample2 )
 plt.ylim(0,2)
 plt.legend((p1[0], p2[0]), (sample1, sample2))
 
-plt.savefig('./graphs/hallmark_subsets/HALLMARK_ADIPOGENESIS/compares/' + sample1 + sample2 + '.png')
+plt.savefig('./graphs/hallmark_subsets/'+ process + '/compares/' + sample1 + sample2 + '.png')
