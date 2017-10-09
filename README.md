@@ -1,6 +1,7 @@
 # DeepGTEx
 Multilayer perceptron network to classify genomic data
-'''
+
+
     usage: nn_gtex.py [-h] [--lr LR] [--epochs EPOCHS] [--h1 H1] [--h2 H2]
                       [--h3 H3] [--batch_size BATCH_SIZE]
                       [--display_step DISPLAY_STEP] [--n_input N_INPUT]
@@ -21,5 +22,4 @@ Multilayer perceptron network to classify genomic data
       --beta BETA             hyperparemeter for l1 regularization of weights
       --load LOAD             load weights from previous run
       --confusion BOOL        generate confusion matrix (1) or no (0)
-  '''
   
