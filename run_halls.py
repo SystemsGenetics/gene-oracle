@@ -10,10 +10,10 @@ import subprocess
 
 hall_subs = os.listdir("./datasets/hallmark_subsets")
 hall_subs.sort()
-files = ['53reinforce_2048x2048x2048_250e.txt']
-h1 = [2048]
-h2 = [2048]
-h3 = [2048]
+files = ['Xav_1024x1024x1024_100e.txt']
+h1 = [1024]
+h2 = [1024]
+h3 = [1024]
 
 for j in range(len(files)):
 	out = []
@@ -24,7 +24,7 @@ for j in range(len(files)):
 	    n_features = temp.shape[0]
 	    #future:change arguments and get from command line
 	    out.append(subprocess.check_output('python ../reinforce/nn_gtex_reinforce.py --n_input ' + str(n_features) + \
-	    	' --n_classes 53 --batch_size 256 --lr 0.001 --epochs 250 --h1 ' + str(h1[j]) + ' --h2 ' + str(h2[j]) + ' --h3 ' + str(h3[j]), shell=True))
+	    	' --n_classes 53 --batch_size 16 --lr 0.001 --epochs 100 --h1 ' + str(h1[j]) + ' --h2 ' + str(h2[j]) + ' --h3 ' + str(h3[j]), shell=True))
 
 	fp = open('./logs/' + files[j], 'w')
 	for val,name in zip(out,hall_subs):

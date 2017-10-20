@@ -12,7 +12,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser(description='Neural network to classify genetic data')
-    parser.add_argument('--lr', help='learning rate', type=float, default=0.0001)
+    parser.add_argument('--lr', help='learning rate', type=float, default=0.001)
     parser.add_argument('--epochs', help='no. of training epoch', type=int, default=100)
     parser.add_argument('--h1', help='no. of neurons in hidden layer 1', type=int, default=512)
     parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
@@ -61,7 +61,7 @@ def main():
         #layer_2 = tf.nn.dropout(layer_2, 0.75)
         # Hidden layer with RELU activation
         layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
-        layer_3 = tf.nn.relu(layer_3)
+        layer_3 = tf.nn.sigmoid(layer_3)
         #layer_3 = tf.nn.dropout(layer_3, 0.75)
         #layer_3 = tf.nn.l2_normalize(layer_3, [0,1])
 
@@ -147,9 +147,9 @@ def main():
             # Compute average loss
             avg_cost += c / total_batch
             
-        if epoch % display_step == 0:
-            print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
-    print("Optimization Finished!")
+    #     if epoch % display_step == 0:
+    #         print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
+    # print("Optimization Finished!")
     saver.save(sess, "./checkpoints/gtex_nn")
 
     # Test model
@@ -157,6 +157,7 @@ def main():
     # Calculate accuracy
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print(str(accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)))
+    #print(str(result.eval({x:gtex.test.data[0:3]}, session=sess)))
     # bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
     # bd = maxabsscaler.fit_transform(bd)
     # labels = np.zeros((331,30))
