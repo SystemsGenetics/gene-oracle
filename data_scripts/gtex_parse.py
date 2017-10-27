@@ -61,15 +61,15 @@ tissues = {
 	"Whole-Blood" : 393
 }
 
-files = os.listdir('./datasets/hallmark_subsets/')
-cols = np.load('./datasets/cols_gtex.npy')
+files = os.listdir('../datasets/hallmark_subsets/')
+cols = np.load('../datasets/cols_gtex.npy')
 
 for f in files:
 	dir = f.split('.')[0]
-	if not os.path.exists('./datasets/hallmark_subsets/' + dir):
-		os.makedirs('./datasets/hallmark_subsets/' + dir)
+	if not os.path.exists('../datasets/hallmark_subsets/' + dir):
+		os.makedirs('../datasets/hallmark_subsets/' + dir)
 
-	data = np.load('./datasets/hallmark_subsets/' + f)
+	data = np.load('../datasets/hallmark_subsets/' + f)
 	data = np.copy(data[:,2:])
 	data = data.astype(np.float32)
 
@@ -81,12 +81,12 @@ for f in files:
 	for key in sorted(tissues.iterkeys()):
 		
 		#create class directory if not already there
-		if not os.path.exists('./datasets/hallmark_subsets/' + dir + '/' + key):
-			os.makedirs('./datasets/hallmark_subsets/' + dir + '/' + key)
+		if not os.path.exists('../datasets/hallmark_subsets/' + dir + '/' + key):
+			os.makedirs('../datasets/hallmark_subsets/' + dir + '/' + key)
 
 		#create h5 file for each sample
 		for i in range(tissues[key]):
-			data[:,j].tofile('./datasets/hallmark_subsets/' + dir + '/' + key + '/' + str('%03d' % i) + '_' + cols[j] + '.dat', sep="")
+			data[:,j].tofile('../datasets/hallmark_subsets/' + dir + '/' + key + '/' + str('%03d' % i) + '_' + cols[j] + '.dat', sep="")
 			# np.savetxt('GTEx_Data/' + key + '/' + str('%03d' % i) + '_' + cols[j] + '.txt', gtex_data[:,j], fmt='%8f')
 			j = j + 1
 

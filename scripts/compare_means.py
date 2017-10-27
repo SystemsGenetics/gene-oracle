@@ -37,11 +37,11 @@ average_expressions2 = np.zeros(200)
 average_expressions = [average_expressions1,average_expressions2]
 
 for i in range(len(tissues)):#go through both samples
-    tissue_samples = os.listdir("./datasets/hallmark_subsets/"+process+"/" + tissues[i])#get dat files/samples
+    tissue_samples = os.listdir("../datasets/hallmark_subsets/"+process+"/" + tissues[i])#get dat files/samples
 
     for j in range(gene_count_dict[tissues[i]]):
         #print(tissue_samples[0])
-        sample = np.fromfile("./datasets/hallmark_subsets/" + process + "/" + tissues[i]+'/' + tissue_samples[j], dtype=np.float32)
+        sample = np.fromfile("../datasets/hallmark_subsets/" + process + "/" + tissues[i]+'/' + tissue_samples[j], dtype=np.float32)
         for d in range(200):
             average_expressions[i][d] += sample[d]
 
@@ -66,7 +66,7 @@ if args.stack == 1:
 	plt.ylim(0,2)
 	plt.legend((p1[0], p2[0]), (sample1, sample2))
 
-	plt.savefig('./graphs/hallmark_subsets/'+ process + '/compares/' + sample1 + sample2 + '.png')
+	plt.savefig('../graphs/hallmark_subsets/'+ process + '/compares/' + sample1 + sample2 + '.png')
 else:
 	N = 200
 	ind = np.arange(N)    # the x locations for the groups
@@ -92,5 +92,5 @@ else:
 	print(str(np.max(average_expressions[1])))
 	print(np.argmax(average_expressions[1]))
 
-	plt.savefig('./graphs/hallmark_subsets/'+ process + '/compares/' + sample1 + sample2 + '.png')
+	plt.savefig('../graphs/hallmark_subsets/'+ process + '/compares/' + sample1 + sample2 + '.png')
 

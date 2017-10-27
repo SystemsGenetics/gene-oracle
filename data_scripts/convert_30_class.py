@@ -3,11 +3,11 @@
 # convert 53 class GTEx datasets to 30 class datasets
 import os, shutil
 
-subs = os.listdir('./datasets/hallmark_subsets_30')
+subs = os.listdir('../datasets/hallmark_subsets_30')
 subs.sort()
 
 for sub in subs:
-	path = './datasets/hallmark_subsets_30/' + sub
+	path = '../datasets/hallmark_subsets_30/' + sub
 
 ####Adipose
 	os.mkdir(path + '/Adipose')

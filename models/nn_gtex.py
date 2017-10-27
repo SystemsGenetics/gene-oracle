@@ -92,7 +92,7 @@ def main():
 
     # gather data
     #print('loading gtex data...')
-    gtex = setup_gtex.GTEx('./datasets/GTEx_Data', './train_data', './test_data', args.n_input)
+    gtex = setup_gtex.GTEx('../datasets/GTEx_Data', '../train_data', '../test_data', args.n_input)
 
     #print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
     #print('epochs:        ' + str(args.epochs))
@@ -132,7 +132,7 @@ def main():
     sess.run(init)
 
     if args.load:
-        saver.restore(sess, './checkpoints/gtex_nn')
+        saver.restore(sess, '../checkpoints/gtex_nn')
 
     # Training cycle
     for epoch in range(training_epochs):
@@ -150,7 +150,7 @@ def main():
     #     if epoch % display_step == 0:
     #         print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
     # print("Optimization Finished!")
-    saver.save(sess, "./checkpoints/gtex_nn")
+    saver.save(sess, "../checkpoints/gtex_nn")
 
     # Test model
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))

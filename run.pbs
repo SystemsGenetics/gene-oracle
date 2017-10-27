@@ -1,6 +1,0 @@
-#PBS -N regular_and_normal
-#PBS -l select=1:ncpus=16:ngpus=2:mem=16gb:gpu_model=k40,walltime=05:00:00
-
-cd /home/ctargon/SciDAS/DeepGTEx
-module list
-singularity exec --nv -B /software:/software -B /scratch2:/scratch2 -B /local_scratch:/local_scratch /software/singularity-containers/ubuntu_dl_gpu.img /usr/bin/python  nn_gtex.py --epochs 400 --h2 2048  > logs/gtex30_512x2048x512_dropout_l1reg_noscale.log
