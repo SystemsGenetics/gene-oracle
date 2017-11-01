@@ -1,5 +1,9 @@
 # DeepGTEx
-Multilayer perceptron network to classify genomic data
+This repository contains all code, scripts, and other for the DeepGTEx project. DeepGTEx is an ongoing research effort to effectively classify RNA expression level data from the Genotype-Tissue Expression project, located [here](https://gtexportal.org/home/). 
+
+
+
+
 
 
     usage: nn_gtex.py [-h] [--lr LR] [--epochs EPOCHS] [--h1 H1] [--h2 H2]
