@@ -21,8 +21,8 @@ gtex = np.load('../datasets/gtex_gct_data_string.npy')
 subs = []
 print('mapping genes...')
 
-if not os.path.exists('../datasets/hallmark_subsets/'):
-	os.makedirs('../datasets/hallmark_subsets/')
+if not os.path.exists('../datasets/hallmark_numpys/'):
+	os.makedirs('../datasets/hallmark_numpys/')
 
 for h in hallmarks:
 	subset = np.zeros((h.shape[0] - 2, gtex.shape[1]))
@@ -35,5 +35,5 @@ for h in hallmarks:
 		if (len(a[0]) != 0):
 			subset[c - 2, :] = np.copy(gtex[a[0][0],:])
 			
-	np.save('../datasets/hallmark_subsets/' + h[0] + '.npy', subset)
+	np.save('../datasets/hallmark_numpys/' + h[0] + '.npy', subset)
 
