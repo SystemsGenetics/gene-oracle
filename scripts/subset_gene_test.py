@@ -1,31 +1,25 @@
 #/usr/bin/python
 
-# runs all the hallmark sets iteratively
-
-import numpy as np
+import numpy as np 
 import os
 import subprocess
 
+sub = np.load('../datasets/hallmark_numpys/HALLMARK_HEDGEHOG_SIGNALING.npy')
+
+genes = sub[:,1].tolist()
+
 #top_dir = os.system("cd /home/csheare/DeepGTEx/datasets/hallmark_subsets")
 
-hall_subs = os.listdir("../datasets/hallmark_subsets")
-hall_subs.sort()
-files = ['random_accuracy.txt']
+files = ['hedgehog_single_gene_accuracy.txt']
 h1 = [1024]
 h2 = [1024]
 h3 = [1024]
 
-accs = np.zeros((50,100))
+accs = np.zeros((35,1))
 
-for j in range(100):
-	print('Iteration ' + str(j))
-	out = []
+for j in range(30):
 	for i in range(len(hall_subs)):
-
-		temp = np.fromfile('../datasets/hallmark_subsets/' + hall_subs[i] + '/Artery-Tibial/000_GTEX-111FC-0426-SM-5N9CV.dat', dtype=np.float32)
-		n_features = temp.shape[0]
-
-		os.system('python ../data_scripts/random_gene_generator.py --num ' + str(n_features))
+		os.system('python ../data_scripts/random_gene_generator.py --num ' + str(1))
 
 		os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Data_Random ' + ' -t 70 -r 30 ')
 		#find features
