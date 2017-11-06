@@ -12,6 +12,7 @@ with open('../BROAD_LISTS/h.all.v6.0.symbols.gmt') as f:
 	content = f.readlines()
 
 for c in content:
+	c = c.replace('\n', '')
 	hallmarks.append(np.array(c.split('\t')))
 
 print('loading gtex GEM string data...')

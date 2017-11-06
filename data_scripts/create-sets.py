@@ -46,8 +46,8 @@ elif args.DATASET == "brain":
 	subs.sort()
 	dataset = datasets.Brain(subs)
 # initialize the training set and test set
-TRAIN_PATH = "./train_data"
-TEST_PATH = "./test_data"
+TRAIN_PATH = "../train_data"
+TEST_PATH = "../test_data"
 
 if os.path.isdir(TRAIN_PATH):
 	shutil.rmtree(TRAIN_PATH)

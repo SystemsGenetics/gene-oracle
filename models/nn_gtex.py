@@ -3,12 +3,16 @@
 # multilayer perceptron neural network with softmax layer to classify
 # GTEx data (30 classes)
 
+import sys
+sys.path.insert(0, '../data_scripts')
+
 import numpy as np 
 import tensorflow as tf 
 from sklearn import preprocessing
 import setup_gtex
 import sys, argparse
 import os
+
 
 def main():
     parser = argparse.ArgumentParser(description='Neural network to classify genetic data')
