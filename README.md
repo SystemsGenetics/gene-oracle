@@ -2,7 +2,7 @@
 This repository contains all code, scripts, and other for the DeepGTEx project. DeepGTEx is an ongoing research effort to effectively classify RNA expression level data from the Genotype-Tissue Expression project, located [here](https://gtexportal.org/home/). Running models from this repo requires a downloaded version of the RNA-seq data Gene TPM's, located [here](https://gtexportal.org/home/datasets) (a sign-in is required to download the dataset for privacy reasons). 
 
 ## Requirements and Setup
-Creating a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
+Create a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
     
     module add anaconda3/4.3.0
     conda create -n {name of env} python=2.7
