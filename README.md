@@ -7,6 +7,10 @@ Creating a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
     module add anaconda3/4.3.0
     conda create -n {name of env} python=2.7
     
+To activate your environment, simply do:
+
+    source activate {name of env}
+    
 Once a virtualenv is created, the following software is required to run the models:
     
     tensorflow-gpu (1.3.0)
