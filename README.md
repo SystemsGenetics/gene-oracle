@@ -49,3 +49,5 @@ The models expect a valid training set and test set has already been created by 
       --load LOAD             load weights from previous run
       --confusion BOOL        generate confusion matrix (1) or no (0)
   
+## Feature Engineering
+To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from hallmark sets. 
