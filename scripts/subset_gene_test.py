@@ -88,6 +88,7 @@ genes = sub[:,1].tolist()
 
 for i in xrange(6, 36):
 
+	print('--------ITERATION ' + str(i) + '--------')
 	# read in the previous accuracy file
 	gene_dict = create_new_combos('../logs/hedgehog_' + str(i) + '_gene_accuracy.txt', genes)
 
@@ -105,7 +106,7 @@ for i in xrange(6, 36):
 	total_gene_list = gtex_str_data[1:,1]
 
 	fp = open('../logs/' + files[0], 'w')
-	i = 0
+
 	for key in gene_dict:
 		# retrieve the new combination of genes and create a new dataset containing the specified features
 		combo = list(key)
@@ -115,13 +116,11 @@ for i in xrange(6, 36):
 		os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Hedgehog ' + ' -t 70 -r 30 ')
 
 		# run the neural network architecture to retrieve an accuracy based on the new dataset
-		acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(6) + \
+		acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(i + 1) + \
 			' --n_classes 53 --batch_size 256 --lr 0.001 --epochs 75 --h1 ' + str(h1[0]) + ' --h2 ' + str(h2[0]) + ' --h3 ' + str(h3[0]), shell=True)
 
 		print('iteration ' + str(i) + ' ' + str(combo) + '\t' + str(acc))
 		
 		fp.write('{0}\t{1}\n'.format(key, acc))
-
-		i = i + 1
 
 	fp.close() 
