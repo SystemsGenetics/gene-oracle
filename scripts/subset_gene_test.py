@@ -62,11 +62,11 @@ def create_subset(sub_gene, tot_gene_lists):
 	for i in range(len(sub_gene)):
 		gene_indexes.append(np.argwhere(tot_gene_lists == sub_gene[i])[0])
 
-	if os.path.isdir('../datasets/GTEx_Notch'):
-		shutil.rmtree('../datasets/GTEx_Notch')
+	if os.path.isdir('../datasets/GTEx_Rand'):
+		shutil.rmtree('../datasets/GTEx_Rand')
 
-	if not os.path.isdir('./datasets/GTEx_Notch'):
-		os.mkdir('../datasets/GTEx_Notch')
+	if not os.path.isdir('./datasets/GTEx_Rand'):
+		os.mkdir('../datasets/GTEx_Rand')
 
 	tissues = os.listdir("../datasets/GTEx_Data")
 
@@ -74,8 +74,8 @@ def create_subset(sub_gene, tot_gene_lists):
 	for i in range(len(tissues)):#loop through all tissue types
 	    tissue_samples = os.listdir("../datasets/GTEx_Data/"+ tissues[i])#get dat files/samples
 
-	    if not os.path.isdir('./datasets/GTEx_Notch/' + tissues[i]):
-	    	os.mkdir('../datasets/GTEx_Notch/' + tissues[i])
+	    if not os.path.isdir('./datasets/GTEx_Rand/' + tissues[i]):
+	    	os.mkdir('../datasets/GTEx_Rand/' + tissues[i])
 
 	    for j in range(gene_count_dict[tissues[i]]):#loop through dat files
 	        sample = np.fromfile("../datasets/GTEx_Data/"+ tissues[i]+'/' + tissue_samples[j], dtype=np.float32)#get 1 sample
@@ -86,7 +86,7 @@ def create_subset(sub_gene, tot_gene_lists):
 
 		sub_sample = sub_sample.astype(np.float32)
 		#print(len(random_sample))
-		sub_sample.tofile("../datasets/GTEx_Notch/"+ tissues[i] + '/' + tissue_samples[j])
+		sub_sample.tofile("../datasets/GTEx_Rand/"+ tissues[i] + '/' + tissue_samples[j])
 
 def create_random_subset(num_genes, tot_gene_lists):		
 	#Generate Gene Indexes for Random Sample
@@ -120,14 +120,15 @@ if __name__ == '__main__':
 		# read in the previous accuracy file
 		if i > 3:
 			gene_dict = create_new_combos_from_file('../logs/notch/notch_' + str(i) + '_gene_accuracy.txt', genes)
+			# create files to write to, specify neural net architecture
+			files = ['notch_' + str(i + 1) + '_gene_accuracy.txt']
 		else:
 			gene_dict = create_raw_combos(genes, i)
+			# create files to write to, specify neural net architecture
+			files = ['notch_' + str(i) + '_gene_accuracy.txt']
 
 		# collect the data from the hedgehog file
 		data = sub[:,2:] # raw data is in 2
-
-		# create files to write to, specify neural net architecture
-		files = ['notch_' + str(i + 1) + '_gene_accuracy.txt']
 		
 		h1 = [1024]
 		h2 = [1024]
