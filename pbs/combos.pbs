@@ -1,0 +1,6 @@
+#PBS -N combos
+#PBS -l select=1:ncpus=16:ngpus=2:mem=16gb:gpu_model=k40,walltime=72:00:00
+
+cd /home/ctargon/SciDAS/DeepGTEx/scripts
+source activate gtex
+python subset_gene_test.py
