@@ -3,4 +3,4 @@
 
 cd /home/ctargon/SciDAS/DeepGTEx/scripts
 source activate gtex
-python subset_gene_test.py
+python subset_gene_test.py --set random --num_genes 36
