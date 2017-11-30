@@ -108,33 +108,32 @@ if __name__ == '__main__':
 	if args.set == 'hedgehog':
 		sub = np.load('../datasets/hallmark_numpys/HALLMARK_HEDGEHOG_SIGNALING.npy')
 		genes = sub[:,1].tolist()
-	elif: args.set == 'notch':
+	elif args.set == 'notch':
 		sub = np.load('../datasets/hallmark_numpys/HALLMARK_NOTCH_SIGNALING.npy')
 		genes = sub[:,1].tolist()
 	else:
 		genes = create_random_subset(args.num_genes, total_gene_list)
 
-	for i in xrange(1, len(genes)):
+	for i in xrange(2, len(genes)):
 
 		print('--------ITERATION ' + str(i) + '--------')
 		# read in the previous accuracy file
 		if i > 3:
-			gene_dict = create_new_combos_from_file('../logs/notch/notch_' + str(i) + '_gene_accuracy.txt', genes)
+			n = i + 1
+			gene_dict = create_new_combos_from_file('../logs/rand/rand36_' + str(i) + '_gene_accuracy.txt', genes)
 			# create files to write to, specify neural net architecture
-			files = ['notch_' + str(i + 1) + '_gene_accuracy.txt']
+			files = ['rand36_' + str(i + 1) + '_gene_accuracy.txt']
 		else:
+			n = i
 			gene_dict = create_raw_combos(genes, i)
 			# create files to write to, specify neural net architecture
-			files = ['notch_' + str(i) + '_gene_accuracy.txt']
-
-		# collect the data from the hedgehog file
-		data = sub[:,2:] # raw data is in 2
+			files = ['rand36_' + str(i) + '_gene_accuracy.txt']
 		
 		h1 = [1024]
 		h2 = [1024]
 		h3 = [1024]
 
-		fp = open('../logs/notch/' + files[0], 'w')
+		fp = open('../logs/rand/' + files[0], 'w')
 
 		for key in gene_dict:
 			# retrieve the new combination of genes and create a new dataset containing the specified features
@@ -142,10 +141,10 @@ if __name__ == '__main__':
 			create_subset(combo, total_gene_list)
 
 			# partition the newly created datset into a training and test set
-			os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Notch ' + ' -t 70 -r 30 ')
+			os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Rand ' + ' -t 70 -r 30 ')
 
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
-			acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(i + 1) + \
+			acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(n) + \
 				' --n_classes 53 --batch_size 256 --lr 0.001 --epochs 75 --h1 ' + str(h1[0]) + ' --h2 ' + str(h2[0]) + ' --h3 ' + str(h3[0]), shell=True)
 
 			print('iteration ' + str(i) + ' ' + str(combo) + '\t' + str(acc))
