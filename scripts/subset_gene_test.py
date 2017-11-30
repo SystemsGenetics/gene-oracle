@@ -119,11 +119,13 @@ if __name__ == '__main__':
 		print('--------ITERATION ' + str(i) + '--------')
 		# read in the previous accuracy file
 		if i > 3:
+			# for combos from files
 			n = i + 1
 			gene_dict = create_new_combos_from_file('../logs/rand/rand36_' + str(i) + '_gene_accuracy.txt', genes)
 			# create files to write to, specify neural net architecture
 			files = ['rand36_' + str(i + 1) + '_gene_accuracy.txt']
 		else:
+			# for brute force 
 			n = i
 			gene_dict = create_raw_combos(genes, i)
 			# create files to write to, specify neural net architecture
