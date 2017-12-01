@@ -114,19 +114,17 @@ if __name__ == '__main__':
 	else:
 		genes = create_random_subset(args.num_genes, total_gene_list)
 
-	for i in xrange(2, len(genes)):
+	for i in xrange(1, len(genes)):
 
 		print('--------ITERATION ' + str(i) + '--------')
 		# read in the previous accuracy file
 		if i > 3:
 			# for combos from files
-			n = i + 1
-			gene_dict = create_new_combos_from_file('../logs/rand/rand36_' + str(i) + '_gene_accuracy.txt', genes)
+			gene_dict = create_new_combos_from_file('../logs/rand/rand36_' + str(i - 1) + '_gene_accuracy.txt', genes)
 			# create files to write to, specify neural net architecture
-			files = ['rand36_' + str(i + 1) + '_gene_accuracy.txt']
+			files = ['rand36_' + str(i) + '_gene_accuracy.txt']
 		else:
 			# for brute force 
-			n = i
 			gene_dict = create_raw_combos(genes, i)
 			# create files to write to, specify neural net architecture
 			files = ['rand36_' + str(i) + '_gene_accuracy.txt']
@@ -146,7 +144,7 @@ if __name__ == '__main__':
 			os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Rand ' + ' -t 70 -r 30 ')
 
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
-			acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(n) + \
+			acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(i) + \
 				' --n_classes 53 --batch_size 256 --lr 0.001 --epochs 75 --h1 ' + str(h1[0]) + ' --h2 ' + str(h2[0]) + ' --h3 ' + str(h3[0]), shell=True)
 
 			print('iteration ' + str(i) + ' ' + str(combo) + '\t' + str(acc))
