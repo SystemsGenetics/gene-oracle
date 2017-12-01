@@ -12,6 +12,9 @@ To activate your environment, simply do:
     source activate {name of env}
     
 Once a virtualenv is created, the following software is required to run the models:
+
+    conda install -n yourenvname [package]
+    example: conda install -n gtex tensorflow-gpu==1.3.0
     
     tensorflow-gpu (1.3.0)
     scikit-learn (0.19.0)
