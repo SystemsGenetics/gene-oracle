@@ -29,8 +29,8 @@ def create_new_combos_from_file(file, genes):
 	combos = []
 	prev_accs = np.loadtxt(file, delimiter='\t', dtype=np.str)
 	sort = prev_accs[np.argsort(prev_accs[:,1])]
-	top_5_perc = sort[len(sort) - 15:]
-	prev_combos = top_5_perc[:,0].tolist()
+	top_15 = sort[len(sort) - 15:]
+	prev_combos = top_15[:,0].tolist()
 
 	for c in prev_combos:
 		gene_list = sanitize(c)
