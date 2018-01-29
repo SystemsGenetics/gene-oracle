@@ -12,6 +12,12 @@ import json
 import shutil
 import itertools
 import sys, argparse
+import time
+
+sys.path.append(os.path.dirname(os.getcwd()))
+
+from models.nn_gtex import MLP
+from GTEx import GTEx
 
 # special helper function to sanitize the string containing the genes from
 # an accuracy file
@@ -52,46 +58,26 @@ def create_raw_combos(genes, i):
 
 	return dict.fromkeys(combos)
 
-# create a new dataset in the datasets directory that contains the given genes in sub_gene
-def create_subset(sub_gene, tot_gene_lists):
-	gene_count_dict = dict()
-	with open("../data_scripts/numsamples_gtex.json") as f:
-	    gene_count_dict = json.load(f)
-
-	gene_indexes = []
-	for i in range(len(sub_gene)):
-		gene_indexes.append(np.argwhere(tot_gene_lists == sub_gene[i])[0])
-
-	if os.path.isdir('../datasets/GTEx_Rand'):
-		shutil.rmtree('../datasets/GTEx_Rand')
-
-	if not os.path.isdir('./datasets/GTEx_Rand'):
-		os.mkdir('../datasets/GTEx_Rand')
-
-	tissues = os.listdir("../datasets/GTEx_Data")
-
-
-	for i in range(len(tissues)):#loop through all tissue types
-	    tissue_samples = os.listdir("../datasets/GTEx_Data/"+ tissues[i])#get dat files/samples
-
-	    if not os.path.isdir('./datasets/GTEx_Rand/' + tissues[i]):
-	    	os.mkdir('../datasets/GTEx_Rand/' + tissues[i])
-
-	    for j in range(gene_count_dict[tissues[i]]):#loop through dat files
-	        sample = np.fromfile("../datasets/GTEx_Data/"+ tissues[i]+'/' + tissue_samples[j], dtype=np.float32)#get 1 sample
-
-		sub_sample = np.zeros(len(gene_indexes))
-		for r in range(len(gene_indexes)):#loop through indexes
-			sub_sample[r] = sample[gene_indexes[r]]
-
-		sub_sample = sub_sample.astype(np.float32)
-		#print(len(random_sample))
-		sub_sample.tofile("../datasets/GTEx_Rand/"+ tissues[i] + '/' + tissue_samples[j])
-
+# get random gene indexes between 0-56238
 def create_random_subset(num_genes, tot_gene_lists):		
 	#Generate Gene Indexes for Random Sample
 	gene_indexes = np.random.randint(0, 56238, num_genes)
 	return [tot_gene_lists[i] for i in gene_indexes]
+
+
+def load_data(num_samples_json, gtex_gct_flt):
+	sample_count_dict = {}
+	with open(num_samples_json) as f:
+		sample_count_dict = json.load(f)
+
+	idx = 0
+	data = {}
+
+	for k in sorted(sample_count_dict.keys()):
+		data[k] = gtex_gct_flt[:,idx:(idx + sample_count_dict[k])]
+		idx = idx + sample_count_dict[k]
+
+	return data
 
 
 if __name__ == '__main__':
@@ -101,8 +87,12 @@ if __name__ == '__main__':
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
 	args = parser.parse_args()
 
-	gtex_str_data = np.load('../datasets/gtex_gct_data_string.npy')
-	total_gene_list = gtex_str_data[1:,1]
+	print('loading genetic data...')
+	gtex_gct_flt = np.load('../datasets/gtex_gct_data_float.npy')
+	total_gene_list = np.load('../datasets/gtex_complete_gene_list_str.npy')
+	print('done')
+
+	data = load_data("../data_scripts/numsamples.json", gtex_gct_flt)
 
 	# load the hedgehog data
 	if args.set == 'hedgehog':
@@ -114,40 +104,47 @@ if __name__ == '__main__':
 	else:
 		genes = create_random_subset(args.num_genes, total_gene_list)
 
-	for i in xrange(1, len(genes)):
 
+	print('beginning search for optimal combinations...')
+	for i in xrange(1, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 		# read in the previous accuracy file
 		if i > 3:
 			# for combos from files
-			gene_dict = create_new_combos_from_file('../logs/rand/rand36_' + str(i - 1) + '_gene_accuracy.txt', genes)
+			gene_dict = create_new_combos_from_file('../logs/hedgehog/hh_' + str(i - 1) + '_gene_accuracy.txt', genes)
 			# create files to write to, specify neural net architecture
-			files = ['rand36_' + str(i) + '_gene_accuracy.txt']
+			files = ['hh_' + str(i) + '_gene_accuracy.txt']
 		else:
-			# for brute force 
+			# for all possible combos
 			gene_dict = create_raw_combos(genes, i)
-			# create files to write to, specify neural net architecture
-			files = ['rand36_' + str(i) + '_gene_accuracy.txt']
+			
+			# create files to write to
+			files = ['hh_' + str(i) + '_gene_accuracy.txt']
 		
+		# define hidden layer sizes
 		h1 = [1024]
 		h2 = [1024]
 		h3 = [1024]
 
-		fp = open('../logs/rand/' + files[0], 'w')
+		# open log file to write to
+		fp = open('../logs/hedgehog/' + files[0], 'w')
 
 		for key in gene_dict:
 			# retrieve the new combination of genes and create a new dataset containing the specified features
+			start = time.clock()
 			combo = list(key)
-			create_subset(combo, total_gene_list)
+			#create_subset(combo, total_gene_list)
+
+			gtex = GTEx(data, total_gene_list, combo)
 
 			# partition the newly created datset into a training and test set
 			os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Rand ' + ' -t 70 -r 30 ')
-
+			
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
-			acc = subprocess.check_output('python ../models/nn_gtex.py --n_input ' + str(i) + \
-				' --n_classes 53 --batch_size 256 --lr 0.001 --epochs 75 --h1 ' + str(h1[0]) + ' --h2 ' + str(h2[0]) + ' --h3 ' + str(h3[0]), shell=True)
+			mlp = MLP(n_input=i, n_classes=53, batch_size=256, lr=0.001, epochs=75, n_h1=h1[0], n_h2=h2[0], n_h3=h3[0])
+			acc = mlp.run(gtex)
 
-			print('iteration ' + str(i) + ' ' + str(combo) + '\t' + str(acc))
+			print(str(combo) + '\t' + str(acc))
 			
 			fp.write('{0}\t{1}\n'.format(key, acc))
 

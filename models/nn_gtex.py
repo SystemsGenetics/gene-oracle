@@ -13,47 +13,28 @@ import setup_gtex
 import sys, argparse
 import os
 
+class MLP:
+    def __init__(self, lr=0.001, epochs=100, n_h1=512, n_h2=512, n_h3=512, batch_size=16, \
+        disp_step=1, n_input=56238, n_classes=53, beta=0.01, load=0, confusion=0, verbose=0):
+        
+        self.lr = lr
+        self.epochs = epochs
+        self.n_hidden_1 = n_h1
+        self.n_hidden_2 = n_h2
+        self.n_hidden_3 = n_h3
+        self.batch_size = batch_size
+        self.display_step = disp_step
+        self.n_input = n_input
+        self.n_classes = n_classes
+        self.beta = beta
+        self.load = load
+        self.confusion = confusion
+        self.verbose = verbose
 
-def main():
-    parser = argparse.ArgumentParser(description='Neural network to classify genetic data')
-    parser.add_argument('--lr', help='learning rate', type=float, default=0.001)
-    parser.add_argument('--epochs', help='no. of training epoch', type=int, default=100)
-    parser.add_argument('--h1', help='no. of neurons in hidden layer 1', type=int, default=512)
-    parser.add_argument('--h2', help='no. of neurons in hidden layer 2', type=int, default=512)
-    parser.add_argument('--h3', help='no. of neurons in hidden layer 3', type=int, default=512)
-    parser.add_argument('--batch_size', help='batch size', type=int, default=16)
-    parser.add_argument('--display_step', help='print updates after this many steps', type=int, default=1)
-    parser.add_argument('--n_input', help='number of input features', type=int, default=56238)
-    parser.add_argument('--n_classes', help='number of classes', type=int, default=30)
-    parser.add_argument('--beta', help='hyperparemeter for l1 regularization of weights', type=float, default=0.01)
-    parser.add_argument('--load', help='load weights from previous run', type=bool, default=0)
-    parser.add_argument('--confusion', help='generate confusion matrix (1) or no (0)', type=bool, default=0)
-    args = parser.parse_args()
-
-    # Parameters
-    learning_rate = args.lr
-    training_epochs = args.epochs
-    batch_size = args.batch_size
-    display_step = args.display_step
-    beta = args.beta
-
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-
-    # Network Parameters
-    n_hidden_1 = args.h1 # 1st layer number of features
-    n_hidden_2 = args.h2 # 2nd layer number of features
-    n_hidden_3 = args.h3 # 3rd layer number of features
-    #n_hidden_4 = 256 # 4th layer num neurons
-    n_input = args.n_input # GTEx data input size
-    n_classes = args.n_classes # GTEx total classes
-
-    # begin computational graph
-    # tf Graph input
-    x = tf.placeholder("float", [None, n_input])
-    y = tf.placeholder("float", [None, n_classes])
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
     # Create model
-    def multilayer_perceptron(x, weights, biases):
+    def multilayer_perceptron(self, x, weights, biases):
         # Hidden layer with RELU activation
         #x = tf.nn.l1_normalize(x, 0)
         layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
@@ -78,117 +59,114 @@ def main():
         return out_layer
 
 
-    # Store layers weight & bias
-    weights = {
-        'h1': tf.get_variable("h1", shape=[n_input, n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
-        'h2': tf.get_variable("h2", shape=[n_hidden_1, n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
-        'h3': tf.get_variable("h3", shape=[n_hidden_2, n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
-        #'h4': tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4])),
-        'out': tf.get_variable("out_w", shape=[n_hidden_3, n_classes], initializer=tf.contrib.layers.xavier_initializer())
-    }
-    biases = {
-        'b1': tf.get_variable("b1", shape=[n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
-        'b2': tf.get_variable("b2", shape=[n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
-        'b3': tf.get_variable("b3", shape=[n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
-        #'b4': tf.Variable(tf.random_normal([n_hidden_4])),
-        'out': tf.get_variable("out_b", shape=[n_classes], initializer=tf.contrib.layers.xavier_initializer())
-    }
+    def run(self, gtex):
 
-    # gather data
-    #print('loading gtex data...')
-    gtex = setup_gtex.GTEx('../datasets/GTEx_Data', '../train_data', '../test_data', args.n_input)
+        tf.reset_default_graph()
 
-    #print('hidden layers: ' + str(args.h1) + 'x' + str(args.h2) + 'x' + str(args.h3))
-    #print('epochs:        ' + str(args.epochs))
-    #print('learning rate: ' + str(args.lr)) 
+        x = tf.placeholder("float", [None, self.n_input])
+        y = tf.placeholder("float", [None, self.n_classes])
 
-    # preprocess data
-    maxabsscaler = preprocessing.MaxAbsScaler()
-    gtex.train.data = maxabsscaler.fit_transform(gtex.train.data)
-    gtex.test.data = maxabsscaler.fit_transform(gtex.test.data)
-    #gtex.train.data = preprocessing.normalize(gtex.train.data)
-    #gtex.test.data = preprocessing.normalize(gtex.test.data)
+        # Store layers weight & bias
+        weights = {
+            'h1': tf.get_variable("h1", shape=[self.n_input, self.n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
+            'h2': tf.get_variable("h2", shape=[self.n_hidden_1, self.n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
+            'h3': tf.get_variable("h3", shape=[self.n_hidden_2, self.n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
+            #'h4': tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4])),
+            'out': tf.get_variable("out_w", shape=[self.n_hidden_3, self.n_classes], initializer=tf.contrib.layers.xavier_initializer())
+        }
+        biases = {
+            'b1': tf.get_variable("b1", shape=[self.n_hidden_1], initializer=tf.contrib.layers.xavier_initializer()),
+            'b2': tf.get_variable("b2", shape=[self.n_hidden_2], initializer=tf.contrib.layers.xavier_initializer()),
+            'b3': tf.get_variable("b3", shape=[self.n_hidden_3], initializer=tf.contrib.layers.xavier_initializer()),
+            #'b4': tf.Variable(tf.random_normal([n_hidden_4])),
+            'out': tf.get_variable("out_b", shape=[self.n_classes], initializer=tf.contrib.layers.xavier_initializer())
+        }
 
-    # Construct model
-    pred = multilayer_perceptron(x, weights, biases)
+        # gather data
+        #gtex = setup_gtex.GTEx('../datasets/GTEx_Data', '../train_data', '../test_data', self.n_input)
 
-    # Define loss and optimizer
-    g_step = tf.Variable(0, trainable=False)
-    #g_step = tf.contrib.framework.get_global_step()
-    starter_learning_rate = args.lr
-    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step=g_step, decay_steps=500, decay_rate=0.96, staircase=True)
+        # preprocess data
+        maxabsscaler = preprocessing.MaxAbsScaler()
+        gtex.train.data = maxabsscaler.fit_transform(gtex.train.data)
+        gtex.test.data = maxabsscaler.fit_transform(gtex.test.data)
+        
 
-    result = tf.nn.softmax(pred)
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-    # l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
-    # w = tf.trainable_variables()
-    # regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
-    # cost = tf.reduce_mean(cost + regularize_penalty)
+        # Construct model
+        pred = self.multilayer_perceptron(x, weights, biases)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost, global_step=g_step)
-    saver = tf.train.Saver()
+        # Define loss and optimizer
+        g_step = tf.Variable(0, trainable=False)
 
-    # Initializing the variables
-    init = tf.global_variables_initializer()
+        starter_learning_rate = self.lr
 
-    # Launch the graph
-    sess = tf.Session()
-    sess.run(init)
+        learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step=g_step, decay_steps=500, decay_rate=0.96, staircase=True)
 
-    if args.load:
-        saver.restore(sess, '../checkpoints/gtex_nn')
+        result = tf.nn.softmax(pred)
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+        # l1_regularizer = tf.contrib.layers.l1_regularizer(scale=0.005, scope=None)
+        # w = tf.trainable_variables()
+        # regularize_penalty = tf.contrib.layers.apply_regularization(l1_regularizer, w) 
+        # cost = tf.reduce_mean(cost + regularize_penalty)
 
-    # Training cycle
-    for epoch in range(training_epochs):
-        avg_cost = 0.
-        total_batch = int(gtex.train.num_examples/batch_size)
-        # Loop over all batches
-        for i in range(total_batch):
-            batch_x, batch_y = gtex.train.next_batch(batch_size, i)
-            # Run optimization op (backprop) and cost op (to get loss value)
-            _, c, r = sess.run([optimizer, cost, result], feed_dict={x: batch_x,
-                                                          y: batch_y})
-            # Compute average loss
-            avg_cost += c / total_batch
-            
-    #     if epoch % display_step == 0:
-    #         print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
-    # print("Optimization Finished!")
-    saver.save(sess, "../checkpoints/gtex_nn")
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost, global_step=g_step)
+        saver = tf.train.Saver()
 
-    # Test model
-    correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
-    # Calculate accuracy
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-    print(str(accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)))
-    #print(str(result.eval({x:gtex.test.data[0:3]}, session=sess)))
-    # bd = np.transpose(np.load('./datasets/braincell_data_flt32.npy'))
-    # bd = maxabsscaler.fit_transform(bd)
-    # labels = np.zeros((331,30))
-    # labels[:,5] = 1
-    # print("Braincell Accuracy: ", accuracy.eval({x:bd, y:labels}, session=sess))
-    #print(result.eval({x: gtex.test.data[0:3]}, session=sess))
+        # Initializing the variables
+        init = tf.global_variables_initializer()
 
-    if args.confusion:
-        # generate confusion matrices for brain data and gtex data
-        temp = pred.eval({x: gtex.test.data}, session=sess)
-        preds = np.argmax(temp, 1)
-        labs = np.argmax(gtex.test.labels, 1)
-        cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
-        mycm = cm.eval(feed_dict=None, session=sess)
-        np.savetxt('./confusion_matrix_gtex', mycm, fmt='%4d', delimiter=' ')
+        # Launch the graph
+        sess = tf.Session()
+        sess.run(init)
 
-        temp = pred.eval({x: bd}, session=sess)
-        preds = np.argmax(temp, 1)
-        labs = np.argmax(labels, 1)
-        cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
-        mycm = cm.eval(feed_dict=None, session=sess)
-        np.savetxt('./confusion_matrix_brain', mycm, fmt='%4d', delimiter=' ')
+        if self.load:
+            saver.restore(sess, '../checkpoints/gtex_nn')
 
+        # Training cycle
+        for epoch in range(self.epochs):
+            avg_cost = 0.
+            total_batch = int(gtex.train.num_examples/self.batch_size)
+            # Loop over all batches
+            for i in range(total_batch):
+                batch_x, batch_y = gtex.train.next_batch(self.batch_size, i)
 
-    # res = tf.argmax(pred, 1)
+                # Run optimization op (backprop) and cost op (to get loss value)
+                _, c, r = sess.run([optimizer, cost, result], feed_dict={x: batch_x,
+                                                              y: batch_y})
+                # Compute average loss
+                avg_cost += c / total_batch
 
-    # a =  sess.run(res, feed_dict={x: gtex.test.data})
+            if self.verbose:
+                print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
+                
+        #     if epoch % display_step == 0:
+        #         print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
+        # print("Optimization Finished!")
+        #saver.save(sess, "../checkpoints/gtex_nn")
 
-if __name__ == "__main__":
-    main()
+        # Test model
+        correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+        
+        # Calculate accuracy
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+        if self.confusion:
+            # generate confusion matrices for brain data and gtex data
+            temp = pred.eval({x: gtex.test.data}, session=sess)
+            preds = np.argmax(temp, 1)
+            labs = np.argmax(gtex.test.labels, 1)
+            cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
+            mycm = cm.eval(feed_dict=None, session=sess)
+            np.savetxt('./confusion_matrix_gtex', mycm, fmt='%4d', delimiter=' ')
+
+            temp = pred.eval({x: bd}, session=sess)
+            preds = np.argmax(temp, 1)
+            labs = np.argmax(labels, 1)
+            cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
+            mycm = cm.eval(feed_dict=None, session=sess)
+            np.savetxt('./confusion_matrix_brain', mycm, fmt='%4d', delimiter=' ')
+
+        acc = accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)
+
+        sess.close()
+
+        return acc
