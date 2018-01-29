@@ -4,7 +4,7 @@ This repository contains all code, scripts, and other for the DeepGTEx project. 
 ## Requirements and Setup
 Create a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
     
-    module add anaconda3/4.3.0
+    module add anaconda/4.3.0
     conda create -n {name of env} python=2.7
     
 To activate your environment, simply do:
