@@ -62,9 +62,9 @@ if __name__ == '__main__':
 	gene_dict = create_raw_combos(genes, args.set_size)
 
 	######## THIS IS HARDCODED FOR NOW... MUST CHANGE IN FUTURE ################
-	# prev_accs = np.loadtxt('../logs/hedgehog/hh_3_gene_accuracy.txt', delimiter='\t', dtype=np.str)
-	# accs = prev_accs[:,1]
-	# accs = accs.astype(np.float32)
+	prev_accs = np.loadtxt('../logs/hedgehog/hh_3_gene_accuracy.txt', delimiter='\t', dtype=np.str)
+	accs = prev_accs[:,1]
+	accs = accs.astype(np.float32)
 
 	# convert dictionary to list
 	l = []
@@ -114,11 +114,11 @@ if __name__ == '__main__':
 		np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
 	
 	# viz with seaborne
-	sns.regplot(x=X_embedded[:,0], y=X_embedded[:,1], fit_reg=False, scatter_kws={'s':1}, hue=accs)
+	#sns.regplot(x=X_embedded[:,0], y=X_embedded[:,1], fit_reg=False, scatter_kws={'s':1})
 
 	# UNCOMMENT FOR HUE VISUALIZATION OF CLASSIFICATIONS
-	#plt.scatter(X_embedded[:,0], X_embedded[:,1], c=accs, s=1, cmap=plt.cm.coolwarm)
-	#cbar = plt.colorbar()
+	plt.scatter(X_embedded[:,0], X_embedded[:,1], c=accs, s=1, cmap=plt.cm.coolwarm)
+	cbar = plt.colorbar()
 
 	# show plot
 	plt.show()
