@@ -20,14 +20,7 @@ Once a virtualenv is created, the following software is required to run the mode
     scikit-learn (0.19.0)
     numpy (1.13.1)
     argparse (1.4.0)
-
-## Data Manipulation
-The dataset can be partioned using the create-sets.py script as follows:
-
-    usage: ./create-sets.py -d {"gtex", "gtex_30", "brain"} -t PERCENT_TRAIN -r PERCENT_TEST -p /path/to/dataset
     
-The dataset is expected to be structured with directories containing class samples, with each sample in the .dat format.
-
 ## Usage
 The models expect a valid training set and test set has already been created by the user, using the ./create-sets.py script. The training set and test set should reside in the top level directory of this repo. 
 
