@@ -9,7 +9,6 @@ sys.path.insert(0, '../data_scripts')
 import numpy as np 
 import tensorflow as tf 
 from sklearn import preprocessing
-import setup_gtex
 import sys, argparse
 import os
 

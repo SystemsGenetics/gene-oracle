@@ -100,7 +100,7 @@ if __name__ == '__main__':
 	spinner.start()
 	
 	if args.load == 1:
-		print('Loading .npy TSNE file...')
+		print('\nLoading .npy TSNE file...')
 		X_embedded = np.load('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy')
 	else:
 		# run TSNE
@@ -117,8 +117,31 @@ if __name__ == '__main__':
 	#sns.regplot(x=X_embedded[:,0], y=X_embedded[:,1], fit_reg=False, scatter_kws={'s':1})
 
 	# UNCOMMENT FOR HUE VISUALIZATION OF CLASSIFICATIONS
-	plt.scatter(X_embedded[:,0], X_embedded[:,1], c=accs, s=1, cmap=plt.cm.coolwarm)
+	plt.scatter(X_embedded[:,0], X_embedded[:,1], c=accs, s=0.5, cmap=plt.cm.coolwarm)
 	cbar = plt.colorbar()
+
+	# apply labels to points with > 50% accuracy
+
+	for label, x, y in zip(accs, X_embedded[:, 0], X_embedded[:, 1]):
+		if float(label) > 0.53:
+		    plt.annotate(
+		        label,
+		        xy=(x, y), xytext=(-10, 10), size=6,
+		        textcoords='offset points', ha='right', va='bottom',
+		        bbox=dict(boxstyle='round,pad=0.1', fc='yellow', alpha=0.5),
+		        arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
 	# show plot
 	plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
