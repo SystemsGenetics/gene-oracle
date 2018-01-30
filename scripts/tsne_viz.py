@@ -13,6 +13,7 @@ import itertools
 import sys, argparse
 import time
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 import seaborn as sns
 import matplotlib.pyplot as plt
 from halo import Halo
@@ -30,8 +31,9 @@ if __name__ == '__main__':
 	parser.add_argument('--set', help='subset to be used', type=str, required=True, choices=['hedgehog', 'notch', 'random'])
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
 	parser.add_argument('--set_size', help='size of subsets to visualize', type=int, required=True, choices=[1,2,3])
-	parser.add_argument('--save', help='save .npy TSNE matrix', type=int, required=False, choices=[0,1], default=0)
-	parser.add_argument('--load', help='load .npy TSNE matrix', type=int, required=False, choices=[0,1], default=0)
+	parser.add_argument('--save', help='save .npy TSNE matrix', action='store_true')
+	parser.add_argument('--load', help='load .npy TSNE matrix', action='store_true')
+	parser.add_argument('--pca', help='run PCA on data before TSNE', action='store_true')
 	args = parser.parse_args()
 
 	# start halo spinner
@@ -71,9 +73,11 @@ if __name__ == '__main__':
 	for k in gene_dict:
 		l.append(list(k))
 
-	# create matrix to run through tsne
-	# creating matrix for tsne calculations
-	if args.load == 0:
+
+	if args.load:
+		print('\nLoading .npy TSNE file...')
+		X_embedded = np.load('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy')
+	else:
 		print('creating TSNE calculation matrix...')
 		spinner.start()
 
@@ -96,22 +100,33 @@ if __name__ == '__main__':
 
 		spinner.stop()
 
-	
-	spinner.start()
-	
-	if args.load == 1:
-		print('\nLoading .npy TSNE file...')
-		X_embedded = np.load('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy')
-	else:
+		#run PCA
+		if args.pca:
+			print('running PCA...')
+			spinner.start()
+
+			pca = PCA()
+			pca.fit(x_data)
+			x_data = pca.transform(x_data)
+
+			spinner.stop()
+
 		# run TSNE
+		spinner.start()
+		
 		print('running TSNE...')
 		X_embedded = TSNE().fit_transform(x_data)
-	
-	spinner.stop()
 
-	if args.save == 1:
+		spinner.stop()
+
+	
+	if args.save:
 		print('Saving .npy TSNE file...')
-		np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
+		if args.pca:
+			np.save('../datasets/TSNE/pca_' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
+		else:
+			np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
+
 	
 	# viz with seaborne
 	#sns.regplot(x=X_embedded[:,0], y=X_embedded[:,1], fit_reg=False, scatter_kws={'s':1})
@@ -123,7 +138,7 @@ if __name__ == '__main__':
 	# apply labels to points with > 50% accuracy
 
 	for label, x, y in zip(accs, X_embedded[:, 0], X_embedded[:, 1]):
-		if float(label) > 0.53:
+		if float(label) > 0.525:
 		    plt.annotate(
 		        label,
 		        xy=(x, y), xytext=(-10, 10), size=6,
