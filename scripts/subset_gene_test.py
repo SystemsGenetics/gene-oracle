@@ -13,11 +13,15 @@ import shutil
 import itertools
 import sys, argparse
 import time
+from halo import Halo
+from sklearn.cluster import KMeans
+from math import log
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from models.nn_gtex import MLP
 from GTEx import GTEx
+
 
 # special helper function to sanitize the string containing the genes from
 # an accuracy file
@@ -28,26 +32,76 @@ def sanitize(gene_str):
 	gene_list = gene_list.split(',')
 	return gene_list
 
-# create_new_combos takes in a file string that is an accuracy file with a list of genes
-# separated by a tab, followed by the accuracy for that list. it returns a dictionary
-# of new combinations with one extra gene appended that was not previously in the list
-def create_new_combos_from_file(file, genes):
+# comment this yo
+# convert sets 
+def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
+	feature_list = []
+	for combo in combo_list:
+		dataset = GTEx(data, total_gene_list, combo, train_split=70, test_split=30)
+
+		concat_genes = dataset.train.data[:,0]
+
+		for i in xrange(1, set_size):
+			concat_genes = np.append(concat_genes, dataset.train.data[:,i])
+
+		feature_list.append(concat_genes)
+
+	# convert to numpy format
+	x_data = np.array(feature_list)
+
+	return x_data
+
+# generate_new_subsets_w_clustering takes in a file string that is an accuracy file with a list of genes
+# separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
+# with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
+# clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes):
+	# collect previous files combinations/accuracyies
+	prev_combos = []
+	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
+	
+	# gather previous combinations
 	combos = []
-	prev_accs = np.loadtxt(file, delimiter='\t', dtype=np.str)
-	sort = prev_accs[np.argsort(prev_accs[:,1])]
-	top_15 = sort[len(sort) - 15:]
-	prev_combos = top_15[:,0].tolist()
+	prev_combos = prev_run[:,0]
+	for pc in prev_combos:
+		combos.append(sanitize(pc))
 
-	for c in prev_combos:
-		gene_list = sanitize(c)
+	# gather previous accuracies
+	prev_accs = prev_run[:,1]
 
-		for g in genes:
-			if g not in gene_list:
-				temp_list = gene_list[:]
-				temp_list.append(g)
-				combos.append(temp_list)
+	# create data matrix of old combinations
+	gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
 
-	combos = [tuple(g) for g in combos]
+	BIC_list = []
+	#inertias = []
+
+	# run k means k times
+	print("Running Kmeans :)")
+	for i in xrange(1,9):
+		print("...running kmeans with " + str(i) + " clusters ")
+		#reset inertias
+		#inertias[:] = []
+		kmeans = KMeans(n_clusters = i, n_jobs = 8, n_init=50)
+		#print("...running kmeans with " + str(i) + " clusters for the "+ str(j) + " iteration")
+		kmeans.fit(gene_set_data)
+		#inertias.append(kmeans.inertia_)
+		BIC = log(len(combos))*i + 2*(kmeans.inertia_)
+		#BIC = kmeans.inertia_ - (float(i) / 2.0) * log(len(combos))
+		#BIC = -2.0 * log(kmeans.inertia_) + 2.0 * i	
+		BIC_list.append(BIC)
+
+	# for i in xrange(len(centroids_list)):
+	# 	print(str(i) +" \n" + str(centroids_list[i]) + "\n")
+	for i in xrange(len(BIC_list)):
+		print(str(i + 1)+ " \t" + str(BIC_list[i]))
+
+		# run k means doooood!!!!!!!
+
+	# test BIC / AIC to find best kmeans algorithm (USE THE INERTIA!!!!!)
+
+
+	# num =max_experiments / (k + 1) send off num sets from each k clusters + num random sets
+
 	return dict.fromkeys(combos)
 
 # create every possible combination
@@ -87,6 +141,9 @@ if __name__ == '__main__':
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
 	args = parser.parse_args()
 
+	# start halo spinner
+	spinner = Halo(text='Loading', spinner='dots')
+
 	print('loading genetic data...')
 	gtex_gct_flt = np.load('../datasets/gtex_gct_data_float.npy')
 	total_gene_list = np.load('../datasets/gtex_complete_gene_list_str.npy')
@@ -110,8 +167,10 @@ if __name__ == '__main__':
 		print('--------ITERATION ' + str(i) + '--------')
 		# read in the previous accuracy file
 		if i > 3:
+			print('performing set selection via KMeans...')
 			# for combos from files
-			gene_dict = create_new_combos_from_file('../logs/hedgehog/hh_' + str(i - 1) + '_gene_accuracy.txt', genes)
+			f = '../logs/hedgehog/hh_' + str(i - 1) + '_gene_accuracy.txt'
+			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes)
 			# create files to write to, specify neural net architecture
 			files = ['hh_' + str(i) + '_gene_accuracy.txt']
 		else:
@@ -136,9 +195,6 @@ if __name__ == '__main__':
 			#create_subset(combo, total_gene_list)
 
 			gtex = GTEx(data, total_gene_list, combo)
-
-			# partition the newly created datset into a training and test set
-			os.system('python ../data_scripts/create-sets.py -d gtex -p ../datasets/GTEx_Rand ' + ' -t 70 -r 30 ')
 			
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
 			mlp = MLP(n_input=i, n_classes=53, batch_size=256, lr=0.001, epochs=75, n_h1=h1[0], n_h2=h2[0], n_h3=h3[0])

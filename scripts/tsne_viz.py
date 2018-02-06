@@ -20,9 +20,7 @@ from halo import Halo
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from GTEx import GTEx
-from subset_gene_test import create_raw_combos, create_random_subset, load_data
-
-
+from subset_gene_test import create_raw_combos, create_random_subset, load_data, convert_sets_to_vecs
 
 if __name__ == '__main__':
 
@@ -69,9 +67,9 @@ if __name__ == '__main__':
 	accs = accs.astype(np.float32)
 
 	# convert dictionary to list
-	l = []
+	combo_list = []
 	for k in gene_dict:
-		l.append(list(k))
+		combo_list.append(list(k))
 
 
 	if args.load:
@@ -81,22 +79,7 @@ if __name__ == '__main__':
 		print('creating TSNE calculation matrix...')
 		spinner.start()
 
-		f = []
-		for combo in l:
-			d = GTEx(data, total_gene_list, combo)
-
-			if args.set_size == 1:
-				a = d.train.data[:,0]
-			elif args.set_size == 2:
-				a = np.append(d.train.data[:,0], d.train.data[:,1])
-			elif args.set_size == 3:
-				a = np.append(d.train.data[:,0], d.train.data[:,1])
-				a = np.append(a, d.train.data[:,2])
-
-			f.append(a)
-
-		# convert to numpy format
-		x_data = np.array(f)
+		x_data = convert_sets_to_vecs(data, total_gene_list, combo_list, args.set_size)
 
 		spinner.stop()
 
@@ -113,7 +96,7 @@ if __name__ == '__main__':
 
 		# run TSNE
 		spinner.start()
-		
+
 		print('running TSNE...')
 		X_embedded = TSNE().fit_transform(x_data)
 
@@ -125,7 +108,7 @@ if __name__ == '__main__':
 		if args.pca:
 			np.save('../datasets/TSNE/pca_' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
 		else:
-			np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '.npy', X_embedded)
+			np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '_30_70.npy', X_embedded)
 
 	
 	# viz with seaborne
@@ -138,7 +121,7 @@ if __name__ == '__main__':
 	# apply labels to points with > 50% accuracy
 
 	for label, x, y in zip(accs, X_embedded[:, 0], X_embedded[:, 1]):
-		if float(label) > 0.525:
+		if float(label) > 0.52:
 		    plt.annotate(
 		        label,
 		        xy=(x, y), xytext=(-10, 10), size=6,
