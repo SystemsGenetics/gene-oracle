@@ -17,7 +17,6 @@ from halo import Halo
 from sklearn.cluster import KMeans
 from math import log
 import ast
-import operation
 import random
 
 sys.path.append(os.path.dirname(os.getcwd()))
