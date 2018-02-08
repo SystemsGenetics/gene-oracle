@@ -16,6 +16,9 @@ import time
 from halo import Halo
 from sklearn.cluster import KMeans
 from math import log
+import ast
+import operation
+import random
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -102,9 +105,42 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 
 	# find the top num sets from each cluster and additionally return num random sets
 	# num = max_experiments / (k + 1) send off num sets from each k clusters + num random sets
-	num_per_k = max_experiments / (final_k + 1)
+	num_per_k = max_experiments / (final_k + 2)
 
-	return dict.fromkeys(combos)
+	# extract the top num_per_k for each cluster, add to dictionary that contains tuple of classification 
+	# rate and cluster label
+	combo_info = {}
+	for i in xrange(len(combos)):
+		combo_info[str(combos[i])] = (prev_accs[i], final_model.labels_[i])
+
+	# sort the combo info descending by accuracy
+	sort_c_info = sorted(combo_info.items(), key=operator.itemgetter(1), reverse=True)
+
+	# retrieve the top num_per_k values from each cluster
+	final_combos = []
+	unused_idxs = []
+	cnt = 0
+	counts = np.zeros(final_k + 1)
+	for item in sort_c_info:
+		if counts[item[1][1]] < num_per_k: # see if the num_per_k is under threshold 
+			final_combos.append(ast.literal_eval(item[0])) # append the list of genes to final_combos
+			counts[item[1][1]] = counts[item[1][1]] + 1 # increment the global counts of each cluster
+		else:
+			unused_idxs.append(cnt)		
+		
+		cnt = cnt + 1 # increment index count
+
+	# add on an additional num_per_k random samples from the data
+	samples = random.sample(unused_idxs, num_per_k)
+	
+	for s in samples:
+		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
+
+	ret_combos = []
+	for f in final_combos:
+		ret_combos.append(tuple(f))
+
+	return dict.fromkeys(ret_combos)
 
 # create every possible combination
 def create_raw_combos(genes, i):
