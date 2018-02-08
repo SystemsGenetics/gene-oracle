@@ -37,7 +37,7 @@ def sanitize(gene_str):
 def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 	feature_list = []
 	for combo in combo_list:
-		dataset = GTEx(data, total_gene_list, combo, train_split=70, test_split=30)
+		dataset = GTEx(data, total_gene_list, combo, train_split=30, test_split=70)
 
 		concat_genes = dataset.train.data[:,0]
 
@@ -55,7 +55,7 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 # separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
 # with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
 # clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
-def generate_new_subsets_w_clustering(file, data, total_gene_list, genes):
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=200):
 	# collect previous files combinations/accuracyies
 	prev_combos = []
 	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
@@ -72,35 +72,37 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes):
 	# create data matrix of old combinations
 	gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
 
+	inertias = []
 	BIC_list = []
-	#inertias = []
+	models = []
 
 	# run k means k times
-	print("Running Kmeans :)")
-	for i in xrange(1,9):
-		print("...running kmeans with " + str(i) + " clusters ")
-		#reset inertias
-		#inertias[:] = []
-		kmeans = KMeans(n_clusters = i, n_jobs = 8, n_init=50)
-		#print("...running kmeans with " + str(i) + " clusters for the "+ str(j) + " iteration")
+	print("Running Kmeans")
+	for i in xrange(1,11):
+		kmeans = KMeans(n_clusters=i, n_jobs=8, n_init=30)
 		kmeans.fit(gene_set_data)
-		#inertias.append(kmeans.inertia_)
-		BIC = log(len(combos))*i + 2*(kmeans.inertia_)
-		#BIC = kmeans.inertia_ - (float(i) / 2.0) * log(len(combos))
-		#BIC = -2.0 * log(kmeans.inertia_) + 2.0 * i	
+
+		models.append(kmeans)
+		inertias.append(kmeans.inertia_)
+
+		# calculate BIC and append to list
+		BIC = log(kmeans.inertia_) - (log(len(combos) * i))
 		BIC_list.append(BIC)
 
-	# for i in xrange(len(centroids_list)):
-	# 	print(str(i) +" \n" + str(centroids_list[i]) + "\n")
-	for i in xrange(len(BIC_list)):
-		print(str(i + 1)+ " \t" + str(BIC_list[i]))
 
-		# run k means doooood!!!!!!!
+	# approximate second derivatives to determine where the 'elbow' in the curve is
+	second_dervs = []
+	for i in xrange(1, len(inertias) - 1):
+		xpp = inertias[i + 1] + inertias[i - 1] - 2 * inertias[i]
+		second_dervs.append(xpp)
 
-	# test BIC / AIC to find best kmeans algorithm (USE THE INERTIA!!!!!)
+	# add one... excluded first and last k from calculations TODO: may need to fix this
+	final_k = second_dervs.index(max(second_dervs)) + 1
+	final_model = models[final_k]
 
-
-	# num =max_experiments / (k + 1) send off num sets from each k clusters + num random sets
+	# find the top num sets from each cluster and additionally return num random sets
+	# num = max_experiments / (k + 1) send off num sets from each k clusters + num random sets
+	num_per_k = max_experiments / (final_k + 1)
 
 	return dict.fromkeys(combos)
 
@@ -165,6 +167,7 @@ if __name__ == '__main__':
 	print('beginning search for optimal combinations...')
 	for i in xrange(1, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
+
 		# read in the previous accuracy file
 		if i > 3:
 			print('performing set selection via KMeans...')
@@ -176,7 +179,6 @@ if __name__ == '__main__':
 		else:
 			# for all possible combos
 			gene_dict = create_raw_combos(genes, i)
-			
 			# create files to write to
 			files = ['hh_' + str(i) + '_gene_accuracy.txt']
 		
@@ -192,7 +194,6 @@ if __name__ == '__main__':
 			# retrieve the new combination of genes and create a new dataset containing the specified features
 			start = time.clock()
 			combo = list(key)
-			#create_subset(combo, total_gene_list)
 
 			gtex = GTEx(data, total_gene_list, combo)
 			
