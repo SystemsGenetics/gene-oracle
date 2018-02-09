@@ -18,6 +18,7 @@ from sklearn.cluster import KMeans
 from math import log
 import ast
 import random
+import operator 
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -91,6 +92,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 		BIC = log(kmeans.inertia_) - (log(len(combos) * i))
 		BIC_list.append(BIC)
 
+	print('done kmeans')
 
 	# approximate second derivatives to determine where the 'elbow' in the curve is
 	second_dervs = []
@@ -135,8 +137,17 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
 
+	# append missing genes to each of the combinations of 3
+	next_set_size_combos = []
+	for c in final_combos:
+		for g in genes:
+			if g not in c:
+				temp_list = c[:]
+				temp_list.append(g)
+				next_set_size_combos.append(temp_list)
+
 	ret_combos = []
-	for f in final_combos:
+	for f in next_set_size_combos:
 		ret_combos.append(tuple(f))
 
 	return dict.fromkeys(ret_combos)
@@ -200,7 +211,7 @@ if __name__ == '__main__':
 
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, len(genes)):
+	for i in xrange(4, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
