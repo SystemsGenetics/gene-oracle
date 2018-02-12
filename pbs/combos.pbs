@@ -1,7 +1,7 @@
 #PBS -N combos
-#PBS -l select=1:ncpus=16:ngpus=2:mem=16gb:gpu_model=k40,walltime=72:00:00
-#PBS -q mri
+#PBS -l select=1:ncpus=16:ngpus=2:mem=64gb:gpu_model=k40,walltime=168:00:00
+#PBS -q feltus
 
 cd /home/$USER/SciDAS/DeepGTEx/scripts
 source activate gtex
-python subset_gene_test.py --set random --num_genes 36
+python subset_gene_test.py --set random5 --num_genes 36

@@ -185,7 +185,7 @@ def load_data(num_samples_json, gtex_gct_flt):
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Run tests on specified subsets of a hallmark or random set')
-	parser.add_argument('--set', help='subset to be used', type=str, required=True, choices=['hedgehog', 'notch', 'random'])
+	parser.add_argument('--set', help='subset to be used', type=str, required=True)
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
 	args = parser.parse_args()
 
@@ -211,22 +211,22 @@ if __name__ == '__main__':
 
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(4, len(genes)):
+	for i in xrange(1, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
 		if i > 3:
 			print('performing set selection via KMeans...')
 			# for combos from files
-			f = '../logs/hedgehog/hh_' + str(i - 1) + '_gene_accuracy.txt'
-			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes)
+			f = '../logs/' + str(args.set) + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
+			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=80)
 			# create files to write to, specify neural net architecture
-			files = ['hh_' + str(i) + '_gene_accuracy.txt']
+			files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
 		else:
 			# for all possible combos
 			gene_dict = create_raw_combos(genes, i)
 			# create files to write to
-			files = ['hh_' + str(i) + '_gene_accuracy.txt']
+			files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
 		
 		# define hidden layer sizes
 		h1 = [1024]
@@ -234,7 +234,7 @@ if __name__ == '__main__':
 		h3 = [1024]
 
 		# open log file to write to
-		fp = open('../logs/hedgehog/' + files[0], 'w')
+		fp = open('../logs/' + str(args.set) + '/' + files[0], 'w')
 
 		for key in gene_dict:
 			# retrieve the new combination of genes and create a new dataset containing the specified features
