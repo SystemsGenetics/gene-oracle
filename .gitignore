@@ -3,12 +3,15 @@
 *.log
 *.txt
 *.json
+
 # folders
+data
 datasets
 test_data
 train_data
 checkpoints
 logs
+subsets
 
 # python byte code
 *.pyc
