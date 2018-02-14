@@ -163,7 +163,7 @@ def create_raw_combos(genes, i):
 # get random gene indexes between 0-56238
 def create_random_subset(num_genes, tot_gene_lists):		
 	#Generate Gene Indexes for Random Sample
-	gene_indexes = np.random.randint(0, 56238, num_genes)
+	gene_indexes = np.random.randint(0, len(total_gene_list), num_genes)
 	return [tot_gene_lists[i] for i in gene_indexes]
 
 
