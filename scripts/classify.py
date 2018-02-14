@@ -168,12 +168,12 @@ if __name__ == '__main__':
 	# read subset file if provided
 	if args.subset_list:
 		subsets = read_subset_file(args.subset_list)
-		subset_classification(data, args.gene_list, subsets, args.out_file)
+		subset_classification(data, total_gene_list, subsets, args.out_file)
 
 
 	# if random is selectioned, run random 
 	if args.random_test:
-		random_classification(data, args.gene_list, args.num_randoms, args.rand_iters, args.out_file)
+		random_classification(data, total_gene_list, args.num_randoms, args.rand_iters, args.out_file)
 
 
 
