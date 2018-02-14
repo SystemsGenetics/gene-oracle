@@ -112,7 +112,8 @@ def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1)
 		print ('running experiment on ' + str(s))
 		# set up the neural network
 		mlp = MLP(n_input=len(subsets[s]), n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
-		
+		print(s)
+		print(subsets[s])		
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, subsets[s])
