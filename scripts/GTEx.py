@@ -20,7 +20,7 @@ class data_t(object):
 
 class GTEx:
 	def __init__(self, data, total_gene_list=None, sub_gene_list=None, train_split=70, test_split=30):
-		self.num_classes = 53
+		self.num_classes = len(data)
 		self.train, self.test = self.split_set(data, total_gene_list, sub_gene_list, train_split, test_split)
 
 
@@ -40,7 +40,10 @@ class GTEx:
 		#get genes in sub_gen_list from total_gene_list
 		gene_indexes = []
 		for i in range(len(sub_gene_list)):
-			gene_indexes.append(np.argwhere(total_gene_list == sub_gene_list[i])[0])
+			if (np.argwhere(total_gene_list == sub_gene_list[i])[0]):
+				gene_indexes.append(np.argwhere(total_gene_list == sub_gene_list[i])[0])
+			else:
+				print('GTEx Class: gene is missing!')
 
 		# dictionary for requested data
 		req_data = {}
