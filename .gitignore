@@ -2,7 +2,7 @@
 *.dat
 *.log
 *.txt
-
+*.json
 # folders
 datasets
 test_data
