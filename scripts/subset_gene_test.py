@@ -176,8 +176,8 @@ def load_data(num_samples_json, gtex_gct_flt):
 	data = {}
 
 	for k in sorted(sample_count_dict.keys()):
-		data[k] = gtex_gct_flt[:,idx:(idx + sample_count_dict[k])]
-		idx = idx + sample_count_dict[k]
+		data[k] = gtex_gct_flt[:,idx:(idx + int(sample_count_dict[k]))]
+		idx = idx + int(sample_count_dict[k])
 
 	return data
 
