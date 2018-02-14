@@ -1,6 +1,7 @@
 # data and log files
 *.dat
 *.log
+*.txt
 
 # folders
 datasets
