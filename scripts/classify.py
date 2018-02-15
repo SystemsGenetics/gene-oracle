@@ -140,7 +140,7 @@ def full_classification(data, total_gene_list, out_file, kfold_val=1):
 		# set up the gtex class to partition data
 		gtex = GTEx(data, total_gene_list)
 
-		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024, verbose=1)
+		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=64, verbose=1)
 
 		# run the neural net
 		acc = mlp.run(gtex)

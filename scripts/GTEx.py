@@ -24,7 +24,6 @@ class GTEx:
 		self.train, self.test = self.split_set(data, total_gene_list, sub_gene_list, train_split, test_split)
 
 
-
 	# 
 	# USAGE:
 	# 		create a new data dictionary with classes as keys that contain a subsample of original data,
