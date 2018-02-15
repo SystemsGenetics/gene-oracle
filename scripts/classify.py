@@ -134,12 +134,13 @@ def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1)
 def full_classification(data, total_gene_list, out_file, kfold_val=1):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')	
-
+	accs = []
+	
 	for i in xrange(kfold_val):
 		# set up the gtex class to partition data
 		gtex = GTEx(data, total_gene_list)
 
-		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
+		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024, verbose=1)
 
 		# run the neural net
 		acc = mlp.run(gtex)
@@ -149,6 +150,7 @@ def full_classification(data, total_gene_list, out_file, kfold_val=1):
 	accs_np = np.asarray(accs)
 	mean = np.mean(accs_np)
 	std = np.std(accs_np)
+	s = 'EVERY FEATURE'
 	print(str(s) + '\t' + str(mean))
 	f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
 
