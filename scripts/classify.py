@@ -120,12 +120,13 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, subsets[s])
 
-			mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
-			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
-			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
-			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
-			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			display_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+				batch_size=config['mlp']['batch_size'], \
+				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
+				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
+				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
+				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
+				display_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 			# run the neural net
 			acc = mlp.run(gtex)
@@ -151,7 +152,8 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 		# set up the gtex class to partition data
 		gtex = GTEx(data, total_gene_list)
 
-		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
+		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+			batch_size=config['mlp']['batch_size'], \
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
