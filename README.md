@@ -24,10 +24,10 @@ Once a virtualenv is created, the following software is required to run the mode
 ## Usage
 classify.py can be used to classify a dataset using all the features, a random subset of features, or a specified subset of features.  
 Users are required to input a path to three files:
-*a numpy data array that has features (genes) row-wise and samples column wise
-*a numpy data array that contains a list of every gene (str) in the exact order as the dataset
-*a json file that contains the number of samples per class
-    *note: the dataset is assumed to be in order of the json file
+* a numpy data array that has features (genes) row-wise and samples column wise
+* a numpy data array that contains a list of every gene (str) in the exact order as the dataset
+* a json file that contains the number of samples per class
+    * note: the dataset is assumed to be in order of the json file
 
     usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
                        SAMPLE_JSON --config CONFIG --out_file OUT_FILE
