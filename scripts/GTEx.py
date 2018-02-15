@@ -40,7 +40,7 @@ class GTEx:
 		#get genes in sub_gen_list from total_gene_list
 		gene_indexes = []
 		for i in range(len(sub_gene_list)):
-			if np.argwhere(total_gene_list == sub_gene_list[i]).size != 0:
+			if sub_gene_list[i] in total_gene_list:
 				gene_indexes.append(np.argwhere(total_gene_list == sub_gene_list[i])[0])
 			else:
 				print('GTEx Class: gene is missing!')
