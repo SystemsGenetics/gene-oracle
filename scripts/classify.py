@@ -74,12 +74,11 @@ def read_subset_file(file):
 
 # perform random classification based on the given parameters
 def random_classification(data, total_gene_list, num_genes, iters, out_file):
-
-	accs = []
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
+		accs = []
 		# set up the neural network
 		mlp = MLP(n_input=num, n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
 		
@@ -104,28 +103,29 @@ def random_classification(data, total_gene_list, num_genes, iters, out_file):
 
 # perform classificaiton on each of the subsets provided in the subset_list argument
 def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1):
-	accs = []
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
 	for s in subsets:
-		print ('running experiment on ' + str(s))
+		accs = []
 		# set up the neural network
-		mlp = MLP(n_input=len(subsets[s]), n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
-		print(s)
-		print(subsets[s])		
+		
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, subsets[s])
 
+			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
+
 			# run the neural net
-			accs.append(mlp.run(gtex))
+			acc = mlp.run(gtex)
+			accs.append(acc)
 
 		# print the results to a file
 		accs_np = np.asarray(accs)
 		mean = np.mean(accs_np)
 		std = np.std(accs_np)
-		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		print(str(s) + '\t' + str(mean))
+		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
 
 	f.close()
 
