@@ -8,9 +8,9 @@ import sys, argparse
 import os
 
 class MLP:
-    def __init__(self, lr=0.001, epochs=100, n_layers=3, h_units=[512,512,512], batch_size=16, \
-        disp_step=1, n_input=56238, n_classes=53, beta=0.01, dropout=0, load=0, save = 0, \
-        confusion=0, verbose=0):
+    def __init__(self, lr=0.001, epochs=75, n_layers=3, h_units=[512,512,512], \
+        act_funcs=["relu", "relu", "relu"], batch_size=16, disp_step=1, n_input=56238, \
+        n_classes=53, dropout=0, load=0, save = 0, confusion=0, verbose=0):
         
         self.lr = lr
         self.epochs = epochs
@@ -20,7 +20,6 @@ class MLP:
         self.display_step = disp_step
         self.n_input = n_input
         self.n_classes = n_classes
-        self.beta = beta
         self.load = load
         self.save = save
         self.dropout = dropout
@@ -36,11 +35,13 @@ class MLP:
         for i in xrange(1, self.n_layers + 1):
             w = 'h' + str(i)
             b = 'b' + str(i)
+            
             layer = tf.add(tf.matmul(layer, weights[w]), biases[b])
-            if i == self.n_layers:
-                layer = tf.nn.sigmoid(layer)
-            else:
+            
+            if self.act_funcs[i - 1] == "relu":
                 layer = tf.nn.relu(layer)
+            elif self.act_funcs[i - 1] == "sigmoid":
+                layer = tf.nn.sigmoid(layer)
 
             if self.dropout:
                 layer = tf.nn.dropout(layer, 0.75)
