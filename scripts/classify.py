@@ -86,7 +86,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			display_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 		
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
@@ -126,7 +126,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-				display_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 			# run the neural net
 			acc = mlp.run(gtex)
@@ -158,7 +158,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			display_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 		# run the neural net
 		acc = mlp.run(gtex)
