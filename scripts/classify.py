@@ -74,7 +74,7 @@ def read_subset_file(file):
 
 
 # perform random classification based on the given parameters
-def random_classification(data, total_gene_list, num_genes, iters, out_file, config):
+def random_classification(data, total_gene_list, config, num_genes, iters, out_file):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
@@ -108,7 +108,7 @@ def random_classification(data, total_gene_list, num_genes, iters, out_file, con
 
 
 # perform classificaiton on each of the subsets provided in the subset_list argument
-def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1, config):
+def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
@@ -142,7 +142,7 @@ def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1,
 
 
 # perform classification on every gene
-def full_classification(data, total_gene_list, out_file, kfold_val=1, config):
+def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')	
 	accs = []
@@ -216,17 +216,17 @@ if __name__ == '__main__':
 	# read subset file if provided
 	if args.subset_list:
 		subsets = read_subset_file(args.subset_list)
-		subset_classification(data, total_gene_list, subsets, args.out_file, config)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file)
 
 
 	# if random is selectioned, run random 
 	if args.random_test:
-		random_classification(data, total_gene_list, args.num_randoms, args.rand_iters, args.out_file, config)
+		random_classification(data, total_gene_list, config, args.num_randoms, args.rand_iters, args.out_file)
 
 
 	# if not subset test and random test, run classifier on all 56k genes
 	if not args.random_test and not args.subset_list:
-		full_classification(data, total_gene_list, args.out_file, config)
+		full_classification(data, total_gene_list, config, args.out_file)
 
 
 
