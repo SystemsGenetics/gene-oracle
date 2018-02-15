@@ -16,6 +16,7 @@ class MLP:
         self.epochs = epochs
         self.n_layers = n_layers
         self.h_units = h_units
+        self.act_funcs = act_funcs
         self.batch_size = batch_size
         self.display_step = disp_step
         self.n_input = n_input
