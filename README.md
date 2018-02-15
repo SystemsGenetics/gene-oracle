@@ -29,6 +29,8 @@ Users are required to input a path to three files:
 * a json file that contains the number of samples per class
     * note: the dataset is assumed to be in order of the json file
 
+The following contains the example usage:
+
     usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
                        SAMPLE_JSON --config CONFIG --out_file OUT_FILE
                        [--subset_list SUBSET_LIST] [--random_test]
