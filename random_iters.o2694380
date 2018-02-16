@@ -1,0 +1,17 @@
+loading genetic data...
+ 
+ 
++------------------------------------------+ 
+| PALMETTO CLUSTER PBS RESOURCES REQUESTED | 
++------------------------------------------+ 
+ 
+mem=64gb,ncpus=16,walltime=72:00:00
+ 
+ 
++-------------------------------------+ 
+| PALMETTO CLUSTER PBS RESOURCES USED | 
++-------------------------------------+ 
+ 
+cpupercent=19,cput=00:00:05,mem=3272kb,ncpus=16,vmem=115260kb,walltime=00:00:28
+ 
+ 
