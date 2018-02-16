@@ -4,6 +4,10 @@
 *.txt
 *.json
 
+# palmetto outputs
+*.o*
+*.e*
+
 # folders
 data
 datasets
