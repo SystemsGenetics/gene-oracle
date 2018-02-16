@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "scripts/classify.py", line 229, in <module>
-    random_classification(data, total_gene_list, config, args.num_randoms, args.rand_iters, args.out_file)
-AttributeError: 'Namespace' object has no attribute 'num_randoms'
