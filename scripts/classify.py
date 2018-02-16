@@ -226,7 +226,7 @@ if __name__ == '__main__':
 
 	# if random is selectioned, run random 
 	if args.random_test:
-		random_classification(data, total_gene_list, config, args.num_randoms, args.rand_iters, args.out_file)
+		random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file)
 
 
 	# if not subset test and random test, run classifier on all 56k genes
