@@ -7,8 +7,6 @@ source activate gtex
 python scripts/classify.py  --dataset ./data/float_data/gtex_gct_data_float_v7.npy \
 							--gene_list ./data/gene_lists/gtex_gene_list_v7.npy \
 							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
-							--out_file ./logs/random_tests_10_to_200_v7.log \
+							--out_file ./logs/reactome_experiments.log \
 							--config ./models/net_config.json \
-							--random_test \
-							--num_random_genes 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 \
-							--rand_iters 200
+							--subset_list ./subsets/experiments.txt

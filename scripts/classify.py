@@ -102,7 +102,9 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 		accs_np = np.asarray(accs)
 		mean = np.mean(accs_np)
 		std = np.std(accs_np)
-		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		mx = np.max(accs_np)
+		mn = np.min(accs_np)
+		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
 
 	f.close()
 
@@ -110,7 +112,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 # perform classificaiton on each of the subsets provided in the subset_list argument
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
 	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\n')
+	f.write('Num\tAverage\tStd Dev\tMax\tMin\n')
 
 	for s in subsets:
 		accs = []
@@ -136,8 +138,9 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		accs_np = np.asarray(accs)
 		mean = np.mean(accs_np)
 		std = np.std(accs_np)
-		print(str(s) + '\t' + str(mean))
-		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		mx = np.max(accs_np)
+		mn = np.min(accs_np)
+		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
 
 	f.close()
 
@@ -218,7 +221,7 @@ if __name__ == '__main__':
 	# read subset file if provided
 	if args.subset_list:
 		subsets = read_subset_file(args.subset_list)
-		subset_classification(data, total_gene_list, config, subsets, args.out_file)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
 
 	# if random is selectioned, run random 
