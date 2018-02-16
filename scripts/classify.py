@@ -104,7 +104,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 		std = np.std(accs_np)
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
-		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
+		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
 
 	f.close()
 
