@@ -90,7 +90,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 		
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
-			r_genes = create_random_subset(num_genes, total_gene_list)
+			r_genes = create_random_subset(num, total_gene_list)
 
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, r_genes)
@@ -223,6 +223,9 @@ if __name__ == '__main__':
 		subsets = read_subset_file(args.subset_list)
 		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
+
+	print(args.num_random_genes)
+	print(args.rand_iters)
 
 	# if random is selectioned, run random 
 	if args.random_test:
