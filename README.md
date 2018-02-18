@@ -22,28 +22,40 @@ Once a virtualenv is created, the following software is required to run the mode
     argparse (1.4.0)
     
 ## Usage
-The models expect a valid training set and test set has already been created by the user, using the ./create-sets.py script. The training set and test set should reside in the top level directory of this repo. 
+classify.py can be used to classify a dataset using all the features, a random subset of features, or a specified subset of features.  
+Users are required to input a path to three files:
+* a numpy data array that has features (genes) row-wise and samples column wise
+* a numpy data array that contains a list of every gene (str) in the exact order as the dataset
+* a json file that contains the number of samples per class
+    * note: the dataset is assumed to be in order of the json file
 
-    usage: nn_gtex.py [-h] [--lr LR] [--epochs EPOCHS] [--h1 H1] [--h2 H2]
-                      [--h3 H3] [--batch_size BATCH_SIZE]
-                      [--display_step DISPLAY_STEP] [--n_input N_INPUT]
-                      [--n_classes N_CLASSES] [--beta BETA] [--load LOAD]
-                      [--confusion CONFUSION]
+The following contains the example usage:
 
-    optional arguments:
-      -h, --help              show this help message and exit
-      --lr FLOAT              learning rate
-      --epochs INT            no. of training epoch
-      --h1 H1                 no. of neurons in hidden layer 1
-      --h2 H2                 no. of neurons in hidden layer 2
-      --h3 H3                 no. of neurons in hidden layer 3
-      --batch_size INT        batch size
-      --display_step INT      print updates after this many steps
-      --n_input INT           number of input features
-      --n_classes INT         number of classes
-      --beta BETA             hyperparemeter for l1 regularization of weights
-      --load LOAD             load weights from previous run
-      --confusion BOOL        generate confusion matrix (1) or no (0)
+    usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
+                       SAMPLE_JSON --config CONFIG --out_file OUT_FILE
+                       [--subset_list SUBSET_LIST] [--random_test]
+                       [--num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]]
+                       [--rand_iters [RAND_ITERS]]
+
+
+    arguments:
+      -h, --help            show this help message and exit
+      --dataset DATASET     dataset to be used
+      --gene_list GENE_LIST
+                            list of genes in dataset (same order as dataset)
+      --sample_json SAMPLE_JSON
+                            json file containing number of samples per class
+      --config CONFIG       json file containing network specifications
+      --out_file OUT_FILE   output file to send results to
+      --subset_list SUBSET_LIST
+                            gmt/gct file containing subsets
+      --random_test         Perform random test
+      --num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]
+                            Number of random genes to assess
+      --rand_iters [RAND_ITERS]
+                            Number of iterations to perform for random
+                            classification
+
   
 ## Feature Engineering
 To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from hallmark sets. 

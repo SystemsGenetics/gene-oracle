@@ -13,6 +13,7 @@ import numpy as np
 import sys, argparse
 import os
 import re
+import json
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -73,18 +74,23 @@ def read_subset_file(file):
 
 
 # perform random classification based on the given parameters
-def random_classification(data, total_gene_list, num_genes, iters, out_file):
+def random_classification(data, total_gene_list, config, num_genes, iters, out_file):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
 		accs = []
 		# set up the neural network
-		mlp = MLP(n_input=num, n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
+		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
+			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
+			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
+			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
+			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 		
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
-			r_genes = create_random_subset(num_genes, total_gene_list)
+			r_genes = create_random_subset(num, total_gene_list)
 
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, r_genes)
@@ -96,15 +102,17 @@ def random_classification(data, total_gene_list, num_genes, iters, out_file):
 		accs_np = np.asarray(accs)
 		mean = np.mean(accs_np)
 		std = np.std(accs_np)
-		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		mx = np.max(accs_np)
+		mn = np.min(accs_np)
+		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
 
 	f.close()
 
 
 # perform classificaiton on each of the subsets provided in the subset_list argument
-def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1):
+def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
 	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\n')
+	f.write('Num\tAverage\tStd Dev\tMax\tMin\n')
 
 	for s in subsets:
 		accs = []
@@ -114,7 +122,13 @@ def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1)
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, subsets[s])
 
-			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
+			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+				batch_size=config['mlp']['batch_size'], \
+				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
+				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
+				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
+				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
+				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 			# run the neural net
 			acc = mlp.run(gtex)
@@ -124,22 +138,30 @@ def subset_classification(data, total_gene_list, subsets, out_file, kfold_val=1)
 		accs_np = np.asarray(accs)
 		mean = np.mean(accs_np)
 		std = np.std(accs_np)
-		print(str(s) + '\t' + str(mean))
-		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		mx = np.max(accs_np)
+		mn = np.min(accs_np)
+		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(max) + '\t' + str(max) + '\n')
 
 	f.close()
 
 
 # perform classification on every gene
-def full_classification(data, total_gene_list, out_file, kfold_val=1):
+def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')	
-
+	accs = []
+	
 	for i in xrange(kfold_val):
 		# set up the gtex class to partition data
 		gtex = GTEx(data, total_gene_list)
 
-		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), batch_size=128, lr=0.001, epochs=75, n_h1=1024, n_h2=1024, n_h3=1024)
+		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+			batch_size=config['mlp']['batch_size'], \
+			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
+			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
+			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
+			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 		# run the neural net
 		acc = mlp.run(gtex)
@@ -149,6 +171,7 @@ def full_classification(data, total_gene_list, out_file, kfold_val=1):
 	accs_np = np.asarray(accs)
 	mean = np.mean(accs_np)
 	std = np.std(accs_np)
+	s = 'EVERY FEATURE'
 	print(str(s) + '\t' + str(mean))
 	f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
 
@@ -165,6 +188,8 @@ if __name__ == '__main__':
 		type=str, required=True)
 	parser.add_argument('--sample_json', help='json file containing number of samples per class', \
 		type=str, required=True)
+	parser.add_argument('--config', help='json file containing network specifications', type=str, \
+		required=True)
 	parser.add_argument('--out_file', help='output file to send results to', type=str, required=True)
 	parser.add_argument('--subset_list', help='gmt/gct file containing subsets', type=str, required=False)
 	parser.add_argument('--random_test', help='Perform random test', action='store_true', required=False)
@@ -191,21 +216,25 @@ if __name__ == '__main__':
 		print('dataset does not match gene list.')
 		sys.exit(1)
 
+	config = json.load(open(args.config))
 
 	# read subset file if provided
 	if args.subset_list:
 		subsets = read_subset_file(args.subset_list)
-		subset_classification(data, total_gene_list, subsets, args.out_file)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
+
+	print(args.num_random_genes)
+	print(args.rand_iters)
 
 	# if random is selectioned, run random 
 	if args.random_test:
-		random_classification(data, total_gene_list, args.num_randoms, args.rand_iters, args.out_file)
+		random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file)
 
 
 	# if not subset test and random test, run classifier on all 56k genes
 	if not args.random_test and not args.subset_list:
-		full_classification(data, total_gene_list, args.out_file)
+		full_classification(data, total_gene_list, config, args.out_file)
 
 
 
