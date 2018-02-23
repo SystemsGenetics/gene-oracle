@@ -79,6 +79,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 	f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
+		print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
 		accs = []
 		# set up the neural network
 		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
@@ -115,6 +116,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 	f.write('Num\tAverage\tStd Dev\tMax\tMin\n')
 
 	for s in subsets:
+		print('classifying ' + str(s))
 		accs = []
 		# set up the neural network
 		
@@ -223,9 +225,6 @@ if __name__ == '__main__':
 		subsets = read_subset_file(args.subset_list)
 		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
-
-	print(args.num_random_genes)
-	print(args.rand_iters)
 
 	# if random is selectioned, run random 
 	if args.random_test:
