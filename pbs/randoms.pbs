@@ -1,13 +1,13 @@
 #PBS -N random_iters
-#PBS -l select=1:ncpus=16:ngpus=2:mem=64gb:gpu_model=p100,walltime=72:00:00
+#PBS -l select=1:ncpus=16:ngpus=2:mem=16gb:gpu_model=k40,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
 python scripts/classify.py  --dataset ./data/float_data/gtex_gct_data_float_v7.npy \
 							--gene_list ./data/gene_lists/gtex_gene_list_v7.npy \
 							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
-							--out_file ./logs/random_tests_10_to_200_v7.log \
+							--out_file ./logs/random_tests_1_to_36_v7.log \
 							--config ./models/net_config.json \
 							--random_test \
-							--num_random_genes 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 \
-							--rand_iters 200
+							--num_random_genes 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 \
+							--rand_iters 10
