@@ -19,12 +19,65 @@ from math import log
 import ast
 import random
 import operator 
+import re
+import json
+
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from models.nn_gtex import MLP
 from GTEx import GTEx
 
+# check the arguments are correct for the program
+def check_args(args):
+	# check dataset is of correct type
+	if os.path.exists(args.dataset):
+		split = args.dataset.split('.')
+		if split[-1] != 'npy':
+			print('Dataset file must be a numpy file.')
+			sys.exit(1)
+	else:
+		print('File does not exist!')
+		sys.exit(1)
+
+	# check gene list is of correct type
+	if os.path.exists(args.gene_list):
+		split = args.gene_list.split('.')
+		if split[-1] != 'npy':
+			print('Gene list file must be a numpy file.')
+			sys.exit(1)
+	else:
+		print('File does not exist!')
+		sys.exit(1)
+
+	# check gene list is of correct type
+	if os.path.exists(args.sample_json):
+		split = args.sample_json.split('.')
+		if split[-1] != 'json':
+			print('sample file must be a json file.')
+			sys.exit(1)
+	else:
+		print('File does not exist!')
+		sys.exit(1)	
+
+
+# read a csv or txt file that contains a name of a subset followed by a list of genes
+def read_subset_file(file):
+	with open(file, 'r') as f:
+		content = f.readlines()
+
+	# eliminate new line characters
+	content = [x.strip() for x in content]
+
+	# split on tabs or commas to create a sublist of set names and genes
+	content = [re.split('\t|,', x) for x in content]
+
+	# create a dictionary with keys subset names and values list of genes
+	subsets = {}
+	for c in content:
+		subsets[c[0]] = c[1:]
+
+	return subsets
 
 # special helper function to sanitize the string containing the genes from
 # an accuracy file
@@ -133,8 +186,8 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 		
 		cnt = cnt + 1 # increment index count
 
-	# add on an additional num_per_k random samples from the data
-	samples = random.sample(unused_idxs, num_per_k)
+	# fill final combos with random samples from the data
+	samples = random.sample(unused_idxs, max_experiments - len(final_combos))
 	
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
@@ -187,33 +240,51 @@ def load_data(num_samples_json, gtex_gct_flt):
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Run tests on specified subsets of a hallmark or random set')
+	parser.add_argument('--dataset', help='dataset to be used', type=str, required=True)
+	parser.add_argument('--gene_list', help='list of genes in dataset (same order as dataset)', \
+		type=str, required=True)
+	parser.add_argument('--sample_json', help='json file containing number of samples per class', \
+		type=str, required=True)
+	parser.add_argument('--config', help='json file containing network specifications', type=str, \
+		required=True)
+	parser.add_argument('--subset_list', help='gmt/gct/txt file containing subsets', type=str, required=False)
 	parser.add_argument('--set', help='subset to be used', type=str, required=True)
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
 	args = parser.parse_args()
+
+	# check arguments are correct
+	check_args(args)
 
 	# start halo spinner
 	spinner = Halo(text='Loading', spinner='dots')
 
 	print('loading genetic data...')
-	gtex_gct_flt = np.load('../datasets/gtex_gct_data_float_v7.npy')
-	total_gene_list = np.load('../datasets/gtex_complete_gene_list_str.npy')
+	gtex_gct_flt = np.load(args.dataset)
+	total_gene_list = np.load(args.gene_list)
 	print('done')
 
-	data = load_data("../data_scripts/numsamples.json", gtex_gct_flt)
+	data = load_data(args.sample_json, gtex_gct_flt)
 
 	# load the hedgehog data
-	if args.set == 'hedgehog':
-		sub = np.load('../datasets/hallmark_numpys/HALLMARK_HEDGEHOG_SIGNALING.npy')
-		genes = sub[:,1].tolist()
-	elif args.set == 'notch':
-		sub = np.load('../datasets/hallmark_numpys/HALLMARK_NOTCH_SIGNALING.npy')
-		genes = sub[:,1].tolist()
-	else:
+	if args.set == 'random':
 		genes = create_random_subset(args.num_genes, total_gene_list)
+	else:
+		if args.subset_list:
+			subsets = read_subset_file(args.subset_list)
+			try:
+				genes = subsets[args.set.upper()]
+			except:
+				print('set not found in subset file, try again')
+				sys.exit(1)
 
+		else:
+			print('must include subset file if not performing random test. exiting.')
+			sys.exit(1)
+		
+	config = json.load(open(args.config))
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, len(genes)):
+	for i in xrange(4, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
@@ -229,14 +300,18 @@ if __name__ == '__main__':
 			gene_dict = create_raw_combos(genes, i)
 			# create files to write to
 			files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
-		
-		# define hidden layer sizes
-		h1 = [1024]
-		h2 = [1024]
-		h3 = [1024]
+
 
 		# open log file to write to
 		fp = open('../logs/' + str(args.set) + '/' + files[0], 'w')
+
+		mlp = MLP(n_input=i, n_classes=len(data), \
+				batch_size=config['mlp']['batch_size'], \
+				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
+				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
+				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
+				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
+				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 		for key in gene_dict:
 			# retrieve the new combination of genes and create a new dataset containing the specified features
@@ -246,7 +321,6 @@ if __name__ == '__main__':
 			gtex = GTEx(data, total_gene_list, combo)
 			
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
-			mlp = MLP(n_input=i, n_classes=53, batch_size=256, lr=0.001, epochs=75, n_h1=h1[0], n_h2=h2[0], n_h3=h3[0])
 			acc = mlp.run(gtex)
 
 			print(str(combo) + '\t' + str(acc))

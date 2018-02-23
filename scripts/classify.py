@@ -12,65 +12,13 @@
 import numpy as np 
 import sys, argparse
 import os
-import re
 import json
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
-from subset_gene_test import create_random_subset, load_data
+from subset_gene_test import create_random_subset, load_data, check_args, read_subset_file
 from models.nn_gtex import MLP
 from GTEx import GTEx
-
-# check the arguments are correct for the program
-def check_args(args):
-	# check dataset is of correct type
-	if os.path.exists(args.dataset):
-		split = args.dataset.split('.')
-		if split[-1] != 'npy':
-			print('Dataset file must be a numpy file.')
-			sys.exit(1)
-	else:
-		print('File does not exist!')
-		sys.exit(1)
-
-	# check gene list is of correct type
-	if os.path.exists(args.gene_list):
-		split = args.gene_list.split('.')
-		if split[-1] != 'npy':
-			print('Gene list file must be a numpy file.')
-			sys.exit(1)
-	else:
-		print('File does not exist!')
-		sys.exit(1)
-
-	# check gene list is of correct type
-	if os.path.exists(args.sample_json):
-		split = args.sample_json.split('.')
-		if split[-1] != 'json':
-			print('sample file must be a json file.')
-			sys.exit(1)
-	else:
-		print('File does not exist!')
-		sys.exit(1)	
-
-
-# read a csv or txt file that contains a name of a subset followed by a list of genes
-def read_subset_file(file):
-	with open(file, 'r') as f:
-		content = f.readlines()
-
-	# eliminate new line characters
-	content = [x.strip() for x in content]
-
-	# split on tabs or commas to create a sublist of set names and genes
-	content = [re.split('\t|,', x) for x in content]
-
-	# create a dictionary with keys subset names and values list of genes
-	subsets = {}
-	for c in content:
-		subsets[c[0]] = c[1:]
-
-	return subsets
 
 
 # perform random classification based on the given parameters
