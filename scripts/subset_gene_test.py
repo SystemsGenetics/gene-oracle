@@ -192,6 +192,8 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
 
+	print('num sets moving on is ' + str(len(final_combos)))
+
 	# append missing genes to each of the combinations of 3
 	next_set_size_combos = []
 	for c in final_combos:
@@ -219,7 +221,7 @@ def create_raw_combos(genes, i):
 def create_random_subset(num_genes, total_gene_list):		
 	#Generate Gene Indexes for Random Sample
 	gene_indexes = np.random.randint(0, len(total_gene_list), num_genes)
-	return [total_gene_list[i] for i in gene_indexes]
+	return [total_gene_list[i][0] for i in gene_indexes]
 
 
 def load_data(num_samples_json, gtex_gct_flt):
@@ -250,6 +252,7 @@ if __name__ == '__main__':
 	parser.add_argument('--subset_list', help='gmt/gct/txt file containing subsets', type=str, required=False)
 	parser.add_argument('--set', help='subset to be used', type=str, required=True)
 	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
+	parser.add_argument('--log_dir', help='directory where logs are stored', type=str, required=True)
 	args = parser.parse_args()
 
 	# check arguments are correct
@@ -266,7 +269,7 @@ if __name__ == '__main__':
 	data = load_data(args.sample_json, gtex_gct_flt)
 
 	# load the hedgehog data
-	if args.set == 'random':
+	if "random" in args.set:
 		genes = create_random_subset(args.num_genes, total_gene_list)
 	else:
 		if args.subset_list:
@@ -283,27 +286,27 @@ if __name__ == '__main__':
 		
 	config = json.load(open(args.config))
 
+	if not os.path.exists(args.log_dir):
+		os.makedirs(args.log_dir)
+
 	print('beginning search for optimal combinations...')
-	for i in xrange(4, len(genes)):
+	for i in xrange(1, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
 		if i > 3:
 			print('performing set selection via KMeans...')
 			# for combos from files
-			f = '../logs/' + str(args.set) + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
+			f = args.log_dir + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
 			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=80)
-			# create files to write to, specify neural net architecture
-			files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
 		else:
 			# for all possible combos
 			gene_dict = create_raw_combos(genes, i)
-			# create files to write to
-			files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
-
+		
+		files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']
 
 		# open log file to write to
-		fp = open('../logs/' + str(args.set) + '/' + files[0], 'w')
+		fp = open(args.log_dir + '/' + files[0], 'w')
 
 		mlp = MLP(n_input=i, n_classes=len(data), \
 				batch_size=config['mlp']['batch_size'], \
