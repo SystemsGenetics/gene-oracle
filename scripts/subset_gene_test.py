@@ -58,7 +58,7 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 # separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
 # with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
 # clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
-def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=200):
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=80):
 	# collect previous files combinations/accuracyies
 	prev_combos = []
 	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
@@ -103,6 +103,8 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# add one... excluded first and last k from calculations TODO: may need to fix this
 	final_k = second_dervs.index(max(second_dervs)) + 1
 	final_model = models[final_k]
+
+	print('final k for ' + str(len(combos[0])) + ' combos is ' + str(final_k))
 
 	# find the top num sets from each cluster and additionally return num random sets
 	# num = max_experiments / (k + 1) send off num sets from each k clusters + num random sets
@@ -193,7 +195,7 @@ if __name__ == '__main__':
 	spinner = Halo(text='Loading', spinner='dots')
 
 	print('loading genetic data...')
-	gtex_gct_flt = np.load('../datasets/gtex_gct_data_float.npy')
+	gtex_gct_flt = np.load('../datasets/gtex_gct_data_float_v7.npy')
 	total_gene_list = np.load('../datasets/gtex_complete_gene_list_str.npy')
 	print('done')
 
