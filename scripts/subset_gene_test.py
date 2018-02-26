@@ -276,6 +276,10 @@ if __name__ == '__main__':
 			subsets = read_subset_file(args.subset_list)
 			try:
 				genes = subsets[args.set.upper()]
+				for g in genes:
+					if g not in total_gene_list:
+						genes.remove(g)
+						print('missing gene ' + str(g))
 			except:
 				print('set not found in subset file, try again')
 				sys.exit(1)
@@ -290,7 +294,7 @@ if __name__ == '__main__':
 		os.makedirs(args.log_dir)
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, len(genes)):
+	for i in xrange(6, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
