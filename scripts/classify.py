@@ -13,6 +13,7 @@ import numpy as np
 import sys, argparse
 import os
 import json
+import time
 
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -70,6 +71,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
+			start = time.clock()
 			gtex = GTEx(data, total_gene_list, subsets[s])
 
 			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
@@ -83,6 +85,8 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 			# run the neural net
 			acc = mlp.run(gtex)
 			accs.append(acc)
+			stop = time.clock()
+			print('acc is ' + str(acc) + ' time is ' + str(stop - start))
 
 		# print the results to a file
 		accs_np = np.asarray(accs)
@@ -171,6 +175,16 @@ if __name__ == '__main__':
 	# read subset file if provided
 	if args.subset_list:
 		subsets = read_subset_file(args.subset_list)
+		
+		print('checking for valid genes...')
+		for s in subsets:
+			genes = subsets[s]
+			for g in genes:
+				if g not in total_gene_list:
+					genes.remove(g)
+					#print('missing gene ' + str(g))
+		print('done check')
+		
 		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
 

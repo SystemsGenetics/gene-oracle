@@ -279,7 +279,7 @@ if __name__ == '__main__':
 				for g in genes:
 					if g not in total_gene_list:
 						genes.remove(g)
-						print('missing gene ' + str(g))
+						#print('missing gene ' + str(g))
 			except:
 				print('set not found in subset file, try again')
 				sys.exit(1)
@@ -294,14 +294,14 @@ if __name__ == '__main__':
 		os.makedirs(args.log_dir)
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(6, len(genes)):
+	for i in xrange(3, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
 		if i > 3:
 			print('performing set selection via KMeans...')
 			# for combos from files
-			f = args.log_dir + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
+			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
 			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=80)
 		else:
 			# for all possible combos
@@ -322,15 +322,19 @@ if __name__ == '__main__':
 
 		for key in gene_dict:
 			# retrieve the new combination of genes and create a new dataset containing the specified features
-			start = time.clock()
+			#start = time.clock()
 			combo = list(key)
 
 			gtex = GTEx(data, total_gene_list, combo)
-			
+			#stop = time.clock()
+			#print('data load: ' + str(stop - start))
+			start = time.clock()	
 			# run the neural network architecture to retrieve an accuracy based on the new dataset
 			acc = mlp.run(gtex)
-
-			print(str(combo) + '\t' + str(acc))
+			stop = time.clock()
+		
+			#print('time nn: ' + str(stop - start))
+			print(str(combo) + '\t' + str(acc) + '\t' + str(stop - start))
 			
 			fp.write('{0}\t{1}\n'.format(key, acc))
 

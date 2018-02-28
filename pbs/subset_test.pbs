@@ -1,0 +1,13 @@
+#PBS -N subset_test
+#PBS -l select=1:ncpus=16:ngpus=2:mem=64gb:gpu_model=k40,walltime=72:00:00
+
+cd /home/$USER/SciDAS/DeepGTEx
+source activate gtex
+
+	python scripts/subset_gene_test.py  --dataset ./data/float_data/gtex_gct_data_float_v7.npy \
+							--gene_list ./data/gene_lists/gtex_gene_list_v7.npy \
+							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
+							--config ./models/net_config.json \
+							--set random_32_$NUM \
+							--num_genes 32 \
+							--log_dir ./logs/random_32_$NUM
