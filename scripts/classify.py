@@ -146,6 +146,7 @@ if __name__ == '__main__':
 		required=True)
 	parser.add_argument('--out_file', help='output file to send results to', type=str, required=True)
 	parser.add_argument('--subset_list', help='gmt/gct file containing subsets', type=str, required=False)
+	parser.add_argument('--set', help='specific subset to run', type=str, required=False)
 	parser.add_argument('--random_test', help='Perform random test', action='store_true', required=False)
 	parser.add_argument('--num_random_genes', help='Number of random genes to assess', nargs='+', \
 		type=int, required=False)
@@ -178,14 +179,20 @@ if __name__ == '__main__':
 		
 		print('checking for valid genes...')
 		for s in subsets:
-			genes = subsets[s]
-			for g in genes:
-				if g not in total_gene_list:
-					genes.remove(g)
+			genes = []
+			for g in subsets[s]:
+				if g in total_gene_list:
+					genes.append(g)
+			subsets[s] = genes
 					#print('missing gene ' + str(g))
 		print('done check')
-		
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
+
+		if args.set:
+			sub = {}
+			sub[args.set.upper()] = subsets[args.set.upper()]
+			subsets = sub
+
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
 
 
 	# if random is selectioned, run random 

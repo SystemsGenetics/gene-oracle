@@ -274,16 +274,18 @@ if __name__ == '__main__':
 	else:
 		if args.subset_list:
 			subsets = read_subset_file(args.subset_list)
+			for s in subsets:
+				genes = []
+				for g in subsets[s]:
+					if g in total_gene_list:
+						genes.append(g)
+				subsets[s] = genes
+
 			try:
 				genes = subsets[args.set.upper()]
-				for g in genes:
-					if g not in total_gene_list:
-						genes.remove(g)
-						#print('missing gene ' + str(g))
 			except:
-				print('set not found in subset file, try again')
+				print('Set not found in subset file, try again')
 				sys.exit(1)
-
 		else:
 			print('must include subset file if not performing random test. exiting.')
 			sys.exit(1)
