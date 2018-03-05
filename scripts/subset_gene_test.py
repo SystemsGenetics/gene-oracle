@@ -296,7 +296,7 @@ if __name__ == '__main__':
 		os.makedirs(args.log_dir)
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(3, len(genes)):
+	for i in xrange(23, len(genes)):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
