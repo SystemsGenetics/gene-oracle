@@ -49,7 +49,7 @@ def read_top_dir(t_dir):
 
 
 # plot the delta accuracies
-def plot(rand_accs, sub_accs, rand_std_es, sub_stes):
+def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
 	
 	avgs = []
 	for s in sorted(sub_accs.keys()):
@@ -63,18 +63,35 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes):
 	    cap.set_color('b')
 	    cap.set_markeredgewidth(.5)
 
-	colors = ["r","b","g","c","m","y","k","b","m","r"]
-
-	for r, s, c in zip(rand_accs, rand_std_es, colors):
+	if avg_rands:
 		avgs = []
-		for a in sorted(r.keys()):
-			avgs.append(sum(r[a]) / len(r[a]))
+		stes = []
+		for k in rand_accs[0]:
+			concat = []
+			for r in rand_accs:
+				concat += r[k]
+			avgs.append(sum(concat) / len(concat))
+			stes.append(stats.sem(concat))
 
-		(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=5, markerfacecolor=c, capsize=8)
+		(_, caps, _) = plt.errorbar(num, avgs, stes, fmt='ok', lw=1, markersize=5, markerfacecolor='r', capsize=8)
 
 		for cap in caps:
-		    cap.set_color(c)
+		    cap.set_color('r')
 		    cap.set_markeredgewidth(.5)
+
+	else:
+		colors = ["r","b","g","c","m","y","k","b","m","r"]
+
+		for r, s, c in zip(rand_accs, rand_std_es, colors):
+			avgs = []
+			for a in sorted(r.keys()):
+				avgs.append(sum(r[a]) / len(r[a]))
+
+			(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=5, markerfacecolor=c, capsize=8)
+
+			for cap in caps:
+			    cap.set_color(c)
+			    cap.set_markeredgewidth(.5)
 
 	plt.title('Gene Set Accuracies')
 	plt.xlabel('Num Genes in Set')
@@ -92,6 +109,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Visualize delta accuracy between random genes and subsets')
 	parser.add_argument('--rand_dir', help='dir containing random accuracies', type=str, required=True)
 	parser.add_argument('--sub_dir', help='dir containing subset accuracies', type=str, required=True)
+	parser.add_argument('--avg_rands', help='average the random runs', action='store_true', required=False)
 	# additional args?
 	args = parser.parse_args()
 
@@ -111,7 +129,7 @@ if __name__ == '__main__':
 	for s in sub_accs:
 		sub_stes.append(stats.sem(sub_accs[s]))
 
-	plot(rand_accs, sub_accs, rand_std_es, sub_stes)
+	plot(rand_accs, sub_accs, rand_std_es, sub_stes, args.avg_rands)
 
 
 
