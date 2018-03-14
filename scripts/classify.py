@@ -54,6 +54,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 		std = np.std(accs_np)
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
+		print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
 	f.close()
@@ -62,16 +63,14 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 # perform classificaiton on each of the subsets provided in the subset_list argument
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
 	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\tMax\tMin\n')
+	f.write('Num\tAverage\tStd_Dev\tMax\tMin\n')
 
 	for s in subsets:
-		print('classifying ' + str(s))
 		accs = []
 		# set up the neural network
 		
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
-			start = time.clock()
 			gtex = GTEx(data, total_gene_list, subsets[s])
 
 			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
@@ -85,8 +84,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 			# run the neural net
 			acc = mlp.run(gtex)
 			accs.append(acc)
-			stop = time.clock()
-			print('acc is ' + str(acc) + ' time is ' + str(stop - start))
+			#print('acc is ' + str(acc) + ' time is ' + str(stop - start))
 
 		# print the results to a file
 		accs_np = np.asarray(accs)
@@ -94,6 +92,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		std = np.std(accs_np)
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
+		print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
 	f.close()

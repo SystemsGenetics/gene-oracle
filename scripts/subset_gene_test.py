@@ -221,7 +221,7 @@ def create_raw_combos(genes, i):
 def create_random_subset(num_genes, total_gene_list):		
 	#Generate Gene Indexes for Random Sample
 	gene_indexes = np.random.randint(0, len(total_gene_list), num_genes)
-	return [total_gene_list[i][0] for i in gene_indexes]
+	return [total_gene_list[i] for i in gene_indexes]
 
 
 def load_data(num_samples_json, gtex_gct_flt):
@@ -296,7 +296,8 @@ if __name__ == '__main__':
 		os.makedirs(args.log_dir)
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(23, len(genes)):
+
+	for i in xrange(3, args.num_genes):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
