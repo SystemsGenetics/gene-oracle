@@ -28,13 +28,14 @@ import os
 def read_sub_dir(s_dir):
 	accs = {}
 	for sub_f in os.listdir(s_dir):
-		sub_f_split = sub_f.split('_')
-		idx = int([s for s in sub_f_split if s.isdigit()][0])
-		accs[idx] = []
-		with open(os.path.join(s_dir, sub_f), 'r') as f:
-			for line in f:
-				line = line.split('\t')
-				accs[idx].append(float(line[1]))
+		if sub_f != 'gene_list.txt':
+			sub_f_split = sub_f.split('_')
+			idx = int([s for s in sub_f_split if s.isdigit()][0])
+			accs[idx] = []
+			with open(os.path.join(s_dir, sub_f), 'r') as f:
+				for line in f:
+					line = line.split('\t')
+					accs[idx].append(float(line[1]))
 	return accs
 
 
