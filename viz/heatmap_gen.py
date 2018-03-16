@@ -11,6 +11,7 @@ heatmap.py
     directory: /...path.../
     num_genes: #
     hallmark:
+    dataset: gtex or panTCGA
 
     halmark file format: 'hallmark_#_gene_accuracy.txt'
                         Contents: [list of genes] accuracy
