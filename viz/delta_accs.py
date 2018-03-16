@@ -34,7 +34,7 @@ def read_file(file):
 
 
 # plot the delta accuracies
-def plot(d_accs, gene_counts):
+def plot(d_accs, gene_counts, out):
 	x = np.arange(len(d_accs.keys()))
 
 	difs = [d_accs[s] for s in sorted(d_accs.keys())]
@@ -61,7 +61,10 @@ def plot(d_accs, gene_counts):
 	plt.gcf().subplots_adjust(bottom=0.3)
 	#plt.tight_layout()
 
-	plt.show()
+	if len(out):
+		fig.savefig(out, bbox_inches='tight')
+	else:
+		plt.show()
 
 
 if __name__ == '__main__':
@@ -70,6 +73,7 @@ if __name__ == '__main__':
 	parser.add_argument('--rand_accs', help='file random accuracies', type=str, required=True)
 	parser.add_argument('--sub_accs', help='file of subset accuracies', type=str, required=True)
 	parser.add_argument('--sub_count', help='json with count of genes in subset', type=str, required=True)
+	parser.add_argument('--out', help='file to save to', type=str, required=False)
 	# additional args?
 	args = parser.parse_args()
 	
@@ -94,7 +98,7 @@ if __name__ == '__main__':
 
 		gene_counts.append(gene_count_dict[s])
 
-	plot(delta_accs, gene_counts)
+	plot(delta_accs, gene_counts, args.out)
 
 
 
