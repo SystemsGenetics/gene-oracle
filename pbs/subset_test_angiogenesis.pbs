@@ -1,5 +1,5 @@
-#PBS -N apical_subset_test
-#PBS -l select=1:ncpus=16:ngpus=2:mem=64gb:gpu_model=p100,walltime=24:00:00
+#PBS -N angiogenesis_subset_test
+#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=p100,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
@@ -9,6 +9,6 @@ source activate gtex
 							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
 							--config ./models/net_config.json \
 							--subset_list ./subsets/hallmark_experiments.txt \
-							--set hallmark_apical_surface \
-							--num_genes 44 \
-							--log_dir ./logs/hallmark_apical_surface
+							--set hallmark_angiogenesis \
+							--num_genes 36 \
+							--log_dir ./logs/hallmark_angiogenesis_1/
