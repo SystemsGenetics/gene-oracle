@@ -17,7 +17,11 @@ heatmap.py
                         Contents: [list of genes] accuracy
 
 
+example:  python heatmap_gen.py --graph_type "heatmap" "--directory" "../logs/hallmark_hedgehog_signaling_panTCGA/" --num_genes 36 --hallmark "hallmark_hedgehog_signaling" --dataset "panTCGA"
+
 '''
+
+
 
 import sys, argparse
 import matplotlib.pyplot as plt
@@ -32,7 +36,7 @@ comboList = []
 def process(directory,num_genes,hallmark,dataset):
     global genes
     global comboList
-    for i in range(3,num_genes):
+    for i in range(1,num_genes):
         print("Processing..." + str(i))
         combos = pd.DataFrame( columns = ["Genes", "Accuracy"])
         count = 0
@@ -48,7 +52,7 @@ def process(directory,num_genes,hallmark,dataset):
 
     genes = pd.DataFrame(index =range(1,num_genes))
 
-    if(dataset == 'gtex'):
+    if(dataset == 'gtex'):#Gtex
         with open('../subsets/gene_dict.json', 'r') as fp:
                 gene_counts = json.load(fp)
 
@@ -57,10 +61,10 @@ def process(directory,num_genes,hallmark,dataset):
              gene = gene.replace("')","")
              gene =  gene.replace("'","")
              genes.loc[1,gene] = 1
-             genes.loc[2,gene] = 1
-    else:
+             #genes.loc[2,gene] = 1
+    else:#panTCGA
         ensembles = np.loadtxt(directory + "gene_list.txt",dtype=str)
-        with open('../data/ensembles_to_gtex_id.json', 'r') as fp:
+        with open('../data/ensembles_to_hallmark_id.json', 'r') as fp:
                 ensembles_list = json.load(fp)
 
         for i in range(len(ensembles)):
@@ -68,32 +72,37 @@ def process(directory,num_genes,hallmark,dataset):
             ensembles[i] = ensembles[i].replace("'","")
 
         for gene in ensembles:
-
              genes.loc[1,ensembles_list[gene]] = 1
-             genes.loc[2,ensembles_list[gene]] = 1
+             #genes.loc[2,ensembles_list[gene]] = 1
 
 
     genes.loc[1] = genes.loc[1].div(num_genes)
-    genes.loc[2] = genes.loc[2].div(num_genes)
+    #genes.loc[2] = genes.loc[2].div(num_genes)
 
-    for i in range(0, num_genes-3):
+    for i in range(1, num_genes):
         print("Counting"+ str(i))
         count = 0
-        for combo in comboList[i]['Genes']:
-            array = eval(combo)
-            array = list(array)
-            if(dataset != 'gtex'):
-                for i in range(len(array)):
-                    array[i] = ensembles_list[array[i]]
-            #need to convert here
-            for gene in genes.columns.values:
-                if gene in array:
-                    if np.isnan(genes.loc[i+1,gene]):
-                        genes.loc[i+1,gene] = 1
-                    else:
-                        genes.loc[i+1,gene] += 1
-        count = genes.loc[i+1].sum()
-        genes.loc[i+1] = genes.loc[i+1].div(count)
+        for combo in comboList[i-1]['Genes']:
+             if(i == 1):
+                array = []
+                array.append(eval(combo))
+             else:
+                array = eval(combo)
+                array = list(array)
+             #break
+             #array = list(array)
+             if(dataset != 'gtex'):
+                 for j in range(len(array)):
+                     array[j] = ensembles_list[array[j]]
+             #need to convert here
+             for gene in genes.columns.values:
+                 if gene in array:
+                     if np.isnan(genes.loc[i,gene]):
+                         genes.loc[i,gene] = 1
+                     else:
+                         genes.loc[i,gene] += 1
+        count = genes.loc[i].sum()
+        genes.loc[i] = genes.loc[i].div(count)
 
 
 def plot(graph_type,hallmark,dataset):

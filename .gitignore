@@ -16,6 +16,8 @@ train_data
 checkpoints
 logs
 subsets
+graphs
+interaction_analysis
 
 # python byte code
 *.pyc
