@@ -134,7 +134,8 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 
 	# run k means k times
 	print("Running Kmeans")
-	for i in xrange(1,11):
+	for i in xrange(1,6):
+		print(str(i))
 		kmeans = KMeans(n_clusters=i, n_jobs=4, n_init=30, precompute_distances=False, copy_x=False)
 		kmeans.fit(gene_set_data)
 
@@ -309,7 +310,7 @@ if __name__ == '__main__':
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
-		if i > 2:
+		if i > 3:
 			print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
@@ -348,6 +349,6 @@ if __name__ == '__main__':
 			#print('time nn: ' + str(stop - start))
 			print(str(combo) + '\t' + str(acc) + '\t' + str(stop - start))
 			
-			fp.write('{0}\t{1}\n'.format(key, acc))
+			fp.write('{0}\t{1}\n'.format(str(key), acc))
 
 		fp.close() 
