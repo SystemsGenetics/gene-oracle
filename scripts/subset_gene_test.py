@@ -111,7 +111,7 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 # separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
 # with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
 # clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
-def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=80):
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=50):
 	# collect previous files combinations/accuracyies
 	prev_combos = []
 	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
@@ -135,7 +135,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# run k means k times
 	print("Running Kmeans")
 	for i in xrange(1,11):
-		kmeans = KMeans(n_clusters=i, n_jobs=8, n_init=30)
+		kmeans = KMeans(n_clusters=i, n_jobs=4, n_init=30, precompute_distances=False, copy_x=False)
 		kmeans.fit(gene_set_data)
 
 		models.append(kmeans)
@@ -271,6 +271,10 @@ if __name__ == '__main__':
 	# load the hedgehog data
 	if "random" in args.set:
 		genes = create_random_subset(args.num_genes, total_gene_list)
+		#with open(args.log_dir + '/gene_list.txt', 'r') as f:
+		#	genes = []
+		#	for l in f:
+		#		genes.append(l.strip('\n'))
 	else:
 		if args.subset_list:
 			subsets = read_subset_file(args.subset_list)
@@ -295,13 +299,17 @@ if __name__ == '__main__':
 	if not os.path.exists(args.log_dir):
 		os.makedirs(args.log_dir)
 
-	print('beginning search for optimal combinations...')
+	with open(args.log_dir + '/gene_list.txt', 'w') as f:
+		for i in genes:
+			f.write(str(i) + '\n')
+		f.close()
 
-	for i in xrange(3, args.num_genes):
+	print('beginning search for optimal combinations...')
+	for i in xrange(1, args.num_genes + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
-		if i > 3:
+		if i > 2:
 			print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
@@ -314,7 +322,8 @@ if __name__ == '__main__':
 
 		# open log file to write to
 		fp = open(args.log_dir + '/' + files[0], 'w')
-
+		
+		print("Running MLP")
 		mlp = MLP(n_input=i, n_classes=len(data), \
 				batch_size=config['mlp']['batch_size'], \
 				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \

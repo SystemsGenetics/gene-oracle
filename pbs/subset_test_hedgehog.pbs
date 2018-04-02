@@ -1,5 +1,5 @@
-#PBS -N HH_subset_test
-#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=k20,walltime=72:00:00
+#PBS -N apical_subset_test
+#PBS -l select=1:ncpus=16:ngpus=2:mem=64gb:gpu_model=p100,walltime=24:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
@@ -11,4 +11,4 @@ source activate gtex
 							--subset_list ./subsets/hallmark_experiments.txt \
 							--set hallmark_hedgehog_signaling \
 							--num_genes 36 \
-							--log_dir ./logs/hallmark_hedgehog_signaling_k20
+							--log_dir ./logs/hallmark_hedgehog_signaling

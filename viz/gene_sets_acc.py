@@ -58,48 +58,51 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
 
 	num = sorted(sub_accs.keys())
 
-	(_, caps, _) = plt.errorbar(num, avgs, sub_stes, fmt='ok', lw=1, markersize=5, markerfacecolor='b', capsize=8)
+	(_, caps, _) = plt.errorbar(num, avgs, sub_stes, fmt='ok', lw=1, markersize=5, markerfacecolor='#27c419', capsize=8)
 
 	for cap in caps:
 	    cap.set_color('b')
 	    cap.set_markeredgewidth(.5)
 
-	if avg_rands:
-		avgs = []
-		stes = []
-		for k in rand_accs[0]:
-			concat = []
-			for r in rand_accs:
-				concat += r[k]
-			avgs.append(sum(concat) / len(concat))
-			stes.append(stats.sem(concat))
+	#if avg_rands:
+	avgs = []
+	stes = []
+	for k in rand_accs[0]:
+		concat = []
+		for r in rand_accs:
+			concat += r[k]
+		avgs.append(sum(concat) / len(concat))
+		stes.append(stats.sem(concat))
 
-		(_, caps, _) = plt.errorbar(num, avgs, stes, fmt='ok', lw=1, markersize=5, markerfacecolor='r', capsize=8)
+	(_, caps, _) = plt.errorbar(num, avgs, stes, fmt='ok', lw=1, markersize=5, markerfacecolor='#111111', capsize=8)
+
+	for cap in caps:
+	    cap.set_color('r')
+	    cap.set_markeredgewidth(.5)
+
+	#else:
+	colors = ["r","b","g","c","m","y","k","b","m","r"]
+
+	for r, s, c in zip(rand_accs, rand_std_es, colors):
+		avgs = []
+		for a in sorted(r.keys()):
+			avgs.append(sum(r[a]) / len(r[a]))
+
+		(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=5, markerfacecolor=c, capsize=8, alpha=0.05)
 
 		for cap in caps:
-		    cap.set_color('r')
+		    cap.set_color(c)
 		    cap.set_markeredgewidth(.5)
-
-	else:
-		colors = ["r","b","g","c","m","y","k","b","m","r"]
-
-		for r, s, c in zip(rand_accs, rand_std_es, colors):
-			avgs = []
-			for a in sorted(r.keys()):
-				avgs.append(sum(r[a]) / len(r[a]))
-
-			(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=5, markerfacecolor=c, capsize=8)
-
-			for cap in caps:
-			    cap.set_color(c)
-			    cap.set_markeredgewidth(.5)
 
 	plt.title('Gene Set Accuracies')
 	plt.xlabel('Num Genes in Set')
+	plt.ylim([0.0,1.0])
+	plt.yticks(np.arange(0, 1, step=0.1))
 	plt.ylabel('Accuracy')
 	plt.xticks(num)
 
 	ax = plt.axes()
+	ax.yaxis.grid(linestyle='--')
 	ax.xaxis.grid(linestyle='--')
 
 	plt.show()
@@ -130,7 +133,7 @@ if __name__ == '__main__':
 	for s in sub_accs:
 		sub_stes.append(stats.sem(sub_accs[s]))
 
-	plot(rand_accs, sub_accs, rand_std_es, sub_stes, args.avg_rands)
+	plot(rand_accs, sub_accs, rand_std_es, sub_stes, 1)#args.avg_rands)
 
 
 

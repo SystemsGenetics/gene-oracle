@@ -61,7 +61,7 @@ def plot(d_accs, gene_counts, out):
 	plt.gcf().subplots_adjust(bottom=0.3)
 	#plt.tight_layout()
 
-	if len(out):
+	if out:
 		fig.savefig(out, bbox_inches='tight')
 	else:
 		plt.show()
