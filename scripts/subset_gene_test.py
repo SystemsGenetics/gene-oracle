@@ -22,7 +22,6 @@ import operator
 import re
 import json
 
-
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from models.nn_gtex import MLP
@@ -93,7 +92,7 @@ def sanitize(gene_str):
 def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 	feature_list = []
 	for combo in combo_list:
-		dataset = GTEx(data, total_gene_list, combo, train_split=30, test_split=70)
+		dataset = GTEx(data, total_gene_list, combo, train_split=100, test_split=0)
 
 		concat_genes = dataset.train.data[:,0]
 
@@ -107,11 +106,9 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 
 	return x_data
 
-# generate_new_subsets_w_clustering takes in a file string that is an accuracy file with a list of genes
-# separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
-# with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
-# clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
-def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=50):
+
+# return the combinations and accuracies that are listed in a log file
+def get_combos_and_accs(file):
 	# collect previous files combinations/accuracyies
 	prev_combos = []
 	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
@@ -125,6 +122,17 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# gather previous accuracies
 	prev_accs = prev_run[:,1]
 
+	return combos, prev_accs
+
+# generate_new_subsets_w_clustering takes in a file string that is an accuracy file with a list of genes
+# separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
+# with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
+# clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=50):
+
+	# get combos and previous accuracies of the last run
+	combos, prev_accs = get_combos_and_accs(file)
+
 	# create data matrix of old combinations
 	gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
 
@@ -134,7 +142,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 
 	# run k means k times
 	print("Running Kmeans")
-	for i in xrange(1,6):
+	for i in xrange(1,5):
 		print(str(i))
 		kmeans = KMeans(n_clusters=i, n_jobs=4, n_init=30, precompute_distances=False, copy_x=False)
 		kmeans.fit(gene_set_data)
@@ -204,8 +212,13 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 				temp_list.append(g)
 				next_set_size_combos.append(temp_list)
 
+	# get only unique combinations
+	for i in next_set_size_combos:
+		i.sort()
+	unique = [list(x) for x in set(tuple(x) for x in next_set_size_combos)]
+
 	ret_combos = []
-	for f in next_set_size_combos:
+	for f in unique:
 		ret_combos.append(tuple(f))
 
 	return dict.fromkeys(ret_combos)
@@ -275,7 +288,7 @@ if __name__ == '__main__':
 		#with open(args.log_dir + '/gene_list.txt', 'r') as f:
 		#	genes = []
 		#	for l in f:
-		#		genes.append(l.strip('\n'))
+		#		genes.append(str(l.strip('\n')))
 	else:
 		if args.subset_list:
 			subsets = read_subset_file(args.subset_list)
@@ -306,11 +319,11 @@ if __name__ == '__main__':
 		f.close()
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, args.num_genes + 1):
+	for i in xrange(36, args.num_genes + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
-		if i > 3:
+		if i > 3 and i != args.num_genes:
 			print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
