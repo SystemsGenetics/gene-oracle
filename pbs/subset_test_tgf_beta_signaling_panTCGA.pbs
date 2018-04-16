@@ -1,5 +1,5 @@
-#PBS -N random_pan
-#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=k40,walltime=72:00:00
+#PBS -N angiogenesis_subset_test
+#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=p100,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
@@ -8,6 +8,7 @@ source activate gtex
 							--gene_list ./data/gene_lists/gene_list_panTCGA_split.npy \
 							--sample_json ./data/class_counts/panTCGA_tumor_count_v1.json \
 							--config ./models/net_config.json \
-							--set random$NUM \
+							--subset_list ./subsets/ensg_hallmark_experiments.txt \
+							--set hallmark_tgf_beta_signaling \
 							--num_genes 54 \
-							--log_dir ./logs/random_54s_panTCGA/random$NUM
+							--log_dir ./logs/hallmark_tgf_beta_signaling_panTCGA_$NUM/

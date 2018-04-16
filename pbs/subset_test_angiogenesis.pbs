@@ -11,4 +11,4 @@ source activate gtex
 							--subset_list ./subsets/hallmark_experiments.txt \
 							--set hallmark_angiogenesis \
 							--num_genes 36 \
-							--log_dir ./logs/hallmark_angiogenesis_1/
+							--log_dir ./logs/hallmark_angiogenesis/

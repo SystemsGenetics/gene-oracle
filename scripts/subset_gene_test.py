@@ -196,7 +196,10 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 		cnt = cnt + 1 # increment index count
 
 	# fill final combos with random samples from the data
-	samples = random.sample(unused_idxs, max_experiments - len(final_combos))
+	if len(unused_idxs) > max_experiments - len(final_combos):
+		samples = random.sample(unused_idxs, max_experiments - len(final_combos))
+	else:
+		samples = unused_idxs
 	
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
@@ -277,7 +280,7 @@ if __name__ == '__main__':
 
 	print('loading genetic data...')
 	gtex_gct_flt = np.load(args.dataset)
-	total_gene_list = np.load(args.gene_list)
+	total_gene_list = np.load(args.gene_list, encoding='ASCII')
 	print('done')
 
 	data = load_data(args.sample_json, gtex_gct_flt)
@@ -319,7 +322,7 @@ if __name__ == '__main__':
 		f.close()
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(36, args.num_genes + 1):
+	for i in xrange(1, args.num_genes + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
@@ -327,7 +330,7 @@ if __name__ == '__main__':
 			print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
-			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=80)
+			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=60)
 		else:
 			# for all possible combos
 			gene_dict = create_raw_combos(genes, i)

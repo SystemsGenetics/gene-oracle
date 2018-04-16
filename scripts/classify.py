@@ -191,7 +191,7 @@ if __name__ == '__main__':
 			sub[args.set.upper()] = subsets[args.set.upper()]
 			subsets = sub
 
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
 
 
 	# if random is selectioned, run random 

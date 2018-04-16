@@ -1,5 +1,5 @@
-#PBS -N subset_test
-#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=k40,walltime=72:00:00
+#PBS -N random42gtex
+#PBS -l select=1:ncpus=4:ngpus=2:mem=96gb:gpu_model=k40,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
@@ -9,5 +9,5 @@ source activate gtex
 							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
 							--config ./models/net_config.json \
 							--set random$NUM \
-							--num_genes 200 \
-							--log_dir ./logs/random_200s/random$NUM/
+							--num_genes 42 \
+							--log_dir ./logs/random_42s/random$NUM/
