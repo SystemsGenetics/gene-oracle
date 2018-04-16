@@ -21,6 +21,7 @@ import numpy as np
 import seaborn as sns
 import operator as op
 import pandas as pd
+import collections
 
 # read in the accuracy files
 def read_file_avg(file):
@@ -51,15 +52,68 @@ def read_file(file):
 
 
 # plot the delta accuracies
-def plot(d_accs, gene_counts, out):
+def plotDelta(d_accs, gene_counts, out):
+	rc = {'font.size' : 6}
+	sns.set(rc)
+
+	data = d_accs.values()
+	fixed_data = list(data)
 
 	fig, ax = plt.subplots()
-	fig.set_size_inches(50,50)
-	sorted_keys, sorted_vals = zip(*sorted(d_accs.items(),key=op.itemgetter(1)))
-	ax = sns.boxplot(data = sorted_vals,orient='h')
+	fig.set_size_inches(20,10)
+
+	ax = sns.boxplot(data=fixed_data,orient='h')
 	ax.set_yticklabels(delta_accs.keys())
+	ax.set(xlabel="Delta Accuracy", ylabel="Gene Name")
+	ax.set_title("panTCGA Delta Accuracy")
+
+
 	plt.show()
+
+def plotDouble(ran_accs, sub_accs,out):
 	
+	rc = {'font.size' : 6}
+	sns.set(rc)
+
+
+	rand_data = ran_accs.values()
+	#fixed_data_rand = list(rand_data)
+
+	sub_data = sub_accs.values()
+	#fixed_data_sub = list(sub_data)
+
+	print(len(sub_data))
+	print(len(rand_data))
+
+	fig, ax = plt.subplots()
+	fig.set_size_inches(20,10)
+
+	pos = np.arange(len(rand_data))+.2 
+	ran_bp = ax.boxplot(rand_data,positions=pos,vert =False,widths=.25, 
+                 patch_artist=True, boxprops=dict(facecolor="red",edgecolor='red',alpha = .5))
+	plt.setp(ran_bp['whiskers'], color="red")
+
+	pos = np.arange(len(sub_data))-.2 
+	sub_bp = ax.boxplot(sub_data, vert = False,positions=pos,widths=.25, 
+                 patch_artist=True, boxprops=dict(edgecolor='blue',alpha=.3))
+	plt.setp(sub_bp['whiskers'], color="blue")
+
+	ax.legend([ran_bp["boxes"][0], sub_bp["boxes"][0]], ['random', 'hallmark'], loc='upper right')
+
+
+	#ax = sns.boxplot(data=fixed_data_rand,orient='h',  color= 'blue')
+	#ax = sns.boxplot(data=fixed_data_sub,orient='h', color ='red')
+	ax.set_yticklabels(sub_accs.keys())
+	plt.tick_params(axis='y')
+	ax.set(xlabel="Accuracy", ylabel="Gene Name")
+	ax.set_title("Hallmark vs Random")
+	ax.set_aspect(.009)
+	plt.tight_layout()
+
+	plt.show()
+
+	
+
 
 if __name__ == '__main__':
 
@@ -73,35 +127,56 @@ if __name__ == '__main__':
 	
 	# read two accuracy files
 	rand_accs = read_file(args.rand_accs)
-	sub_accs = read_file_avg(args.sub_accs)
+	sub_accs = read_file(args.sub_accs)
 
 	# read a json file containing the count of genes for each subset
 	with open(args.sub_count, 'r') as f:
 		gene_count_dict = json.load(f)
 
 
-	print(rand_accs)
-	print(sub_accs)
+	#sort based on gene count
+
+	#print(gene_count_dict)
+
 
 	# get the delta accs
 	gene_counts = []
-	delta_accs = {}
-	for s in sorted(gene_count_dict.keys()):
-		delta_accs[s] = []
+	delta_accs = collections.OrderedDict()
+	for k,v in sorted(gene_count_dict.items(), key =lambda x: x[1]):
+		delta_accs[k] = []
+		current_gene_count = rand_accs[str(v)]
 
-		for val in rand_accs[str(gene_count_dict[s])]:
-
-			delta = round(sub_accs[s] - val, 3)
-
-			if delta < 0:
-				delta = 0.0
-
-			delta_accs[s].append(delta)
-
-			gene_counts.append(gene_count_dict[s])
-
-	for key, value in delta_accs.items():
-		print(str(key) + " , " + str(value) )
+		for i in range(len(current_gene_count)):
+			delta_accs[k].append(round(sub_accs[k][i] - current_gene_count[i], 3))
 
 
-	plot(delta_accs, gene_counts, args.out)
+		print(str(gene_count_dict[k]) +" : " + str(k) + " : " + str(delta_accs[k]))
+
+	##plotDelta(delta_accs, gene_counts, args.out)
+
+	gene_counts = []
+	rand_dict = collections.OrderedDict()
+	sub_dict = collections.OrderedDict()
+	for k,v in sorted(gene_count_dict.items(), key =lambda x: x[1]):
+		rand_dict[k] = []
+		sub_dict[k] = []
+		current_gene_count = rand_accs[str(v)]
+
+		for i in range(len(current_gene_count)):
+			rand_dict[k].append(current_gene_count[i])
+			sub_dict[k].append(sub_accs[k][i])#append(round(sub_accs[k][i] - current_gene_count[i], 3))
+
+
+		print(str(gene_count_dict[k]) +" : " + str(k) + " : " + str(rand_dict[k]))	
+		print(str(gene_count_dict[k]) +" : " + str(k) + " : " + str(sub_dict[k]))	
+
+
+
+
+	# sanity check
+	# for key, value in delta_accs.items():
+	# 	print(str(key) + " , " + str(value) )
+
+
+	
+	plotDouble(rand_dict,sub_dict,args.out)
