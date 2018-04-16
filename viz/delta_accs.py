@@ -39,7 +39,8 @@ def plot(d_accs, gene_counts, out):
 
 	difs = [d_accs[s] for s in sorted(d_accs.keys())]
 
-	fig = plt.figure()#figsize=(20,10))
+	fig = plt.figure(figsize=(40,20))#figsize=(20,10))
+
 
 	plt.title("Delta Accuracies") 
 	plt.xticks(x, sorted(d_accs.keys()), fontsize=8)
