@@ -173,7 +173,7 @@ if __name__ == '__main__':
 	config = json.load(open(args.config))
 
 	# read subset file if provided
-	if args.subset_list:
+	if args.subset_list and not args.random_test:
 		subsets = read_subset_file(args.subset_list)
 		
 		print('checking for valid genes...')
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 			sub[args.set.upper()] = subsets[args.set.upper()]
 			subsets = sub
 
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=5)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
 
 
 	# if random is selectioned, run random 
@@ -202,9 +202,17 @@ if __name__ == '__main__':
 			# get the number of genes for each subset
 			num = []
 			subsets = read_subset_file(args.subset_list)
+			for s in subsets:
+				genes = []
+				for g in subsets[s]:
+					if g in total_gene_list:
+						genes.append(g)
+				subsets[s] = genes
+
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
+			
 			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file)
 
 
