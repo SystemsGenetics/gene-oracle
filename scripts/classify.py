@@ -202,9 +202,17 @@ if __name__ == '__main__':
 			# get the number of genes for each subset
 			num = []
 			subsets = read_subset_file(args.subset_list)
+			for s in subsets:
+				genes = []
+				for g in subsets[s]:
+					if g in total_gene_list:
+						genes.append(g)
+				subsets[s] = genes
+
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
+			
 			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file)
 
 
