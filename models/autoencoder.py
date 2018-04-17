@@ -18,7 +18,7 @@ def next_batch(data, batch_size, index):
 
 class autoencoder:
 
-	def __init__ (self, epochs=100, lr=0.01, n_input=1000, batch_size=32):
+	def __init__ (self, epochs=100, lr=0.01, n_input=56202, batch_size=16):
 		self.epochs = epochs
 		self.lr = lr
 		self.n_input = n_input
