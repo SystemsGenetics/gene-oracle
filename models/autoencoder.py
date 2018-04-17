@@ -92,10 +92,9 @@ class autoencoder:
 			# set up writer for tensorboard
 			writer = tf.summary.FileWriter('./tf_log', sess.graph)
 
-			avg_cost = 0
-
 			for epoch in range(1, self.epochs + 1):
 
+				avg_cost = 0.0
 				total_batch = int(data.shape[0]/self.batch_size)
 
 				for i in range(total_batch):
@@ -104,14 +103,14 @@ class autoencoder:
 
 					_, l = sess.run([optimizer, loss], feed_dict={x: batch_x})
 
-					print ('batch ' + str(i) + '/' + str(total_batch) + ' loss: ' + str(l))
+					#print ('batch ' + str(i) + '/' + str(total_batch) + ' loss: ' + str(l))
 
 					# Compute average loss
 					avg_cost += l / total_batch
 
 				print("Epoch: ", '%04d' % (epoch), "loss: ", "{:.9f}".format(avg_cost))
 
-			saver.save(sess, 'weights/test.ckpt')
+			saver.save(sess, 'weights/test_autoencoder.ckpt')
 
 
 
