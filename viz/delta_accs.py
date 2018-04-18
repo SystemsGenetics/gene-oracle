@@ -28,7 +28,10 @@ def read_file(file):
 		next(f) # skip the first line which has string header info
 		for line in f:
 			line = line.split('\t')
-			avg_accs[line[0]] = float(line[1])
+			if line[0] not in avg_accs:
+				avg_accs[line[0]] = [float(line[1])]
+			else:
+				avg_accs[line[0]].append(float(line[1]))
 
 	return avg_accs
 
@@ -39,7 +42,7 @@ def plot(d_accs, gene_counts, out):
 
 	difs = [d_accs[s] for s in sorted(d_accs.keys())]
 
-	fig = plt.figure(figsize=(40,20))#figsize=(20,10))
+	fig = plt.figure(figsize=(20,10))#figsize=(20,10))
 
 
 	plt.title("Delta Accuracies") 
@@ -90,7 +93,7 @@ if __name__ == '__main__':
 	gene_counts = []
 	delta_accs = {}
 	for s in sorted(gene_count_dict.keys()):
-		delta = round(sub_accs[s] - rand_accs[str(gene_count_dict[s])], 3)
+		delta = round(sub_accs[s].pop() - rand_accs[str(gene_count_dict[s])].pop(), 4)
 
 		if delta < 0:
 			delta = 0.0
