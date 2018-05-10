@@ -87,7 +87,7 @@ def prepareDataSetAll(directory,num_genes,hallmark,dataset):
     genes = pd.DataFrame(index =range(1,num_genes))
 
 	#Choose Dataset
-    if(dataset == 'gtex'):#GTEx
+    if(dataset == 'GTEx'):#GTEx
         genes = loadGTEx(hallmark,genes)
 
 	#if panTCGA is chosen, then the genes must be converted to ensembles
@@ -136,7 +136,7 @@ def prepareDataSetTopTen(directory,num_genes,hallmark,dataset):
     genes = pd.DataFrame(index =range(1,num_genes))
 
 	#Choose Dataset
-    if(dataset == 'gtex'):#GTEx
+    if(dataset == 'GTEx'):#GTEx
         genes = loadGTEx(hallmark,genes)
 
 	#if panTCGA is chosen, then the genes must be converted to ensembles
@@ -185,9 +185,9 @@ def plot(graph_type,hallmark,data,analysis,dataset):
     sns.reset_defaults()
     fig, ax = plt.subplots(figsize=(20,10))
     if(graph_type == 'clustermap'):
-        sns.clustermap(data=data,cmap="Blues",linewidths=1, linecolor='yellow')
+        sns.clustermap(data=data,cmap="Blues",linewidths=1, linecolor='black')
     if(graph_type == 'heatmap'):
-        sns.heatmap(data=data,cmap="Blues",linewidths=1, linecolor='yellow')
+        sns.heatmap(data=data,cmap="Blues",linewidths=1, linecolor='black',vmin=0, vmax=.2)
 
     plt.xticks(rotation=90)
     plt.yticks(rotation=0)
@@ -214,4 +214,5 @@ if __name__ == '__main__':
              data = freqCountAll(args.directory,args.num_genes,args.hallmark,args.dataset)
         if(str(args.analysis) == "topten"):
              data = freqCountTopTen(args.directory,args.num_genes,args.hallmark,args.dataset)
-        plot(args.graph_type,args.hallmark,data,args.analysis,args.dataset)
+        print(data)
+        #plot(args.graph_type,args.hallmark,data,args.analysis,args.dataset)

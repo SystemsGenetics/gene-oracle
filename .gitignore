@@ -6,6 +6,7 @@
 *.log
 *.txt
 *.json
+*.png
 
 # palmetto outputs
 *.o*
