@@ -23,6 +23,7 @@ import re
 import json
 
 sys.path.append(os.path.dirname(os.getcwd()))
+sys.path.append(os.getcwd())
 
 from models.nn_gtex import MLP
 from GTEx import GTEx

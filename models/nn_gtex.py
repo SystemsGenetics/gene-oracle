@@ -7,6 +7,34 @@ from sklearn import preprocessing
 import sys, argparse
 import os
 
+import matplotlib.pyplot as plt
+
+def confusion_heatmap(conf_arr):
+    norm_conf = preprocessing.normalize(conf_arr, axis=1, norm='l1')
+
+    fig = plt.figure(figsize=(17,10))
+    plt.clf()
+    ax = fig.add_subplot(111)
+    ax.set_aspect(1)
+
+    res = ax.imshow(norm_conf, cmap=plt.cm.jet, 
+            interpolation='nearest')
+
+    width, height = conf_arr.shape
+
+    # for x in xrange(width):
+    #     for y in xrange(height):
+    #         ax.annotate(str(conf_arr[x][y]), xy=(y, x), 
+    #                     horizontalalignment='center',
+    #                     verticalalignment='center')
+
+    cb = fig.colorbar(res)
+    plt.xticks(range(width), np.arange(0,conf_arr.shape[0]), rotation='vertical')
+    plt.yticks(range(height), np.arange(0,conf_arr.shape[0]))
+    plt.show()
+    # plt.savefig('confusion_matrix.png', format='png')
+
+
 class MLP:
     def __init__(self, lr=0.001, epochs=75, n_layers=3, h_units=[512,512,512], \
         act_funcs=["relu", "relu", "relu"], batch_size=16, disp_step=1, n_input=56238, \
@@ -111,6 +139,7 @@ class MLP:
         for epoch in range(self.epochs):
             avg_cost = 0.
             total_batch = int(gtex.train.num_examples/self.batch_size)
+            #gtex.shuffle()
             # Loop over all batches
             for i in range(total_batch):
                 batch_x, batch_y = gtex.train.next_batch(self.batch_size, i)
@@ -138,9 +167,10 @@ class MLP:
             temp = pred.eval({x: gtex.test.data}, session=sess)
             preds = np.argmax(temp, 1)
             labs = np.argmax(gtex.test.labels, 1)
-            cm = tf.confusion_matrix(labs, preds, num_classes=args.n_classes)
+            cm = tf.confusion_matrix(labs, preds, num_classes=self.n_classes)
             mycm = cm.eval(feed_dict=None, session=sess)
-            np.savetxt('./confusion_matrix_gtex', mycm, fmt='%4d', delimiter=' ')
+            print mycm
+            np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
 
         # calculate accuracy that will be returned
         acc = accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)
