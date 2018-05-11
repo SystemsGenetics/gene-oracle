@@ -9,10 +9,10 @@ import os
 
 import matplotlib.pyplot as plt
 
-def confusion_heatmap(conf_arr):
+def confusion_heatmap(conf_arr, labels=None):
     norm_conf = preprocessing.normalize(conf_arr, axis=1, norm='l1')
 
-    fig = plt.figure(figsize=(17,10))
+    fig = plt.figure(figsize=(14,8))
     plt.clf()
     ax = fig.add_subplot(111)
     ax.set_aspect(1)
@@ -29,8 +29,12 @@ def confusion_heatmap(conf_arr):
     #                     verticalalignment='center')
 
     cb = fig.colorbar(res)
-    plt.xticks(range(width), np.arange(0,conf_arr.shape[0]), rotation='vertical')
-    plt.yticks(range(height), np.arange(0,conf_arr.shape[0]))
+    if labels == None:
+        plt.xticks(range(width), np.arange(0,conf_arr.shape[0]), rotation='vertical')
+        plt.yticks(range(height), np.arange(0,conf_arr.shape[0]))
+    else:
+        plt.xticks(range(width), labels, rotation='vertical')
+        plt.yticks(range(height), labels)        
     plt.show()
     # plt.savefig('confusion_matrix.png', format='png')
 
@@ -169,8 +173,10 @@ class MLP:
             labs = np.argmax(gtex.test.labels, 1)
             cm = tf.confusion_matrix(labs, preds, num_classes=self.n_classes)
             mycm = cm.eval(feed_dict=None, session=sess)
-            print mycm
-            np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
+
+            confusion_heatmap(mycm, gtex.label_names_ordered)
+            #print mycm
+            #np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
 
         # calculate accuracy that will be returned
         acc = accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)
