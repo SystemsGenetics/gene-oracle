@@ -70,7 +70,7 @@ def read_subset_file(file):
 	content = [x.strip() for x in content]
 
 	# split on tabs or commas to create a sublist of set names and genes
-	content = [re.split('\t|,', x) for x in content]
+	content = [re.split('\t|,| ', x) for x in content]
 
 	# create a dictionary with keys subset names and values list of genes
 	subsets = {}
