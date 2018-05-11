@@ -23,6 +23,7 @@ import re
 import json
 
 sys.path.append(os.path.dirname(os.getcwd()))
+sys.path.append(os.getcwd())
 
 from models.nn_gtex import MLP
 from GTEx import GTEx
@@ -69,7 +70,7 @@ def read_subset_file(file):
 	content = [x.strip() for x in content]
 
 	# split on tabs or commas to create a sublist of set names and genes
-	content = [re.split('\t|,', x) for x in content]
+	content = [re.split('\t|,| ', x) for x in content]
 
 	# create a dictionary with keys subset names and values list of genes
 	subsets = {}

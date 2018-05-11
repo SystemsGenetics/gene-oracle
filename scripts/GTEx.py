@@ -21,6 +21,7 @@ class data_t(object):
 class GTEx:
 	def __init__(self, data, total_gene_list=None, sub_gene_list=None, train_split=70, test_split=30):
 		self.num_classes = len(data)
+		self.label_names_ordered = []
 		self.train, self.test = self.split_set(data, total_gene_list, sub_gene_list, train_split, test_split)
 
 
@@ -63,7 +64,7 @@ class GTEx:
 	#	data:	the data values for a dataset
 	# 	labels: the labels associated with data for a dataset
 	#
-	def shuffle_and_transform(self, data,labels):
+	def shuffle_and_transform(self, data, labels):
 		new_data = []
 		new_labels = []
 		
@@ -78,6 +79,13 @@ class GTEx:
 		np_labels = np.asarray(new_labels)
 		
 		return data_t(np_data,np_labels)
+
+
+	def shuffle(self):
+		idxs = np.arange(self.train.data.shape[0])
+		idxs = np.random.shuffle(idxs)
+		self.train.data = np.squeeze(self.train.data[idxs])
+		self.train.labels = np.squeeze(self.train.labels[idxs])
 
 
 
@@ -111,6 +119,8 @@ class GTEx:
 		# gather training and testing examples and labels into a list by randomly selecting indices 
 		# of the amount of data in each class
 		for k in sorted(data.keys()):
+			self.label_names_ordered.append(k)
+			
 			num_train = int(data[k].shape[1] * train_split / 100)
 
 			samples = random.sample(xrange(data[k].shape[1]),data[k].shape[1])
