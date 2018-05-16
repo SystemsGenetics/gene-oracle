@@ -24,7 +24,8 @@ Once a virtualenv is created, the following software is required to run the mode
     scikit-learn (0.19.0)
     numpy (1.13.1)
     argparse (1.4.0)
-    matplotlib (2.2.2)
+    matplotlib (2.0.2)
+    halo (0.0.10)
 
 ## Usage
 classify.py can be used to classify a dataset using all the features, a random subset of features, or a specified subset of features.  
