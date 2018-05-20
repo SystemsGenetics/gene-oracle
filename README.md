@@ -1,26 +1,32 @@
 # DeepGTEx
-This repository contains all code, scripts, and other for the DeepGTEx project. DeepGTEx is an ongoing research effort to effectively classify RNA expression level data from the Genotype-Tissue Expression project, located [here](https://gtexportal.org/home/). Running models from this repo requires a downloaded version of the RNA-seq data Gene TPM's, located [here](https://gtexportal.org/home/datasets) (a sign-in is required to download the dataset for privacy reasons). 
+This repository contains all code, scripts, and other for the DeepGTEx project. DeepGTEx is an ongoing research effort to effectively classify RNA expression level data from the Genotype-Tissue Expression project, located [here](https://gtexportal.org/home/). Running models from this repo requires a downloaded version of the RNA-seq data Gene TPM's, located [here](https://gtexportal.org/home/datasets) (a sign-in is required to download the dataset for privacy reasons).
 
 ## Requirements and Setup
 Create a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
-    
+
     module add anaconda/4.3.0
     conda create -n {name of env} python=2.7
-    
+
 To activate your environment, simply do:
 
     source activate {name of env}
-    
+
+To deactivate your environment, simply do:
+
+    source deactivate
+
 Once a virtualenv is created, the following software is required to run the models:
 
     conda install -n yourenvname [package]
     example: conda install -n gtex tensorflow-gpu==1.3.0
-    
+
     tensorflow-gpu (1.3.0)
     scikit-learn (0.19.0)
     numpy (1.13.1)
     argparse (1.4.0)
-    
+    matplotlib (2.0.2)
+    halo (0.0.10)
+
 ## Usage
 classify.py can be used to classify a dataset using all the features, a random subset of features, or a specified subset of features.  
 Users are required to input a path to three files:
@@ -56,6 +62,6 @@ The following contains the example usage:
                             Number of iterations to perform for random
                             classification
 
-  
+
 ## Feature Engineering
-To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from hallmark sets. 
+To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from hallmark sets.
