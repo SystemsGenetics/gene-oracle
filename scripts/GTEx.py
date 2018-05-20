@@ -22,6 +22,7 @@ class GTEx:
 	def __init__(self, data, total_gene_list=None, sub_gene_list=None, train_split=70, test_split=30):
 		self.num_classes = len(data)
 		self.label_names_ordered = []
+		self.class_counts = {}
 		self.train, self.test = self.split_set(data, total_gene_list, sub_gene_list, train_split, test_split)
 
 
@@ -120,6 +121,7 @@ class GTEx:
 		# of the amount of data in each class
 		for k in sorted(data.keys()):
 			self.label_names_ordered.append(k)
+			self.class_counts[k] = data[k].shape[1]
 			
 			num_train = int(data[k].shape[1] * train_split / 100)
 
