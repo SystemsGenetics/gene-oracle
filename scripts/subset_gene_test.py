@@ -144,7 +144,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	print("Running Kmeans")
 	for i in xrange(1,5):
 		print(str(i))
-		kmeans = KMeans(n_clusters=i, n_jobs=4, n_init=30, precompute_distances=False, copy_x=False)
+		kmeans = KMeans(n_clusters=i, n_jobs=1, n_init=30, precompute_distances=False, copy_x=False)
 		kmeans.fit(gene_set_data)
 
 		models.append(kmeans)
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 		required=True)
 	parser.add_argument('--subset_list', help='gmt/gct/txt file containing subsets', type=str, required=False)
 	parser.add_argument('--set', help='subset to be used', type=str, required=True)
-	parser.add_argument('--num_genes', help='number of genes', type=int, required=True)
+	parser.add_argument('--num_genes', help='number of genes', type=int, required=False)
 	parser.add_argument('--log_dir', help='directory where logs are stored', type=str, required=True)
 	args = parser.parse_args()
 
@@ -322,7 +322,7 @@ if __name__ == '__main__':
 		f.close()
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, args.num_genes + 1):
+	for i in xrange(1, len(genes) + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
@@ -332,7 +332,7 @@ if __name__ == '__main__':
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
 			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=60)
 		else:
-			# for all possible combos
+			#for all possible combos
 			gene_dict = create_raw_combos(genes, i)
 		
 		files = [str(args.set) + '_' + str(i) + '_gene_accuracy.txt']

@@ -1,4 +1,4 @@
-#PBS -N random43_pan
+#PBS -N wnt_panTCGA
 #PBS -l select=1:ncpus=4:ngpus=2:mem=96gb:gpu_model=p100,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
@@ -8,6 +8,7 @@ source activate gtex
 							--gene_list ./data/gene_lists/gene_list_panTCGA_split.npy \
 							--sample_json ./data/class_counts/panTCGA_tumor_count_v1.json \
 							--config ./models/net_config.json \
-							--set random$NUM \
-							--num_genes 43 \
-							--log_dir ./logs/random_43s_panTCGA/random$NUM
+							--subset_list ./subsets/ensg_hallmark_experiments.txt \
+							--set hallmark_wnt_beta_catenin_signaling \
+							--num_genes 42 \
+							--log_dir ./logs/hallmark_wnt_beta_catenin_signaling_panTCGA

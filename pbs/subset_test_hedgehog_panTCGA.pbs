@@ -1,5 +1,5 @@
 #PBS -N HH_subset_test
-#PBS -l select=1:ncpus=16:ngpus=2:mem=96gb:gpu_model=p100,walltime=72:00:00
+#PBS -l select=1:ncpus=4:ngpus=2:mem=96gb:gpu_model=p100,walltime=72:00:00
 
 cd /home/$USER/SciDAS/DeepGTEx
 source activate gtex
