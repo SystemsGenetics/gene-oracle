@@ -50,7 +50,7 @@ def read_top_dir(t_dir):
 
 
 # plot the delta accuracies
-def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
+def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands, title):
 	
 	avgs = []
 	for s in sorted(sub_accs.keys()):
@@ -58,7 +58,7 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
 
 	num = sorted(sub_accs.keys())
 
-	(_, caps, _) = plt.errorbar(num, avgs, sub_stes, fmt='ok', lw=1, markersize=5, markerfacecolor='#27c419', capsize=8)
+	(_, caps, _) = plt.errorbar(num, avgs, sub_stes, fmt='ok', lw=1, markersize=4, markerfacecolor='#2f50e2', capsize=8, label='Hallmark')
 
 	for cap in caps:
 	    cap.set_color('b')
@@ -74,7 +74,7 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
 		avgs.append(sum(concat) / len(concat))
 		stes.append(stats.sem(concat))
 
-	(_, caps, _) = plt.errorbar(num, avgs, stes, fmt='ok', lw=1, markersize=5, markerfacecolor='#111111', capsize=8)
+	(_, caps, _) = plt.errorbar(num, avgs, stes, fmt='ok', lw=1, markersize=4, markerfacecolor='#f43d3d', capsize=8, label='Random')
 
 	for cap in caps:
 	    cap.set_color('r')
@@ -88,18 +88,24 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands):
 		for a in sorted(r.keys()):
 			avgs.append(sum(r[a]) / len(r[a]))
 
-		(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=5, markerfacecolor=c, capsize=8, alpha=0.05)
+		(_, caps, _) = plt.errorbar(num, avgs, s, fmt='ok', lw=1, markersize=4, markerfacecolor=c, capsize=8, alpha=0.05)
 
 		for cap in caps:
 		    cap.set_color(c)
 		    cap.set_markeredgewidth(.5)
 
-	plt.title('Gene Set Accuracies')
+	if title is None:
+		plt.title('Gene Set Accuracies')
+	else:
+		plt.title(title)
+
 	plt.xlabel('Num Genes in Set')
 	plt.ylim([0.0,1.0])
 	plt.yticks(np.arange(0, 1, step=0.1))
 	plt.ylabel('Accuracy')
 	plt.xticks(num)
+
+	plt.legend(loc=2)
 
 	ax = plt.axes()
 	ax.yaxis.grid(linestyle='--')
@@ -114,6 +120,7 @@ if __name__ == '__main__':
 	parser.add_argument('--rand_dir', help='dir containing random accuracies', type=str, required=True)
 	parser.add_argument('--sub_dir', help='dir containing subset accuracies', type=str, required=True)
 	parser.add_argument('--avg_rands', help='average the random runs', action='store_true', required=False)
+	parser.add_argument('--title', help='title of the graph', type=str, required=False)
 	# additional args?
 	args = parser.parse_args()
 
@@ -133,7 +140,7 @@ if __name__ == '__main__':
 	for s in sub_accs:
 		sub_stes.append(stats.sem(sub_accs[s]))
 
-	plot(rand_accs, sub_accs, rand_std_es, sub_stes, 1)#args.avg_rands)
+	plot(rand_accs, sub_accs, rand_std_es, sub_stes, 1, args.title)#args.avg_rands)
 
 
 

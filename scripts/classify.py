@@ -182,6 +182,8 @@ if __name__ == '__main__':
 			for g in subsets[s]:
 				if g in total_gene_list:
 					genes.append(g)
+				else:
+					print('missing ' + g)
 			subsets[s] = genes
 					#print('missing gene ' + str(g))
 		print('done check')
@@ -191,7 +193,7 @@ if __name__ == '__main__':
 			sub[args.set.upper()] = subsets[args.set.upper()]
 			subsets = sub
 
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=1)
 
 
 	# if random is selectioned, run random 
@@ -212,7 +214,7 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-			
+
 			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file)
 
 
