@@ -28,20 +28,18 @@ class autoencoder:
 	def encoder(self, x, weights, biases):
 		l1 = tf.nn.relu(tf.add(tf.matmul(x, weights['encoder_h1']), \
 											biases['encoder_b1']))
+		l1 = tf.nn.dropout(l1, 0.50)
 		l2 = tf.nn.relu(tf.add(tf.matmul(l1, weights['encoder_h2']), \
 											biases['encoder_b2']))
-		l3 = tf.nn.relu(tf.add(tf.matmul(l2, weights['encoder_h3']), \
-											biases['encoder_b3']))
 		return l2
 
 
 	def decoder(self, x, weights, biases):
 		l1 = tf.nn.relu(tf.add(tf.matmul(x, weights['decoder_h1']), \
 											biases['decoder_b1']))
+		l1 = tf.nn.dropout(l1, 0.50)
 		l2 = tf.nn.relu(tf.add(tf.matmul(l1, weights['decoder_h2']), \
 											biases['decoder_b2']))
-		l3 = tf.nn.relu(tf.add(tf.matmul(l2, weights['decoder_h3']), \
-											biases['decoder_b3']))
 		return l2
 
 
@@ -52,21 +50,17 @@ class autoencoder:
 		x = tf.placeholder("float", [None, self.n_input])
 
 		weights = {
-			'encoder_h1': tf.get_variable('encoder_h1', shape=[self.n_input, 4000],  initializer=tf.keras.initializers.glorot_uniform()),
-			'encoder_h2': tf.get_variable('encoder_h1', shape=[4000, 1000],  initializer=tf.keras.initializers.glorot_uniform()),
-			'encoder_h3': tf.get_variable('encoder_h2', shape=[1000, 200], initializer=tf.keras.initializers.glorot_uniform()),
-			'decoder_h1': tf.get_variable('decoder_h1', shape=[200, 1000], initializer=tf.keras.initializers.glorot_uniform()),
-			'decoder_h2': tf.get_variable('decoder_h2', shape=[1000, 4000], initializer=tf.keras.initializers.glorot_uniform())
-			'decoder_h3': tf.get_variable('decoder_h2', shape=[4000, self.n_input], initializer=tf.keras.initializers.glorot_uniform())
+			'encoder_h1': tf.get_variable('encoder_h1', shape=[self.n_input, 1000],  initializer=tf.keras.initializers.glorot_uniform()),
+			'encoder_h2': tf.get_variable('encoder_h2', shape=[1000, 100],  initializer=tf.keras.initializers.glorot_uniform()),
+			'decoder_h1': tf.get_variable('decoder_h1', shape=[100, 1000], initializer=tf.keras.initializers.glorot_uniform()),
+			'decoder_h2': tf.get_variable('decoder_h2', shape=[1000, self.n_input], initializer=tf.keras.initializers.glorot_uniform()),
 		}
 
 		biases = {
-			'encoder_b1': tf.get_variable('encoder_b1', shape=[4000], initializer=tf.keras.initializers.glorot_uniform()),
-			'encoder_b2': tf.get_variable('encoder_b1', shape=[1000], initializer=tf.keras.initializers.glorot_uniform()),
-			'encoder_b3': tf.get_variable('encoder_b2', shape=[200], initializer=tf.keras.initializers.glorot_uniform()),
+			'encoder_b1': tf.get_variable('encoder_b1', shape=[1000], initializer=tf.keras.initializers.glorot_uniform()),
+			'encoder_b2': tf.get_variable('encoder_b2', shape=[100], initializer=tf.keras.initializers.glorot_uniform()),
 			'decoder_b1': tf.get_variable('decoder_b1', shape=[1000], initializer=tf.keras.initializers.glorot_uniform()),
-			'decoder_b2': tf.get_variable('decoder_b1', shape=[4000], initializer=tf.keras.initializers.glorot_uniform()),
-			'decoder_b3': tf.get_variable('decoder_b2', shape=[self.n_input], initializer=tf.keras.initializers.glorot_uniform())
+			'decoder_b2': tf.get_variable('decoder_b2', shape=[self.n_input], initializer=tf.keras.initializers.glorot_uniform())
 		}
 
 		# run architecture
@@ -118,7 +112,7 @@ class autoencoder:
 
 				print("Epoch: ", '%04d' % (epoch), "loss: ", "{:.9f}".format(avg_cost))
 
-			saver.save(sess, 'weights/test_autoencoder.ckpt')
+			saver.save(sess, 'weights/test_autoencoder_dropout.ckpt')
 
 
 

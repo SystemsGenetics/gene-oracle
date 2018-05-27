@@ -23,13 +23,12 @@ from GTEx import GTEx
 
 
 # perform random classification based on the given parameters
-def random_classification(data, total_gene_list, config, num_genes, iters, out_file):
+def random_classification(data, total_gene_list, config, num_genes, iters, kfold_val, out_file):
 	f = open(out_file, 'w')
 	f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
 		print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
-		accs = []
 		# set up the neural network
 		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
@@ -41,21 +40,22 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
 			r_genes = create_random_subset(num, total_gene_list)
+			accs = []
+			for _ in xrange(kfold_val):
+				# set up the gtex class to partition data
+				gtex = GTEx(data, total_gene_list, r_genes)
 
-			# set up the gtex class to partition data
-			gtex = GTEx(data, total_gene_list, r_genes)
+				# run the neural net
+				accs.append(mlp.run(gtex))
 
-			# run the neural net
-			accs.append(mlp.run(gtex))
-
-		# print the results to a file
-		accs_np = np.asarray(accs)
-		mean = np.mean(accs_np)
-		std = np.std(accs_np)
-		mx = np.max(accs_np)
-		mn = np.min(accs_np)
-		print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
-		f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+			# print the results to a file
+			accs_np = np.asarray(accs)
+			mean = np.mean(accs_np)
+			std = np.std(accs_np)
+			mx = np.max(accs_np)
+			mn = np.min(accs_np)
+			print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
+			f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
 	f.close()
 
@@ -214,8 +214,8 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-
 			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file)
+			
 
 
 	# if not subset test and random test, run classifier on all 56k genes
