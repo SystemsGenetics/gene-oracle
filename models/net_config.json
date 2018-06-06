@@ -11,7 +11,7 @@
     "dropout": 0,
     "display_step": 5,
     "load": 0,
-    "confusion": 1,
-    "verbose": 1
+    "confusion": 0,
+    "verbose": 0
   }
 }

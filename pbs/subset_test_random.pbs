@@ -9,5 +9,5 @@ source activate gtex
 							--sample_json ./data/class_counts/gtex_tissue_count_v7.json \
 							--config ./models/net_config.json \
 							--set random$NUM \
-							--num_genes 58 \
-							--log_dir ./logs/random_58s/random$NUM/
+							--num_genes $GENE \
+							--log_dir ./logs/random_$GENEs/random$NUM/

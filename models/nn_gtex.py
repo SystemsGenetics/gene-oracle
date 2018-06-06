@@ -35,8 +35,8 @@ def confusion_heatmap(conf_arr, labels=None):
     else:
         plt.xticks(range(width), labels, rotation='vertical')
         plt.yticks(range(height), labels)        
-    plt.show()
-    # plt.savefig('confusion_matrix.png', format='png')
+    #plt.show()
+    plt.savefig('confusion_matrix.png', format='png')
 
 
 class MLP:
