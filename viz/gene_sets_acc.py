@@ -51,13 +51,14 @@ def read_top_dir(t_dir):
 
 # plot the delta accuracies
 def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands, title):
-	
+	plt.figure(figsize=(20,10))
 	avgs = []
 	for s in sorted(sub_accs.keys()):
 		avgs.append(sum(sub_accs[s]) / len(sub_accs[s]))
 
 	num = sorted(sub_accs.keys())
 
+	print(len(num))
 	(_, caps, _) = plt.errorbar(num, avgs, sub_stes, fmt='ok', lw=1, markersize=4, markerfacecolor='#2f50e2', capsize=8, label='Hallmark')
 
 	for cap in caps:
@@ -111,7 +112,8 @@ def plot(rand_accs, sub_accs, rand_std_es, sub_stes, avg_rands, title):
 	ax.yaxis.grid(linestyle='--')
 	ax.xaxis.grid(linestyle='--')
 
-	plt.show()
+
+	plt.savefig("../graphs/"+str(title)+'.png')
 
 
 if __name__ == '__main__':
@@ -141,16 +143,3 @@ if __name__ == '__main__':
 		sub_stes.append(stats.sem(sub_accs[s]))
 
 	plot(rand_accs, sub_accs, rand_std_es, sub_stes, 1, args.title)#args.avg_rands)
-
-
-
-
-
-
-
-
-
-
-
-
-
