@@ -2,14 +2,14 @@
 
 '''
 	This script can be used to run a specified dataset, a specified subset of genes,
-	or a specified number of random genes for classification. 
+	or a specified number of random genes for classification.
 
 	It is required to have a numpy array containing column-wise samples and rows of
 	genes. Additionally, it is required to have a numpy vector of genes that are contained
-	in the dataset (in the same exact order). 
+	in the dataset (in the same exact order).
 '''
 
-import numpy as np 
+import numpy as np
 import sys, argparse
 import os
 import json
@@ -36,7 +36,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, kfold
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
 			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
-		
+
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
 			r_genes = create_random_subset(num, total_gene_list)
@@ -68,7 +68,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 	for s in subsets:
 		accs = []
 		# set up the neural network
-		
+
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
 			gtex = GTEx(data, total_gene_list, subsets[s])
@@ -101,9 +101,9 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 # perform classification on every gene
 def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\n')	
+	f.write('Num\tAverage\tStd Dev\n')
 	accs = []
-	
+
 	for i in xrange(kfold_val):
 		# set up the gtex class to partition data
 		gtex = GTEx(data, total_gene_list)
@@ -151,9 +151,12 @@ if __name__ == '__main__':
 		type=int, required=False)
 	parser.add_argument('--rand_iters', help='Number of iterations to perform for random classification', \
 		type=int, nargs='?', const=10, required=False)
+	parser.add_argument('--k_fold', help='Number of folds for K fold cross validation', \
+		type=int, nargs='?', const=10, required=False)
+
 	args = parser.parse_args()
 
-	
+
 	# check arguments are correct
 	check_args(args)
 
@@ -175,7 +178,7 @@ if __name__ == '__main__':
 	# read subset file if provided
 	if args.subset_list and not args.random_test:
 		subsets = read_subset_file(args.subset_list)
-		
+
 		print('checking for valid genes...')
 		for s in subsets:
 			genes = []
@@ -196,7 +199,7 @@ if __name__ == '__main__':
 		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=1)
 
 
-	# if random is selectioned, run random 
+	# if random is selectioned, run random
 	if args.random_test:
 		if args.num_random_genes:
 			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file)
@@ -214,13 +217,10 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file)
-			
+			random_classification(data, total_gene_list, config, num, args.rand_iters,args.k_fold, args.out_file)
+
 
 
 	# if not subset test and random test, run classifier on all 56k genes
 	if not args.random_test and not args.subset_list:
 		full_classification(data, total_gene_list, config, args.out_file)
-
-
-
