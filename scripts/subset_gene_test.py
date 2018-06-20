@@ -195,7 +195,6 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	for item in sort_c_info:
 		if nxt_items < max_experiments - (max_experiments * rand_exps_perct):
 			final_combos.append(ast.literal_eval(item[0]))
-			print item
 			nxt_items = nxt_items + 1
 		else:
 			unused_idxs.append(cnt)
@@ -214,7 +213,6 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
-		print sort_c_info[s]
 
 	print('num sets moving on is ' + str(len(final_combos)))
 
