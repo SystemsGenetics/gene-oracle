@@ -129,7 +129,7 @@ def get_combos_and_accs(file):
 # separated by a tab, followed by the accuracy for that list. it returns a dictionary of new combinations 
 # with one extra gene appended that was not previously in the list. It chooses subsets by performing KMeans
 # clustering, choosing top performing subsets from each cluster, then also adding in some random subsets
-def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=50):
+def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_experiments=50, rand_exps_perct=0.5):
 
 	# get combos and previous accuracies of the last run
 	combos, prev_accs = get_combos_and_accs(file)
@@ -137,41 +137,36 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# create data matrix of old combinations
 	gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
 
-	inertias = []
-	BIC_list = []
-	models = []
+	# inertias = []
+	# models = []
 
-	# run k means k times
-	print("Running Kmeans")
-	for i in xrange(1,5):
-		print(str(i))
-		kmeans = KMeans(n_clusters=i, n_jobs=1, n_init=30, precompute_distances=False, copy_x=False)
-		kmeans.fit(gene_set_data)
+	# # run k means k times
+	# print("Running Kmeans")
+	# for i in xrange(1,5):
+	# 	print(str(i))
+	# 	kmeans = KMeans(n_clusters=i, n_jobs=1, n_init=30, precompute_distances=False, copy_x=False)
+	# 	kmeans.fit(gene_set_data)
 
-		models.append(kmeans)
-		inertias.append(kmeans.inertia_)
+	# 	models.append(kmeans)
+	# 	inertias.append(kmeans.inertia_)
 
-		# calculate BIC and append to list
-		BIC = log(kmeans.inertia_) - (log(len(combos) * i))
-		BIC_list.append(BIC)
+	# print('done kmeans')
 
-	print('done kmeans')
+	# # approximate second derivatives to determine where the 'elbow' in the curve is
+	# second_dervs = []
+	# for i in xrange(1, len(inertias) - 1):
+	# 	xpp = inertias[i + 1] + inertias[i - 1] - 2 * inertias[i]
+	# 	second_dervs.append(xpp)
 
-	# approximate second derivatives to determine where the 'elbow' in the curve is
-	second_dervs = []
-	for i in xrange(1, len(inertias) - 1):
-		xpp = inertias[i + 1] + inertias[i - 1] - 2 * inertias[i]
-		second_dervs.append(xpp)
+	# # add one... excluded first and last k from calculations TODO: may need to fix this
+	# final_k = second_dervs.index(max(second_dervs)) + 1
+	# final_model = models[final_k]
 
-	# add one... excluded first and last k from calculations TODO: may need to fix this
-	final_k = second_dervs.index(max(second_dervs)) + 1
-	final_model = models[final_k]
+	# print('final k for ' + str(len(combos[0])) + ' combos is ' + str(final_k))
 
-	print('final k for ' + str(len(combos[0])) + ' combos is ' + str(final_k))
-
-	# find the top num sets from each cluster and additionally return num random sets
-	# num = max_experiments / (k + 1) send off num sets from each k clusters + num random sets
-	num_per_k = max_experiments / (final_k + 2)
+	# # find the top num sets from each cluster and additionally return num random sets
+	# # num = max_experiments / (k + 1) send off num sets from each k clusters + num random sets
+	# num_per_k = max_experiments / (final_k + 2)
 
 	# extract the top num_per_k for each cluster, add to dictionary that contains tuple of classification 
 	# rate and cluster label
@@ -186,19 +181,33 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	final_combos = []
 	unused_idxs = []
 	cnt = 0
-	counts = np.zeros(final_k + 1)
-	for item in sort_c_info:
-		if counts[item[1][1]] < num_per_k: # see if the num_per_k is under threshold 
-			final_combos.append(ast.literal_eval(item[0])) # append the list of genes to final_combos
-			counts[item[1][1]] = counts[item[1][1]] + 1 # increment the global counts of each cluster
-		else:
-			unused_idxs.append(cnt)		
+	nxt_items = 0
+	# counts = np.zeros(final_k + 1)
+	# for item in sort_c_info:
+	# 	if counts[item[1][1]] < num_per_k: # see if the num_per_k is under threshold 
+	# 		final_combos.append(ast.literal_eval(item[0])) # append the list of genes to final_combos
+	# 		counts[item[1][1]] = counts[item[1][1]] + 1 # increment the global counts of each cluster
+	# 	else:
+	# 		unused_idxs.append(cnt)		
 		
-		cnt = cnt + 1 # increment index count
+	# 	cnt = cnt + 1 # increment index count
+
+	for item in sort_c_info:
+		if nxt_items < max_experiments - (max_experiments * rand_exps_perct):
+			final_combos.append(ast.literal_eval(item[0]))
+			nxt_items = nxt_items + 1
+		else:
+			unused_idxs.append(cnt)
+		cnt = cnt + 1
 
 	# fill final combos with random samples from the data
-	if len(unused_idxs) > max_experiments - len(final_combos):
-		samples = random.sample(unused_idxs, max_experiments - len(final_combos))
+	# if len(unused_idxs) > max_experiments - len(final_combos):
+	# 	samples = random.sample(unused_idxs, max_experiments - len(final_combos))
+	# else:
+	# 	samples = unused_idxs
+
+	if len(unused_idxs) > max_experiments * rand_exps_perct:
+		samples = random.sample(unused_idxs, max_experiments * rand_exps_perct)
 	else:
 		samples = unused_idxs
 	
