@@ -7,11 +7,12 @@
     "n_h_layers" : 3,
     "n_h_units" : [512, 256, 128],
     "act_funcs" : ["relu", "relu", "relu"],
-    "batch_size": 2048,
+    "batch_size": 32,
     "dropout": 0,
     "display_step": 5,
     "load": 0,
     "confusion": 0,
-    "verbose": 0
+    "verbose": 1,
+    "weighted_loss": 0
   }
 }

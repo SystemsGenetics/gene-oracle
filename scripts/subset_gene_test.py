@@ -135,7 +135,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	combos, prev_accs = get_combos_and_accs(file)
 
 	# create data matrix of old combinations
-	gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
+	# gene_set_data = convert_sets_to_vecs(data, total_gene_list, combos, len(combos[0]))
 
 	# inertias = []
 	# models = []
@@ -172,7 +172,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# rate and cluster label
 	combo_info = {}
 	for i in xrange(len(combos)):
-		combo_info[str(combos[i])] = (prev_accs[i], final_model.labels_[i])
+		combo_info[str(combos[i])] = (prev_accs[i])#, final_model.labels_[i])
 
 	# sort the combo info descending by accuracy
 	sort_c_info = sorted(combo_info.items(), key=operator.itemgetter(1), reverse=True)
@@ -195,6 +195,7 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	for item in sort_c_info:
 		if nxt_items < max_experiments - (max_experiments * rand_exps_perct):
 			final_combos.append(ast.literal_eval(item[0]))
+			print item
 			nxt_items = nxt_items + 1
 		else:
 			unused_idxs.append(cnt)
@@ -207,12 +208,13 @@ def generate_new_subsets_w_clustering(file, data, total_gene_list, genes, max_ex
 	# 	samples = unused_idxs
 
 	if len(unused_idxs) > max_experiments * rand_exps_perct:
-		samples = random.sample(unused_idxs, max_experiments * rand_exps_perct)
+		samples = random.sample(unused_idxs, int(max_experiments * rand_exps_perct))
 	else:
 		samples = unused_idxs
 	
 	for s in samples:
 		final_combos.append(ast.literal_eval(sort_c_info[s][0]))
+		print sort_c_info[s]
 
 	print('num sets moving on is ' + str(len(final_combos)))
 
@@ -332,15 +334,16 @@ if __name__ == '__main__':
 		f.close()
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, len(genes) + 1):
+	for i in xrange(4, len(genes) + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file
 		if i > 3 and i != args.num_genes:
-			print('performing set selection via KMeans...')
+			# print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
-			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, max_experiments=60)
+			gene_dict = generate_new_subsets_w_clustering(f, data, total_gene_list, genes, \
+				max_experiments=60, rand_exps_perct=0.5)
 		else:
 			#for all possible combos
 			gene_dict = create_raw_combos(genes, i)

@@ -23,9 +23,10 @@ from GTEx import GTEx
 
 
 # perform random classification based on the given parameters
-def random_classification(data, total_gene_list, config, num_genes, iters, kfold_val, out_file):
-	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\n')
+def random_classification(data, total_gene_list, config, num_genes, iters, out_file, kfold_val):
+	if out_file:
+		f = open(out_file, 'w')
+		f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
 		print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
@@ -55,15 +56,18 @@ def random_classification(data, total_gene_list, config, num_genes, iters, kfold
 			mx = np.max(accs_np)
 			mn = np.min(accs_np)
 			print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
-			f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+			if out_file:
+				f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
-	f.close()
+	if out_file:
+		f.close()
 
 
 # perform classificaiton on each of the subsets provided in the subset_list argument
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
-	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd_Dev\tMax\tMin\n')
+	if out_file:
+		f = open(out_file, 'w')
+		f.write('Num\tAverage\tStd_Dev\tMax\tMin\n')
 
 	for s in subsets:
 		accs = []
@@ -93,15 +97,19 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
 		print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
-		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+		if out_file:
+			f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
-	f.close()
+	if out_file:
+		f.close()
 
 
 # perform classification on every gene
 def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
-	f = open(out_file, 'w')
-	f.write('Num\tAverage\tStd Dev\n')
+	if out_file:
+		f = open(out_file, 'w')
+		f.write('Num\tAverage\tStd Dev\n')
+
 	accs = []
 
 	for i in xrange(kfold_val):
@@ -126,9 +134,9 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	std = np.std(accs_np)
 	s = 'EVERY FEATURE'
 	print(str(s) + '\t' + str(mean))
-	f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
-
-	f.close()
+	if out_file:
+		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		f.close()
 
 
 
@@ -143,7 +151,7 @@ if __name__ == '__main__':
 		type=str, required=True)
 	parser.add_argument('--config', help='json file containing network specifications', type=str, \
 		required=True)
-	parser.add_argument('--out_file', help='output file to send results to', type=str, required=True)
+	parser.add_argument('--out_file', help='output file to send results to', type=str, required=False)
 	parser.add_argument('--subset_list', help='gmt/gct file containing subsets', type=str, required=False)
 	parser.add_argument('--set', help='specific subset to run', type=str, required=False)
 	parser.add_argument('--random_test', help='Perform random test', action='store_true', required=False)
@@ -202,7 +210,7 @@ if __name__ == '__main__':
 	# if random is selectioned, run random
 	if args.random_test:
 		if args.num_random_genes:
-			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file)
+			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file, kfold_val=1)
 		elif args.subset_list:
 			# get the number of genes for each subset
 			num = []
