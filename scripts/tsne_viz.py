@@ -4,7 +4,7 @@
 	This file allows users to visualize sets of genes with tsne
 '''
 
-import numpy as np 
+import numpy as np
 import os
 import subprocess
 import json
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
 		spinner.stop()
 
-	
+
 	if args.save:
 		print('Saving .npy TSNE file...')
 		if args.pca:
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 		else:
 			np.save('../datasets/TSNE/' + str(args.set) + '_' + str(args.set_size) + '_30_70.npy', X_embedded)
 
-	
+
 	# viz with seaborne
 	#sns.regplot(x=X_embedded[:,0], y=X_embedded[:,1], fit_reg=False, scatter_kws={'s':1})
 
@@ -131,15 +131,3 @@ if __name__ == '__main__':
 
 	# show plot
 	plt.show()
-
-
-
-
-
-
-
-
-
-
-
-

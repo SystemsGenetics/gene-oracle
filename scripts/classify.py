@@ -7,6 +7,16 @@
 	It is required to have a numpy array containing column-wise samples and rows of
 	genes. Additionally, it is required to have a numpy vector of genes that are contained
 	in the dataset (in the same exact order).
+
+
+	Protypes:
+	- random_classification(data, total_gene_list, config, num_genes, iters, out_file, kfold_val)
+	- subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1)
+	- full_classification(data, total_gene_list, config, out_file, kfold_val=1)
+
+	Todo:
+		-modularize functions in main, main should be small, logic needs to be in functions
+
 '''
 
 import numpy as np
@@ -23,7 +33,16 @@ from models.mlp import MLP
 from utils.dataset import DataContainer as DC
 
 
-# perform random classification based on the given parameters
+# USAGE:
+# 		- perform random classification based on the given parameters
+# PARAMS:
+#	data: dataset to be used
+#	total_gene_list: list of genes in dataset (same order as dataset)
+#	config: json file containing network specifications
+#	num_genes: Number of random genes to assess
+#	iters: Number of iterations to perform for random classification
+#	out_file: the file to write to
+#	kfold_val: Number of folds for K fold cross validation
 def random_classification(data, total_gene_list, config, num_genes, iters, out_file, kfold_val):
 	if out_file:
 		f = open(out_file, 'w')
@@ -63,8 +82,15 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 	if out_file:
 		f.close()
 
-
-# perform classificaiton on each of the subsets provided in the subset_list argument
+# USAGE:
+# 		- perform classification on each of the subsets provided in the subset_list argument
+# PARAMS:
+#	data: dataset to be used
+#	total_gene_list: list of genes in dataset (same order as dataset)
+#	config: json file containing network specifications
+#	subsets: gmt/gct file containing subsets
+#	out_file: the file to write to
+#	kfold_val: Number of folds for K fold cross validation, set at 1
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
 	if out_file:
 		f = open(out_file, 'w')
@@ -100,12 +126,19 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		if out_file:
 			f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+			f.close()
 
 	if out_file:
 		f.close()
 
-
-# perform classification on every gene
+# USAGE:
+# 		- perform classification on every gene
+# PARAMS:
+#	data: dataset to be used
+#	total_gene_list: list of genes in dataset (same order as dataset)
+#	config: json file containing network specifications
+#	out_file: the file to write to
+#	kfold_val: Number of folds for K fold cross validation, set at 1
 def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	if out_file:
 		f = open(out_file, 'w')
@@ -143,6 +176,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 
 if __name__ == '__main__':
 
+	#Parse Arguments
 	parser = argparse.ArgumentParser(description='Run classification on specified dataset, \
 		subset of genes, or a random set')
 	parser.add_argument('--dataset', help='dataset to be used', type=str, required=True)
@@ -165,10 +199,8 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-
-	# check arguments are correct
+	# Check arguments are correct
 	check_args(args)
-
 
 	# load the data
 	print('loading genetic data...')
@@ -176,15 +208,13 @@ if __name__ == '__main__':
 	total_gene_list = np.load(args.gene_list)
 	data = load_data(args.sample_json, gtex_gct_flt)
 
-
 	# ensure the dataset and gene list match dimensions
-	if gtex_gct_flt.shape[0] != total_gene_list.shape[0]:
-		print('dataset does not match gene list.')
-		sys.exit(1)
+	assert gtex_gct_flt.shape[0] is total_gene_list.shape[0], "dataset does not match gene list."
 
 	config = json.load(open(args.config))
 
-	# read subset file if provided
+	# RUN SUBSET CLASSIFICATION
+	# read subset file, if provided
 	if args.subset_list and not args.random_test:
 		subsets = read_subset_file(args.subset_list)
 
@@ -208,6 +238,7 @@ if __name__ == '__main__':
 		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=1)
 
 
+	#RUN RANDOM CLASSIFICATION
 	# if random is selectioned, run random
 	if args.random_test:
 		if args.num_random_genes:
@@ -229,7 +260,7 @@ if __name__ == '__main__':
 			random_classification(data, total_gene_list, config, num, args.rand_iters,args.k_fold, args.out_file)
 
 
-
+	#RUN FULL_CLASSIFICATION
 	# if not subset test and random test, run classifier on all 56k genes
 	if not args.random_test and not args.subset_list:
 		full_classification(data, total_gene_list, config, args.out_file)
