@@ -12,7 +12,7 @@
     "display_step": 5,
     "load": 0,
     "confusion": 0,
-    "verbose": 1,
+    "verbose": 0,
     "weighted_loss": 0
   }
 }

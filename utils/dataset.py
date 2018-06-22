@@ -1,5 +1,5 @@
 #
-# FILE: GTEx.py
+# FILE: dataset.py
 # USE:  Creates object that holds data and labels for gene specified dataset
 #
 
@@ -18,7 +18,7 @@ class data_t(object):
 		n_idx = index * batch_size + batch_size
 		return self.data[idx:n_idx, :], self.labels[idx:n_idx, :]
 
-class GTEx:
+class DataContainer:
 	def __init__(self, data, total_gene_list=None, sub_gene_list=None, train_split=70, test_split=30):
 		self.num_classes = len(data)
 		self.label_names_ordered = []

@@ -16,10 +16,11 @@ import json
 import time
 
 sys.path.append(os.path.dirname(os.getcwd()))
+sys.path.append(os.getcwd())
 
-from subset_gene_test import create_random_subset, load_data, check_args, read_subset_file
-from models.nn_gtex import MLP
-from GTEx import GTEx
+from utils.utils import create_random_subset, load_data, check_args, read_subset_file
+from models.mlp import MLP
+from utils.dataset import DataContainer as DC
 
 
 # perform random classification based on the given parameters
@@ -43,11 +44,11 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 			r_genes = create_random_subset(num, total_gene_list)
 			accs = []
 			for _ in xrange(kfold_val):
-				# set up the gtex class to partition data
-				gtex = GTEx(data, total_gene_list, r_genes)
+				# set up the DataContainer class to partition data
+				dataset = DC(data, total_gene_list, r_genes)
 
 				# run the neural net
-				accs.append(mlp.run(gtex))
+				accs.append(mlp.run(dataset))
 
 			# print the results to a file
 			accs_np = np.asarray(accs)
@@ -75,9 +76,9 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 
 		for i in xrange(kfold_val):
 			# set up the gtex class to partition data
-			gtex = GTEx(data, total_gene_list, subsets[s])
+			dataset = DC(data, total_gene_list, subsets[s])
 
-			mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+			mlp = MLP(n_input=dataset.train.data.shape[1], n_classes=len(data), \
 				batch_size=config['mlp']['batch_size'], \
 				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
@@ -86,7 +87,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 			# run the neural net
-			acc = mlp.run(gtex)
+			acc = mlp.run(dataset)
 			accs.append(acc)
 			#print('acc is ' + str(acc) + ' time is ' + str(stop - start))
 
@@ -114,9 +115,9 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 
 	for i in xrange(kfold_val):
 		# set up the gtex class to partition data
-		gtex = GTEx(data, total_gene_list)
+		dataset = DC(data, total_gene_list)
 
-		mlp = MLP(n_input=gtex.train.data.shape[1], n_classes=len(data), \
+		mlp = MLP(n_input=dataset.train.data.shape[1], n_classes=len(data), \
 			batch_size=config['mlp']['batch_size'], \
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
@@ -125,7 +126,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
 
 		# run the neural net
-		acc = mlp.run(gtex)
+		acc = mlp.run(dataset)
 		accs.append(acc)
 
 	# print the results to a file
