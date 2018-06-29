@@ -1,5 +1,6 @@
 # Gene Oracle
-This repository contains all code, scripts, and other for the Gene Oracle project. Gene Oracle is an ongoing research effort to effectively classify RNA expression level data from the Genotype-Tissue Expression project, located [here](https://gtexportal.org/home/). Running models from this repo requires a downloaded version of the RNA-seq data Gene TPM's, located [here](https://gtexportal.org/home/datasets) (a sign-in is required to download the dataset for privacy reasons).
+This repository contains all code, scripts, and other for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes given RNA expression data. The data is expected to be preprocessed and in numpy float format with rows being genes (features) and columns being samples (each data point being an RNA expression level). Additionally, a list of genes, also in numpy format, is expected as input in the same order in which the float data is constructed. Finally, a json file containing class names and number of samples per class, in sample order, is required. 
+
 
 ## Requirements and Setup
 Create a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
@@ -20,7 +21,7 @@ Once a virtualenv is created, the following software is required to run the mode
     conda install -n yourenvname [package]
     example: conda install -n gtex tensorflow-gpu==1.3.0
 
-    tensorflow-gpu (1.3.0)
+    tensorflow-gpu (1.8.0)
     scikit-learn (0.19.0)
     numpy (1.13.1)
     argparse (1.4.0)
@@ -64,4 +65,4 @@ The following contains the example usage:
 
 
 ## Feature Engineering
-To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from hallmark sets.
+To determine the relevance of a particular gene or a subgroup of genes, [subset_gene_test.py](https://github.com/CUFCTL/DeepGTEx/blob/master/scripts/subset_gene_test.py) can be used to generate subgroups from sets of genes. 
