@@ -5,7 +5,10 @@ import os
 import numpy as np
 
 
-# check the arguments are correct for the program
+# USAGE:
+#	-check the arguments are correct for the program
+# PARAMS:
+#	args: list of program arguments
 def check_args(args):
 	# check dataset is of correct type
 	if os.path.exists(args.dataset):
@@ -35,10 +38,14 @@ def check_args(args):
 			sys.exit(1)
 	else:
 		print('File does not exist!')
-		sys.exit(1)	
+		sys.exit(1)
 
-
-# create every possible combination
+# USAGE:
+# 	- create every possible combination
+# PARAMS:
+#	genes:
+#	i:
+# Todo: rename i to something better....@Colin
 def create_raw_combos(genes, i):
 	combos = []
 	for c in itertools.combinations(genes, i):
@@ -47,7 +54,7 @@ def create_raw_combos(genes, i):
 	return dict.fromkeys(combos)
 
 # get random gene indexes between 0-56238
-def create_random_subset(num_genes, total_gene_list):		
+def create_random_subset(num_genes, total_gene_list):
 	#Generate Gene Indexes for Random Sample
 	gene_indexes = np.random.randint(0, len(total_gene_list), num_genes)
 	return [total_gene_list[i] for i in gene_indexes]
@@ -67,7 +74,10 @@ def load_data(num_samples_json, gtex_gct_flt):
 
 	return data
 
-# read a csv or txt file that contains a name of a subset followed by a list of genes
+# USAGE:
+# 	- read a csv or txt file that contains a name of a subset followed by a list of genes
+# PARAMS:
+#	file: file to read
 def read_subset_file(file):
 	with open(file, 'r') as f:
 		content = f.readlines()
@@ -85,8 +95,13 @@ def read_subset_file(file):
 
 	return subsets
 
-# special helper function to sanitize the string containing the genes from
+
+
+# USAGE:
+#  -special helper function to sanitize the string containing the genes from
 # an accuracy file
+# PARAMS:
+#	gene_str: gene string to sanitize
 def sanitize(gene_str):
 	gene_list = gene_str.strip('()')
 	gene_list = gene_list.replace('\'', '')
@@ -94,8 +109,14 @@ def sanitize(gene_str):
 	gene_list = gene_list.split(',')
 	return gene_list
 
-# comment this yo
-# convert sets 
+
+# USAGE:
+# - convert sets
+# PARAMS:
+#	data:
+#	total_gene_list:
+# 	combo_list:
+#	set_size:
 def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 	feature_list = []
 	for combo in combo_list:
@@ -114,12 +135,15 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 	return x_data
 
 
-# return the combinations and accuracies that are listed in a log file
+# USAGE:
+# - return the combinations and accuracies that are listed in a log file
+# PARAMS:
+#	file:
 def get_combos_and_accs(file):
 	# collect previous files combinations/accuracyies
 	prev_combos = []
 	prev_run = np.loadtxt(file, delimiter='\t', dtype=np.str)
-	
+
 	# gather previous combinations
 	combos = []
 	prev_combos = prev_run[:,0]

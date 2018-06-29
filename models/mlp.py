@@ -1,49 +1,20 @@
 #/usr/bin/python
 
 # multilayer perceptron neural network with softmax layer to classify genetic data
-import numpy as np 
-import tensorflow as tf 
+import numpy as np
+import tensorflow as tf
 from sklearn import preprocessing
 import sys, argparse
 import os
 
 import matplotlib.pyplot as plt
-
-def confusion_heatmap(conf_arr, labels=None):
-    norm_conf = preprocessing.normalize(conf_arr, axis=1, norm='l1')
-
-    fig = plt.figure(figsize=(14,8))
-    plt.clf()
-    ax = fig.add_subplot(111)
-    ax.set_aspect(1)
-
-    res = ax.imshow(norm_conf, cmap=plt.cm.jet, 
-            interpolation='nearest')
-
-    width, height = conf_arr.shape
-
-    # for x in xrange(width):
-    #     for y in xrange(height):
-    #         ax.annotate(str(conf_arr[x][y]), xy=(y, x), 
-    #                     horizontalalignment='center',
-    #                     verticalalignment='center')
-
-    cb = fig.colorbar(res)
-    if labels == None:
-        plt.xticks(range(width), np.arange(0,conf_arr.shape[0]), rotation='vertical')
-        plt.yticks(range(height), np.arange(0,conf_arr.shape[0]))
-    else:
-        plt.xticks(range(width), labels, rotation='vertical')
-        plt.yticks(range(height), labels)        
-    #plt.show()
-    plt.savefig('confusion_matrix.png', format='png')
-
+from validation import confusion_heatmap, roc_plt
 
 class MLP:
     def __init__(self, lr=0.001, epochs=75, n_layers=3, h_units=[512,512,512], \
         act_funcs=["relu", "relu", "relu"], batch_size=16, disp_step=1, n_input=56238, \
-        n_classes=53, dropout=0, load=0, save = 0, confusion=0, verbose=0, weighted_loss=0):
-        
+        n_classes=53, dropout=0, load=0, save = 0, confusion=0, roc = 0, verbose=0, weighted_loss=0):
+
         self.lr = lr
         self.epochs = epochs
         self.n_layers = n_layers
@@ -57,21 +28,23 @@ class MLP:
         self.save = save
         self.dropout = dropout
         self.confusion = confusion
+        self.roc = roc
         self.verbose = verbose
         self.weighted_loss = weighted_loss
 
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
     # Create model
     def multilayer_perceptron(self, x, weights, biases):
-        
+
         layer = x
         for i in xrange(1, self.n_layers + 1):
             w = 'h' + str(i)
             b = 'b' + str(i)
-            
+
             layer = tf.add(tf.matmul(layer, weights[w]), biases[b])
-            
+
             if self.act_funcs[i - 1] == "relu":
                 layer = tf.nn.relu(layer)
             elif self.act_funcs[i - 1] == "sigmoid":
@@ -104,7 +77,7 @@ class MLP:
             b = 'b' + str(i)
             weights[w] = tf.get_variable(w, shape=[units[i - 1], units[i]], initializer=tf.contrib.layers.xavier_initializer())
             biases[b] = tf.get_variable(b, shape=[units[i]], initializer=tf.contrib.layers.xavier_initializer())
-        
+
         weights['out'] = tf.get_variable('out_w', shape=[self.h_units[-1], self.n_classes], initializer=tf.contrib.layers.xavier_initializer())
         biases['out'] = tf.get_variable('out_b', shape=[self.n_classes], initializer=tf.contrib.layers.xavier_initializer())
 
@@ -112,7 +85,7 @@ class MLP:
         maxabsscaler = preprocessing.MaxAbsScaler()
         gtex.train.data = maxabsscaler.fit_transform(gtex.train.data)
         gtex.test.data = maxabsscaler.fit_transform(gtex.test.data)
-        
+
         # Construct model
         pred = self.multilayer_perceptron(x, weights, biases)
 
@@ -175,7 +148,7 @@ class MLP:
                                                                   y: batch_y, cost_ratio: weights})
                 else:
                     _, c, r = sess.run([optimizer, cost, result], feed_dict={x: batch_x, y: batch_y})
-                
+
                 # Compute average loss
                 avg_cost += c / total_batch
 
@@ -187,13 +160,24 @@ class MLP:
 
         # Test model
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
-        
+
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
         acc = accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)
 
+        if self.roc:
+            print("ROC YO!")
+            print("Y:" + str(y.eval({y:gtex.test.labels}, session=sess)))
+            print("Pred:" + str(result.eval({x:gtex.test.data}, session=sess)))
+            #y is the test Output
+            #pred is the predicted out
+            y_pred = result.eval({x:gtex.test.data}, session=sess)
+            y_label = y.eval({y:gtex.test.labels}, session=sess)
+            roc_plt(3,y_label,y_pred)
+
         if self.confusion:
+            print("CONFUSION MATRIX YO!")
             # generate confusion matrices for brain data and gtex data
             temp = pred.eval({x: gtex.test.data}, session=sess)
             preds = np.argmax(temp, 1)
@@ -203,7 +187,8 @@ class MLP:
 
             confusion_heatmap(mycm, gtex.label_names_ordered)
             #print mycm
-            #np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
+            np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
+
 
         # calculate accuracy that will be returned
 

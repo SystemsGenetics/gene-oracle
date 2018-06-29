@@ -26,18 +26,18 @@ class DataContainer:
 		self.train, self.test = self.split_set(data, total_gene_list, sub_gene_list, train_split, test_split)
 
 
-	# 
+	#
 	# USAGE:
 	# 		create a new data dictionary with classes as keys that contain a subsample of original data,
-	#		specified by the 'sub_gene_list' 
+	#		specified by the 'sub_gene_list'
 	# PARAMS:
 	#		orig_data:       dictionary containing classes as keys, with values as matrix of class samples
-	#						 with all possible genes 
+	#						 with all possible genes
 	#		total_gene_list: list of every gene in the original data GEM
 	#   	sub_gene_list:   specified genes from a subset of total gene list
 	#
 	def extract_requested_genes(self, orig_data, total_gene_list, sub_gene_list):
-		
+
 		#get genes in sub_gen_list from total_gene_list
 		gene_indexes = []
 		for i in range(len(sub_gene_list)):
@@ -68,9 +68,9 @@ class DataContainer:
 	def shuffle_and_transform(self, data, labels):
 		new_data = []
 		new_labels = []
-		
+
 		samples = random.sample(xrange(len(data)),len(data))
-		
+
 		for i in samples:
 			new_data.append(data[i])
 			new_labels.append(labels[i])
@@ -78,10 +78,12 @@ class DataContainer:
 		# convert lists to numpy arrays
 		np_data = np.asarray(new_data)
 		np_labels = np.asarray(new_labels)
-		
+
 		return data_t(np_data,np_labels)
 
-
+	#
+	# USAGE:
+	#	TODO: What is this use @Colin
 	def shuffle(self):
 		idxs = np.arange(self.train.data.shape[0])
 		idxs = np.random.shuffle(idxs)
@@ -117,12 +119,12 @@ class DataContainer:
 
 		idx = 0 # keep count of index in dictionary
 
-		# gather training and testing examples and labels into a list by randomly selecting indices 
+		# gather training and testing examples and labels into a list by randomly selecting indices
 		# of the amount of data in each class
 		for k in sorted(data.keys()):
 			self.label_names_ordered.append(k)
 			self.class_counts[k] = data[k].shape[1]
-			
+
 			num_train = int(data[k].shape[1] * train_split / 100)
 
 			samples = random.sample(xrange(data[k].shape[1]),data[k].shape[1])
@@ -151,4 +153,3 @@ class DataContainer:
 		test = self.shuffle_and_transform(test_data, test_labels)
 
 		return [train, test]
-
