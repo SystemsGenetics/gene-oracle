@@ -6,7 +6,9 @@
 
 	Prototpes:
 		- run_kmeans(data,total_gene_list,combos)
-		-
+		- generate_new_subsets_wo_clustering(file, data, total_gene_list, genes, max_experiments=50, rand_exps_perct=0.5)
+	Todo:
+		- generate_new_subsets_w_clustering
 '''
 
 import numpy as np
@@ -186,13 +188,10 @@ if __name__ == '__main__':
 
 	data = load_data(args.sample_json, gtex_gct_flt)
 
-	# load the hedgehog data
+	# load the data
 	if "random" in args.set:
 		genes = create_random_subset(args.num_genes, total_gene_list)
-		#with open(args.log_dir + '/gene_list.txt', 'r') as f:
-		#	genes = []
-		#	for l in f:
-		#		genes.append(str(l.strip('\n')))
+
 	else:
 		if args.subset_list:
 			subsets = read_subset_file(args.subset_list)
@@ -228,7 +227,6 @@ if __name__ == '__main__':
 
 		# read in the previous accuracy file
 		if i > 3 and i != args.num_genes:
-			# print('performing set selection via KMeans...')
 			# for combos from files
 			f = args.log_dir + '/' + str(args.set) + '_' + str(i - 1) + '_gene_accuracy.txt'
 			gene_dict = generate_new_subsets_wo_clustering(f, data, total_gene_list, genes, \

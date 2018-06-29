@@ -56,7 +56,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
 
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
@@ -110,7 +110,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
 
 			# run the neural net
 			acc = mlp.run(dataset)
@@ -147,7 +147,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	accs = []
 
 	for i in xrange(kfold_val):
-		# set up the gtex class to partition data
+		# set up the data class to partition data
 		dataset = DC(data, total_gene_list)
 
 		mlp = MLP(n_input=dataset.train.data.shape[1], n_classes=len(data), \
@@ -156,7 +156,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'])
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
 
 		# run the neural net
 		acc = mlp.run(dataset)
@@ -209,7 +209,10 @@ if __name__ == '__main__':
 	data = load_data(args.sample_json, gtex_gct_flt)
 
 	# ensure the dataset and gene list match dimensions
-	assert gtex_gct_flt.shape[0] is total_gene_list.shape[0], "dataset does not match gene list."
+	#assert gtex_gct_flt.shape[0] not total_gene_list.shape[0], "dataset does not match gene list."
+	if gtex_gct_flt.shape[0] != total_gene_list.shape[0]:
+		print('dataset does not match gene list.')
+		sys.exit(1)
 
 	config = json.load(open(args.config))
 
