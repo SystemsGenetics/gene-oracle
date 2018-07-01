@@ -126,7 +126,6 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		if out_file:
 			f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
-			f.close()
 
 	if out_file:
 		f.close()
