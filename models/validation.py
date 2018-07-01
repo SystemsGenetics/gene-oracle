@@ -5,6 +5,7 @@ import os
 import matplotlib.pyplot as plt
 
 
+
 from itertools import cycle
 from sklearn import svm, datasets
 from sklearn.metrics import roc_curve, auc
@@ -47,8 +48,9 @@ def confusion_heatmap(conf_arr, labels=None):
 #Tutorial Here: http://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html#sphx-glr-auto-examples-model-selection-plot-roc-py
 #y_score = pred
 #y_test = actual
-def roc_plt(n_classes,y_test,y_score):
+def roc_plt(n_classes,y_test,y_score,labels):
     # Compute ROC curve and ROC area for each class
+    fig = plt.figure(figsize=(24,16))
     fpr = dict()
     tpr = dict()
     lw =2
@@ -68,18 +70,21 @@ def roc_plt(n_classes,y_test,y_score):
     # Finally average it and compute AUC
     mean_tpr /= n_classes
 
-    colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
-    for i, color in zip(range(n_classes), colors):
-        plt.plot(fpr[i], tpr[i], color=color, lw=lw,
-                 label='ROC curve of class {0} (area = {1:0.2f})'
-                 ''.format(i, roc_auc[i]))
+    #colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
+    #for i, color in zip(range(n_classes), colors):
+    for i in range(n_classes):
+        #plt.legend(fontsize=50) # using a size in points
+        #plt.legend(fontsize="x-large") # using a named size
+        plt.plot(fpr[i], tpr[i], lw=lw,
+                 label='{0} (area = {1:0.2f})'
+                 ''.format(labels[i], roc_auc[i]))
+        #plt.legend(loc=2, prop={'size': 20})
 
     plt.plot([0, 1], [0, 1], 'k--', lw=lw)
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('Some extension of Receiver operating characteristic to multi-class')
+    plt.title('panTCGA ROC Curves')
     plt.legend(loc="lower right")
     plt.savefig('roc.png', format='png')
-    exit(1)
