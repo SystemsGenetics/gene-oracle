@@ -58,7 +58,7 @@ class MLP:
         return out_layer
 
 
-    def run(self, gtex):
+    def run(self, dataset):
 
         tf.reset_default_graph()
 
@@ -83,8 +83,8 @@ class MLP:
 
         # preprocess data
         maxabsscaler = preprocessing.MaxAbsScaler()
-        gtex.train.data = maxabsscaler.fit_transform(gtex.train.data)
-        gtex.test.data = maxabsscaler.fit_transform(gtex.test.data)
+        dataset.train.data = maxabsscaler.fit_transform(dataset.train.data)
+        dataset.test.data = maxabsscaler.fit_transform(dataset.test.data)
 
         # Construct model
         pred = self.multilayer_perceptron(x, weights, biases)
@@ -101,8 +101,8 @@ class MLP:
 
         if self.weighted_loss:
             class_counts = []
-            for k in sorted(gtex.class_counts.keys()):
-                class_counts.append(gtex.class_counts[k])
+            for k in sorted(dataset.class_counts.keys()):
+                class_counts.append(dataset.class_counts[k])
 
             ratios = [1 - (float(a) / sum(class_counts)) for a in class_counts]
 
@@ -129,16 +129,16 @@ class MLP:
         sess.run(init)
 
         if self.load:
-            saver.restore(sess, '../checkpoints/gtex_nn')
+            saver.restore(sess, '../checkpoints/dataset_nn')
 
         # Training cycle
         for epoch in range(self.epochs):
             avg_cost = 0.
-            total_batch = int(gtex.train.num_examples/self.batch_size)
-            #gtex.shuffle()
+            total_batch = int(dataset.train.num_examples/self.batch_size)
+            #dataset.shuffle()
             # Loop over all batches
             for i in range(total_batch):
-                batch_x, batch_y = gtex.train.next_batch(self.batch_size, i)
+                batch_x, batch_y = dataset.train.next_batch(self.batch_size, i)
 
                 if self.weighted_loss:
                     maxs = np.argmax(batch_y, axis=1).astype(np.int32)
@@ -156,7 +156,7 @@ class MLP:
                 print("Epoch:", '%04d' % (epoch+1), "Learning Rate: ", '%5f' % (learning_rate.eval(feed_dict=None, session=sess)), "cost=", "{:.9f}".format(avg_cost))
 
         if self.save:
-            saver.save(sess, "../checkpoints/gtex_nn")
+            saver.save(sess, "../checkpoints/dataset_nn")
 
         # Test model
         correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
@@ -164,30 +164,31 @@ class MLP:
         # Calculate accuracy
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
-        acc = accuracy.eval({x: gtex.test.data, y: gtex.test.labels}, session=sess)
+        acc = accuracy.eval({x: dataset.test.data, y: dataset.test.labels}, session=sess)
 
         if self.roc:
             print("ROC YO!")
-            print("Y:" + str(y.eval({y:gtex.test.labels}, session=sess)))
-            print("Pred:" + str(result.eval({x:gtex.test.data}, session=sess)))
+            print("Y:" + str(y.eval({y:dataset.test.labels}, session=sess)))
+            print("Pred:" + str(result.eval({x:dataset.test.data}, session=sess)))
             #y is the test Output
             #pred is the predicted out
-            y_pred = result.eval({x:gtex.test.data}, session=sess)
-            y_label = y.eval({y:gtex.test.labels}, session=sess)
-            roc_plt(3,y_label,y_pred)
+            y_pred = result.eval({x:dataset.test.data}, session=sess)
+            y_label = y.eval({y:dataset.test.labels}, session=sess)
+            #will need to change first number of function to 33/panTCGA or 53/GTEx
+            roc_plt(33,y_label,y_pred,dataset.label_names_ordered)
 
         if self.confusion:
             print("CONFUSION MATRIX YO!")
-            # generate confusion matrices for brain data and gtex data
-            temp = pred.eval({x: gtex.test.data}, session=sess)
+            # generate confusion matrices for brain data and dataset data
+            temp = pred.eval({x: dataset.test.data}, session=sess)
             preds = np.argmax(temp, 1)
-            labs = np.argmax(gtex.test.labels, 1)
+            labs = np.argmax(dataset.test.labels, 1)
             cm = tf.confusion_matrix(labs, preds, num_classes=self.n_classes)
             mycm = cm.eval(feed_dict=None, session=sess)
 
-            confusion_heatmap(mycm, gtex.label_names_ordered)
+            confusion_heatmap(mycm, dataset.label_names_ordered)
             #print mycm
-            np.savetxt('./confusion_matrix_gtex.txt', mycm, fmt='%4d', delimiter=' ')
+            np.savetxt('./confusion_matrix_dataset.txt', mycm, fmt='%4d', delimiter=' ')
 
 
         # calculate accuracy that will be returned
