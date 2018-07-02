@@ -11,8 +11,8 @@
     "dropout": 0,
     "display_step": 5,
     "load": 0,
-    "confusion": 1,
-    "roc":1,
+    "confusion": 0,
+    "roc":0,
     "verbose": 0,
     "weighted_loss": 0
   }
