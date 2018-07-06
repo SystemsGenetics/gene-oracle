@@ -1,5 +1,5 @@
 ## declare an array variable
-declare -a panTCGA=(31 32 35 36 42 43 44 58)
+declare -a panTCGA=(31 32 35 36 41 42 43 44 58)
 
 ## now loop through the above array
 for i in "${panTCGA[@]}"
