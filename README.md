@@ -19,7 +19,7 @@ To deactivate your environment, simply do:
 Once a virtualenv is created, the following software is required to run the models:
 
     conda install -n yourenvname [package]
-    example: conda install -n gtex tensorflow-gpu==1.3.0
+    example: conda install -n yourenvname tensorflow-gpu==1.3.0
 
     tensorflow-gpu (1.8.0)
     scikit-learn (0.19.0)
