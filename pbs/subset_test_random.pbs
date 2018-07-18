@@ -10,4 +10,4 @@ source activate tensorflow
 							--config ./models/net_config.json \
 							--set random_${NUM} \
 							--num_genes ${GENE} \
-							--log_dir ./logs/random_${GENE}s/random$NUM/
+							--log_dir ./logs/random_${GENE}s/random${NUM}/
