@@ -18,7 +18,7 @@ def check_args(args):
 			print('Dataset file must be a numpy file.')
 			sys.exit(1)
 	else:
-		print('File does not exist!')
+		print('File ' + str(args.dataset) + ' does not exist!')
 		sys.exit(1)
 
 	# check gene list is of correct type
@@ -28,7 +28,7 @@ def check_args(args):
 			print('Gene list file must be a numpy file.')
 			sys.exit(1)
 	else:
-		print('File does not exist!')
+		print('File ' + str(args.gene_list) + ' does not exist!')
 		sys.exit(1)
 
 	# check gene list is of correct type
@@ -38,7 +38,7 @@ def check_args(args):
 			print('sample file must be a json file.')
 			sys.exit(1)
 	else:
-		print('File does not exist!')
+		print('File ' + str(args.sample_json) + ' does not exist!')
 		sys.exit(1)
 
 # USAGE:

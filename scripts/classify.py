@@ -221,31 +221,38 @@ if __name__ == '__main__':
 	if args.subset_list and not args.random_test:
 		subsets = read_subset_file(args.subset_list)
 
+		tot_genes = []
+		missing_genes = []
+
 		print('checking for valid genes...')
 		for s in subsets:
 			genes = []
 			for g in subsets[s]:
+				if g not in tot_genes:
+					tot_genes.append(g)
 				if g in total_gene_list:
 					genes.append(g)
 				else:
-					print('missing ' + g)
+					if g not in missing_genes:
+						missing_genes.append(g)
 			subsets[s] = genes
 					#print('missing gene ' + str(g))
-		print('done check')
+		print('missing ' + str(len(missing_genes)) + '/' + str(len(tot_genes)) + ' genes' + ' or ' \
+			 + str(int((float(len(missing_genes)) / len(tot_genes)) * 100.0)) + '% of genes')
 
 		if args.set:
 			sub = {}
 			sub[args.set.upper()] = subsets[args.set.upper()]
 			subsets = sub
 
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=1)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
 
 
 	#RUN RANDOM CLASSIFICATION
 	# if random is selectioned, run random
 	if args.random_test:
 		if args.num_random_genes:
-			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file, kfold_val=1)
+			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file, kfold_val=10)
 		elif args.subset_list:
 			# get the number of genes for each subset
 			num = []
@@ -260,7 +267,7 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-			random_classification(data, total_gene_list, config, num, args.rand_iters,args.k_fold, args.out_file)
+			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file, kfold_val=10)
 
 
 	#RUN FULL_CLASSIFICATION
