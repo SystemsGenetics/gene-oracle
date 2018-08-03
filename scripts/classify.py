@@ -109,8 +109,8 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
-				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
+				load=config['mlp']['load'], dropout=config['mlp']['dropout'])#, \
+				#disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
 
 			# run the neural net
 			acc = mlp.run(dataset)
