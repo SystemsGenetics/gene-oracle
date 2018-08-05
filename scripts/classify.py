@@ -56,7 +56,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'], pr=config['mlp']['pr'])
+			disp_step=config['mlp']['display_step'])#, confusion=config['mlp']['confusion'], roc=config['mlp']['roc'], pr=config['mlp']['pr'])
 
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
