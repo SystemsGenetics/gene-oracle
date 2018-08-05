@@ -267,7 +267,7 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file, kfold_val=10)
+			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file, kfold_val=1)
 
 
 	#RUN FULL_CLASSIFICATION
