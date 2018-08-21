@@ -56,7 +56,7 @@ def random_classification(data, total_gene_list, config, num_genes, iters, out_f
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
+			disp_step=config['mlp']['display_step'])#, confusion=config['mlp']['confusion'], roc=config['mlp']['roc'], pr=config['mlp']['pr'])
 
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
@@ -109,8 +109,8 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 				act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 				h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
-				load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-				disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
+				load=config['mlp']['load'], dropout=config['mlp']['dropout'])#, \
+				#disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
 
 			# run the neural net
 			acc = mlp.run(dataset)
@@ -155,7 +155,7 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'])
+			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
 
 		# run the neural net
 		acc = mlp.run(dataset)
@@ -195,6 +195,7 @@ if __name__ == '__main__':
 		type=int, nargs='?', const=10, required=False)
 	parser.add_argument('--k_fold', help='Number of folds for K fold cross validation', \
 		type=int, nargs='?', const=10, required=False)
+
 
 	args = parser.parse_args()
 
@@ -266,7 +267,7 @@ if __name__ == '__main__':
 			for k in subsets:
 				num.append(len(subsets[k]))
 			num.sort()
-			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file, kfold_val=10)
+			random_classification(data, total_gene_list, config, num, args.rand_iters, args.out_file, kfold_val=1)
 
 
 	#RUN FULL_CLASSIFICATION
