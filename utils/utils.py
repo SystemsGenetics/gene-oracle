@@ -169,7 +169,14 @@ def get_combos_and_accs(file):
 def convert_subset_to_interactions(subsets, interaction_file):
 	# read biogrid file into a dataframe, then extract official symbols
 	biogrid = pd.read_csv(interaction_file, sep='\t')
-	interactions = biogrid[['OFFICIAL_SYMBOL_A', 'OFFICIAL_SYMBOL_B']]
+
+	# only use human genes
+	biogrid = biogrid[biogrid['ORGANISM_A_ID'] == 9606]
+	biogrid = biogrid[biogrid['ORGANISM_B_ID'] == 9606]
+
+	# only interested in offical symbols for A and B and when genes are not equal
+	interactions = biogrid[biogrid['OFFICIAL_SYMBOL_A'] != biogrid['OFFICIAL_SYMBOL_B']]
+	interactions = interactions[['OFFICIAL_SYMBOL_A', 'OFFICIAL_SYMBOL_B']]
 	interactions = interactions.values
 	interactions = interactions.astype(np.str)
 
