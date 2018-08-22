@@ -54,11 +54,53 @@ def create_raw_combos(genes, i):
 
 	return dict.fromkeys(combos)
 
-# get random gene indexes between 0-56238
+# get random gene indexes between 0-len total_gene_list
 def create_random_subset(num_genes, total_gene_list):
 	#Generate Gene Indexes for Random Sample
 	gene_indexes = np.random.randint(0, len(total_gene_list), num_genes)
 	return [total_gene_list[i] for i in gene_indexes]
+
+
+# get random genes that are within an interaction list
+# num_genes: number of random genes to select
+# total_gene_list: list of genes within the dataset being used
+# interaction_genes: list of valid genes from an interaction list
+# interaction_list: should be two columns: interacting A and interacting B...
+#					a list of interacting genes (pairwise)
+# NOTE: it is assumed that interaction_genes are only genes contained inside of
+# total_gene_list, perform a check before passing it to this function
+def create_random_subset_from_interactions(num_genes, total_gene_list, \
+											interaction_genes, interaction_list):
+	num_interactions = num_genes / 2
+	set_length = 0
+
+	while set_length != num_interactions * 2:
+		gene_indexes = np.random.randint(0, len(interaction_genes), num_interactions)
+		rand_genes = [interaction_genes[i] for i in gene_indexes]
+
+		final_genes = []
+		for g in rand_genes:
+			# get locations for g in the interaction list
+			locs = np.where(interaction_list == g)
+			
+			# get a random interaction within the available locations
+			if locs[0].shape[0] > 1:
+				idx = np.random.randint(0, locs[0].shape[0], 1)[0]
+			else:
+				idx = 0
+
+			final_genes.append(interaction_list[locs[0][idx]][0])
+			final_genes.append(interaction_list[locs[0][idx]][1])
+
+		# if odd amount of genes, add one extra gene
+		if num_genes % 2:
+			idx = np.random.randint(0, len(interaction_genes), 1)
+			final_genes.append(interaction_genes[idx[0]])
+
+		set_length = len(list(set(final_genes)))
+
+	return final_genes
+
 
 
 def load_data(num_samples_json, gtex_gct_flt):
@@ -200,13 +242,11 @@ def convert_subset_to_interactions(subsets, interaction_file):
 			for gene in total_interacting_genes:
 				if gene in subsets[s] and gene not in interacted_subsets[s]:
 					interacted_subsets[s].append(gene)
+					print gene
+					if g not in interacted_subsets[s]:
+						interacted_subsets[s].append(g)
+						print g
 
 	return interacted_subsets
-
-
-
-
-
-
 
 
