@@ -2,13 +2,14 @@
 
 delta_accs_box.py
 
-	This script allows for plotting of the differences between the classification accuracies of random genes ve the
+	This script allows for plotting of the differences between the classification accuracies of random genes vs the
 	classification accuracy of hallmark genes
 
 	The program expects the following parameter
 	--rand_accs : dir containing random accuracies as a string
 	--sub_accs : dir containing subset accuracies as a string
 	--sub_count : json with count of genes in subset
+	--sub_count_yaxis : optional file to include if you want a different gene list for the y axis than the first subcount
 	--out: file to save to
 
 
@@ -43,15 +44,15 @@ def read_fileAvg(file):
 	return avg_accs
 
 
-def read_file(file,num_samples):
+def read_file(file):
 	accs = {}
 	with open(file, 'r') as f:
 		next(f) # skip the first line which has string header info
 		for line in f:
 			line = line.split()
 			info = []
-			info.append(float(line[1]) + float(line[2])/math.sqrt(num_samples))# the average plus the standarddev
-			info.append(float(line[1]) - float(line[2])/math.sqrt(num_samples))# the average minus the standarddev
+			info.append(float(line[1]) + float(line[2]))#/math.sqrt(num_samples))# the average plus the standarddev
+			info.append(float(line[1]) - float(line[2]))#/math.sqrt(num_samples))# the average minus the standarddev
 			info.append(float(line[1]))#avg
 			info.append(float(line[3]))#max
 			info.append(float(line[4]))#min
@@ -64,40 +65,15 @@ def read_file(file,num_samples):
 	return accs
 
 
-# plot the delta accuracies
-def plotDelta(d_accs, gene_counts, out):
-	rc = {'font.size' : 6}
-	sns.set(rc)
-
-	data = d_accs.values()
-	fixed_data = list(data)
-
-	fig, ax = plt.subplots()
-	fig.set_size_inches(20,10)
-
-	ax = sns.boxplot(data=fixed_data,orient='h')
-	ax.set_yticklabels(delta_accs.keys())
-	ax.set(xlabel="Delta Accuracy", ylabel="Gene Name")
-	ax.set_title("panTCGA Delta Accuracy")
-
-
-	plt.show()
-
-def plotDouble(ran_accs, sub_accs,out,gene_counts,data_set):
+def plotDeltaBoxPlots(ran_accs, sub_accs,out,gene_counts,data_set):
 
 	plt.style.use('ggplot')
-
 
 	rand_data = ran_accs.values()
 	rand_data = list(rand_data)
 
 	sub_data = sub_accs.values()
 	sub_data = list(sub_data)
-
-	print(rand_data)
-	print(sub_data)
-	#print(str(len(sub_data)) +" " +str(type(sub_data)))
-	#print(str(len(rand_data)) + " " + str(type(rand_data)))
 
 	fig, ax = plt.subplots()
 	ax.grid(False)
@@ -118,11 +94,12 @@ def plotDouble(ran_accs, sub_accs,out,gene_counts,data_set):
 
 	ax.legend(handles=[random,data], loc='upper left')
 
+	##Note: This is a custom piece for the panTCGA data and the GTEx data
 	if(data_set == "panTCGA"):
 		ax.yaxis.set_label_position("right")
 		ax.yaxis.tick_right()
 		ax.set_yticklabels(gene_counts, fontsize = 8,fontweight='bold', color ='k')
-	else:
+	if(data_set == "GTEx"):
 		ax.set_yticklabels(sub_accs.keys(), fontsize = 8,fontweight='bold', color ='k')
 	plt.xticks(np.arange(.2, 1, .1))
 
@@ -131,8 +108,8 @@ def plotDouble(ran_accs, sub_accs,out,gene_counts,data_set):
 	ax.set_title(str(data_set)+ " vs Random")
 	ax.set_aspect(.03)
 	plt.tight_layout()
-
-	plt.savefig(out)
+	plt.show()
+	#plt.savefig(out)
 
 
 
@@ -142,55 +119,41 @@ if __name__ == '__main__':
 	parser.add_argument('--rand_accs', help='file random accuracies', type=str, required=True)
 	parser.add_argument('--sub_accs', help='file of subset accuracies', type=str, required=True)
 	parser.add_argument('--sub_count', help='json with count of genes in subset', type=str, required=True)
+	parser.add_argument('--sub_count_yaxis', help='json with count of genes in subset', type=str, required=False)
 	parser.add_argument('--out', help='file to save to', type=str, required=False)
-	parser.add_argument('--gene_count', help='gene counts file', type=str, required=False)
 	parser.add_argument('--data_set',help='panTCGA or GTEx', type=str, required =True)
 	# additional args?
 	args = parser.parse_args()
 
 	# read two accuracy files
-	rand_accs = read_file(args.rand_accs,50)
-	sub_accs = read_file(args.sub_accs,10)
+	rand_accs = read_file(args.rand_accs)
+	sub_accs = read_file(args.sub_accs)
 
-	# print (rand_accs)
-
-	# read a json file containing the count of genes for each subset
+	#read a json file containing the count of genes for each subset
 	with open(args.sub_count, 'r') as f:
 		gene_count_dict = json.load(f)
 
+	if(args.sub_count_yaxis):
+		with open(args.sub_count_yaxis, 'r') as f:
+			gene_count_dict_y = json.load(f)
 
-	gene_counts = []
+
 	rand_dict = collections.OrderedDict()
 	sub_dict = collections.OrderedDict()
 	gene_counts = []
 
 	for k,v in sorted(gene_count_dict.items(), key =lambda x: x[1]):
-
 		rand_dict[k] = []
 		sub_dict[k] = []
-
-
 		rand_dict[k].append(rand_accs[str(v)].pop())
-		sub_dict[k].append(sub_accs[k][0])#append(round(sub_accs[k][i] - current_gene_count[i], 3))
+		sub_dict[k].append(sub_accs[k][0])
+		gene_counts.append(v)
 
-		#print(str(gene_count_dict[k]) +" : " + str(k) + " : " + str(rand_dict[k]))
-		#print(str(gene_count_dict[k]) +" : " + str(k) + " : " + str(sub_dict[k]))
-
-	gene_counts = []
-	with open(args.gene_count, 'r') as fp:
-		for line in fp:
-			line = line.split("\n")
-			gene_counts.append(line[0])
+	#If you specified you wanted another y axis
+	if(args.sub_count_yaxis):
+		gene_counts = []
+		for k,v in sorted(gene_count_dict_y.items(), key =lambda x: x[1]):
+			gene_counts.append(v)
 
 
-	print(gene_counts)
-
-
-
-	# sanity check
-	# for key, value in delta_accs.items():
-	# 	print(str(key) + " , " + str(value) )
-
-
-
-	plotDouble(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+	plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
