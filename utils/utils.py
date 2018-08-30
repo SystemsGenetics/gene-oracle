@@ -102,6 +102,48 @@ def create_random_subset_from_interactions(num_genes, total_gene_list, \
 	return final_genes
 
 
+# get a random sample of genes from interaction_genes that DO NOT have any
+# interactions with one another
+# num_genes: number of random genes to select
+# total_gene_list: list of genes within the dataset being used
+# interaction_genes: list of valid genes from an interaction list
+# interaction_list: should be two columns: interacting A and interacting B...
+#					a list of interacting genes (pairwise)
+# NOTE: it is assumed that interaction_genes are only genes contained inside of
+# total_gene_list, perform a check before passing it to this function
+def create_random_subset_from_NON_interactions(num_genes, total_gene_list, \
+											interaction_genes, interaction_list):
+	final_genes = []
+
+	# start a list with a single random gene
+	gene_indexes = np.random.randint(0, len(interaction_genes), 1)
+	final_genes = [interaction_genes[gene_indexes[0]]]
+
+	# loop through and add a random gene if it is not already in the list
+	# and if it is does not have any interactions
+	while len(final_genes) != num_genes:
+		interact = 0
+		gene_indexes = np.random.randint(0, len(interaction_genes), 1)
+		rand_gene = interaction_genes[gene_indexes[0]]
+
+		if rand_gene in final_genes:
+			continue
+
+		locs = np.where(interaction_list == rand_gene)
+
+		for i in xrange(locs[0].shape[0]):
+			cand_gene = interaction_list[locs[0][i], 1 - locs[1][i]]
+			if cand_gene in final_genes:
+				interact = 1
+				break
+
+		if interact:
+			continue
+
+		final_genes.append(rand_gene)
+
+	return final_genes
+
 
 def load_data(num_samples_json, gtex_gct_flt):
 	sample_count_dict = {}
@@ -249,4 +291,65 @@ def convert_subset_to_interactions(subsets, interaction_file):
 
 	return interacted_subsets
 
+
+# USAGE:
+# - return a list of subsets only containing genes with NO interactions within the subset
+# PARAMS:
+# subsets - dictionary of subsets similar to whats returned by read_subset_file
+# interaction_file - file containing gene interactions
+
+# NOTE: the interaction file should not contain any metadata in the top (i.e. a readme)...
+# it should just contain the column headers followed by the interaction data.
+# column format is expected to follow the biogrid interaction file 
+def convert_subset_to_non_interactions(subsets, interaction_file):
+	# read biogrid file into a dataframe, then extract official symbols
+	biogrid = pd.read_csv(interaction_file, sep='\t')
+
+	# only use human genes
+	biogrid = biogrid[biogrid['ORGANISM_A_ID'] == 9606]
+	biogrid = biogrid[biogrid['ORGANISM_B_ID'] == 9606]
+
+	# only interested in offical symbols for A and B and when genes are not equal
+	interactions = biogrid[biogrid['OFFICIAL_SYMBOL_A'] != biogrid['OFFICIAL_SYMBOL_B']]
+	interactions = interactions[['OFFICIAL_SYMBOL_A', 'OFFICIAL_SYMBOL_B']]
+	interactions = interactions.values
+	interactions = interactions.astype(np.str)
+
+	non_interacted_subsets = {}
+	for s in subsets:
+		non_interacted_subsets[s] = []
+		subset_interacting_genes = []
+		
+		for g in subsets[s]:
+			total_interacting_genes = []
+			locs = np.where(interactions==g)
+			
+			# go through each interacting gene and add it
+			for i in range(locs[0].shape[0]):
+				# doing 1 - locs[1][i] gives you the interacting gene
+				cand_gene = interactions[locs[0][i], 1 - locs[1][i]]
+
+				if cand_gene not in total_interacting_genes:
+					total_interacting_genes.append(cand_gene)
+
+			int_gs = []
+			for gene in total_interacting_genes:
+				if gene in subsets[s]:
+					int_gs.append(gene)
+
+			if len(int_gs) == 0:
+				non_interacted_subsets[s].append(g)
+
+
+	return non_interacted_subsets
+
+
+# write a subset list dictionary to a file
+def write_subsets_to_file(subsets, file):
+	with open(file, 'w') as f:
+		for s in subsets:
+			f.write(s + '\t')
+			for g in subsets[s]:
+				f.write(g + '\t')
+			f.write('\n')
 
