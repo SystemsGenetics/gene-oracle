@@ -18,7 +18,15 @@ heatmap.py
     halmark file format: 'hallmark_#_gene_accuracy.txt'
                         Contents: [list of genes] accuracy
 
-
+	functions:
+	getDataFromLog(directory,num_genes,hallmark,dataset):
+    loadpanTCGA(directory,genes):
+	loadGTEx(hallmark,genes):
+	prepareDataSetAll(directory,num_genes,hallmark,dataset):
+	freqCountAll(directory,num_genes,hallmark,dataset):
+	prepareDataSetTopTen(directory,num_genes,hallmark,dataset):
+	freqCountTopTen(directory,num_genes,hallmark,dataset):
+	plot(graph_type,hallmark,data,analysis,dataset):
 example:  python heatmap_gen.py --graph_type "heatmap" --analysis all "--directory" "../logs/hallmark_hedgehog_signaling_panTCGA/" --num_genes 36 --hallmark "hallmark_hedgehog_signaling" --dataset "panTCGA"
 
 '''
@@ -29,6 +37,7 @@ import json
 import numpy as np
 import seaborn as sns
 import pandas as pd
+import statistics
 
 
 # takes the data in the log files for the specific hallmark subset
@@ -108,7 +117,7 @@ def freqCountAll(directory,num_genes,hallmark,dataset):
         print("Counting"+ str(i))
         count = 0
         for combo in comboList[i-1]['Genes']:
-             if(i == 1):#special case for the first gene, need to fix but works
+             if(i == 1):#special case for the first gene
                 array = []
                 array.append(eval(combo))
              else:#This is for the rest of the genes
@@ -124,6 +133,11 @@ def freqCountAll(directory,num_genes,hallmark,dataset):
         count = genes.loc[i].sum()
         genes.loc[i] = genes.loc[i].div(count)
 
+	#report candidate genes
+    candidate_genes = report_candidate_genes(genes)
+    print(candidate_genes)
+
+
     if(dataset == "panTCGA"):#need to convert for readability
         with open('../data/ensembles_to_hallmark_id.json', 'r') as fp:
             ensembles_list = json.load(fp)
@@ -131,6 +145,26 @@ def freqCountAll(directory,num_genes,hallmark,dataset):
             genes = genes.rename(columns={genes.columns[i]:ensembles_list[genes.columns[i]]})
 
     return genes
+
+def report_candidate_genes(genes):
+    matrix = genes.values
+    columns = matrix.sum(axis=0)
+    std = statistics.stdev(columns)
+    mean = np.mean(columns, axis=0)
+    values = []
+    for num in columns:
+        if num > mean +std or num < mean - std:
+    	    values.append(num)
+        else:
+    	    values.append(0)
+
+    gene_names = genes.columns.values
+    candidate_genes = []
+    for i in range(len(values)):
+        if values[i] != 0:
+           candidate_genes.append(genes.columns.values[i])
+    return candidate_genes
+
 
 def prepareDataSetTopTen(directory,num_genes,hallmark,dataset):
     genes = pd.DataFrame(index =range(1,num_genes))
@@ -214,5 +248,5 @@ if __name__ == '__main__':
              data = freqCountAll(args.directory,args.num_genes,args.hallmark,args.dataset)
         if(str(args.analysis) == "topten"):
              data = freqCountTopTen(args.directory,args.num_genes,args.hallmark,args.dataset)
-        print(data)
+        #print(data)
         #plot(args.graph_type,args.hallmark,data,args.analysis,args.dataset)
