@@ -108,8 +108,8 @@ def plotDeltaBoxPlots(ran_accs, sub_accs,out,gene_counts,data_set):
 	ax.set_title(str(data_set)+ " vs Random")
 	ax.set_aspect(.03)
 	plt.tight_layout()
-	plt.show()
-	#plt.savefig(out)
+	#plt.show()
+	plt.savefig(out)
 
 
 
