@@ -37,7 +37,7 @@ import json
 import numpy as np
 import seaborn as sns
 import pandas as pd
-import statistics
+#import statistics
 
 
 # takes the data in the log files for the specific hallmark subset
@@ -133,36 +133,57 @@ def freqCountAll(directory,num_genes,hallmark,dataset):
         count = genes.loc[i].sum()
         genes.loc[i] = genes.loc[i].div(count)
 
-	#report candidate genes
-    candidate_genes = report_candidate_genes(genes)
-    print(candidate_genes)
-
-
     if(dataset == "panTCGA"):#need to convert for readability
         with open('../data/ensembles_to_hallmark_id.json', 'r') as fp:
             ensembles_list = json.load(fp)
         for i in range(num_genes):
             genes = genes.rename(columns={genes.columns[i]:ensembles_list[genes.columns[i]]})
 
+	#report candidate genes
+    candidate_genes = report_candidate_genes(genes)
+    print(candidate_genes)
+
+
+
+
     return genes
 
 def report_candidate_genes(genes):
     matrix = genes.values
     columns = matrix.sum(axis=0)
-    std = statistics.stdev(columns)
+    std = np.std(columns)#statistics.stdev(columns)
     mean = np.mean(columns, axis=0)
     values = []
     for num in columns:
-        if num > mean +std or num < mean - std:
+        if num > (mean + (std/2)):
     	    values.append(num)
         else:
     	    values.append(0)
 
     gene_names = genes.columns.values
     candidate_genes = []
+    non_candidate_genes = []
     for i in range(len(values)):
         if values[i] != 0:
            candidate_genes.append(genes.columns.values[i])
+        else:
+            non_candidate_genes.append(genes.columns.values[i])
+
+    with open("mycv2_panTCGA.txt", "w") as f:
+        f.write("og_swag\t")
+        #write original
+        for gene in genes.columns.values:
+            f.write(str(gene) + "\t")
+        f.write("\n")
+        f.write("candidate\t")
+        for gene in candidate_genes:
+            f.write(str(gene) + "\t")
+        f.write("\n")  
+        f.write("non_candidate\t")
+        for gene in non_candidate_genes:
+            f.write(str(gene) + "\t")
+        f.write("\n")      
+
     return candidate_genes
 
 
