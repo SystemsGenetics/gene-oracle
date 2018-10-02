@@ -16,10 +16,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
-from tensorflow.examples.tutorials.mnist import input_data
-
-
-mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
 
 
 markers = {',': 'pixel', 'o': 'circle','*': 'star', 'v': 'triangle_down',
@@ -105,8 +101,8 @@ def plot(samples):
     return fig
 
 class VAE:
-	def __init__(self, latent_dim=2, lr=0.001, epochs=75, h_units=[512,512,512], \
-				batch_size=16, n_input=56238, dropout=0, load=0, save=0, verbose=0):
+	def __init__(self, latent_dim=2, lr=0.001, epochs=75, h_units=[512,256,128], \
+				batch_size=64, n_input=56238, dropout=0, load=0, save=0, verbose=0):
 		self.latent_dim = latent_dim
 		self.lr = lr
 		self.epochs = epochs
@@ -143,45 +139,6 @@ class VAE:
 
 
 	# USAGE:
-	# 		- encoder network for vae
-	# PARAMS:
-	#	x: input data sample
-	#	h_hidden: LIST of num. neurons per hidden layer
-	def inference_convnet(self, x):
-		with tf.variable_scope('encoder', reuse=tf.AUTO_REUSE):
-			input_layer = tf.reshape(x, [-1, 28, 28, 1])
-
-			conv1 = tf.layers.conv2d(
-								inputs=input_layer,
-								filters=32,
-								kernel_size=3,
-								padding="same",
-								activation=tf.nn.relu)
-
-			pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
-			
-			conv2 = tf.layers.conv2d(
-								inputs=pool1,
-								filters=64,
-								kernel_size=3,
-								padding="same",
-								activation=tf.nn.relu)
-
-			pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
-
-			pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
-
-			gaussian_params = tf.layers.dense(inputs=pool2_flat, units=self.latent_dim * 2, activation=None)
-
-			mu = gaussian_params[:, :self.latent_dim]
-
-			# std dev must be positive... parametrize with a softplus
-			sigma = tf.nn.softplus(gaussian_params[:, self.latent_dim:])
-
-			return mu, sigma
-
-
-	# USAGE:
 	# 		- decoder network for vae
 	# PARAMS:
 	#	z: input latent variable
@@ -198,32 +155,6 @@ class VAE:
 
 		return probs, logits
 
-
-	# USAGE:
-	# 		- decoder network for vae on MNIST data
-	# PARAMS:
-	#	z: input latent variable
-	#	n_hidden: LIST of num. neurons per hidden layer
-	def generative_convnet(self, z):
-		with tf.variable_scope('decoder', reuse=tf.AUTO_REUSE):
-			layer = tf.layers.dense(inputs=z, units=7*7*32, activation=tf.nn.relu)
-
-			layer_reshape = tf.reshape(layer, [-1, 7, 7, 32])
-
-			layer1 = tf.layers.conv2d_transpose(layer_reshape, kernel_size=3, filters=64, \
-												strides=2, padding="same", activation=tf.nn.relu)
-
-			layer2 = tf.layers.conv2d_transpose(layer1, kernel_size=3, filters=64, \
-												strides=2, padding="same", activation=tf.nn.relu)
-
-			layer3 = tf.layers.conv2d_transpose(layer2, kernel_size=3, filters=1, \
-												strides=1, padding="same")
-
-			logits = tf.reshape(layer3, [-1, 28 * 28])
-
-			probs = tf.nn.sigmoid(logits)
-
-		return probs, logits
 
 
 	# USAGE:
@@ -269,8 +200,6 @@ class VAE:
 
 		saver = tf.train.Saver()
 
-		sample_z = np.random.randn(16, self.latent_dim)
-
 		# Initializing the variables
 		init = tf.global_variables_initializer()
 
@@ -282,17 +211,12 @@ class VAE:
 			total_batch = int(dataset.train.num_examples/self.batch_size)
 
 			for i in range(total_batch):
-				batch_x, batch_y = dataset.train.next_batch(self.batch_size)#, i)
+				batch_x, batch_y = dataset.train.next_batch(self.batch_size, i)
 				_, c, rcl, kll = sess.run([optimizer, loss, recon_loss, kl], feed_dict={x: batch_x})
 
 				avg_cost += c / total_batch
 
 			print("Epoch:", '%04d' % (epoch), "cost=", "{:.9f}".format(avg_cost))
-
-			samples = sess.run(X_samples, feed_dict={z: sample_z})
-			fig = plot(samples)
-			plt.savefig('out/{}.png'.format(str(epoch).zfill(3)), bbox_inches='tight')
-			plt.close(fig)
 
 		saver.save(sess, "/tmp/model.ckpt")
 		sess.close() 
@@ -337,7 +261,6 @@ class VAE:
 		sess.close()
 
 
-vae = VAE(epochs=50, batch_size=64, h_units=[512, 256, 64], n_input=784, latent_dim=40)
 
 
 
