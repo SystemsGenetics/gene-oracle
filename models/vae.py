@@ -146,7 +146,9 @@ class VAE:
 	def generative_network(self, z):
 		with tf.variable_scope('decoder', reuse=tf.AUTO_REUSE):
 			layer = z
-			for n in self.h_units:
+			units = self.h_units[:]
+			units.reverse()
+			for n in units:
 				layer = tf.layers.dense(inputs=layer, units=n, activation=tf.nn.relu)
 
 			# use a sigmoid activation to get the data between 0 and 1
