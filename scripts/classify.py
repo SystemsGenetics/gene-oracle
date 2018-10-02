@@ -30,7 +30,8 @@ sys.path.append(os.getcwd())
 
 from utils.utils import create_random_subset, load_data, \
 						check_args, read_subset_file, \
-						create_random_subset_from_interactions
+						create_random_subset_from_interactions, \
+						create_random_subset_from_NON_interactions
 from models.mlp import MLP
 from utils.dataset import DataContainer as DC
 
@@ -67,7 +68,7 @@ def random_classification(data, total_gene_list, config, \
 		for i in xrange(iters):
 			# generate random set of genes from the total gene list
 			if interaction_genes:
-				r_genes = create_random_subset_from_interactions(num, \
+				r_genes = create_random_subset_from_NON_interactions(num, \
 																total_gene_list, \
 																interaction_genes, \
 																interaction_list)
@@ -167,8 +168,8 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
 			act_funcs=config['mlp']['act_funcs'], n_layers=config['mlp']['n_h_layers'], \
 			h_units=config['mlp']['n_h_units'], verbose=config['mlp']['verbose'], \
-			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
-			disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
+			load=config['mlp']['load'], dropout=config['mlp']['dropout'], )#\
+			#disp_step=config['mlp']['display_step'], confusion=config['mlp']['confusion'], roc=config['mlp']['roc'],pr=config['mlp']['pr'])
 
 		# run the neural net
 		acc = mlp.run(dataset)

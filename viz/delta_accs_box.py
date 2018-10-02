@@ -27,6 +27,19 @@ import pandas as pd
 import collections
 import matplotlib.patches as mpatches
 import math
+from itertools import combinations
+from scipy.stats import ttest_ind
+
+
+def calc_pval(list1,list2):
+	#print(list1[0][0])
+	for i in range(len(list1)):
+		t, p = ttest_ind(list1[i][0], list2[i][0])
+		print(p)
+
+def get_mid(list1):
+	for i in range(len(list1)):
+		print(list1[i][0][2])
 
 
 # read in the accuracy files
@@ -108,10 +121,13 @@ def plotDeltaBoxPlots(ran_accs, sub_accs,out,gene_counts,data_set):
 	ax.set_title(str(data_set)+ " vs Random")
 	ax.set_aspect(.03)
 	plt.tight_layout()
-	plt.show()
-	#plt.savefig(out)
+	#plt.show()
+	plt.savefig(out)
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 9507adefe2fd9143721b8397ea40bf424d7158d2
 
 if __name__ == '__main__':
 
@@ -148,6 +164,7 @@ if __name__ == '__main__':
 		rand_dict[k].append(rand_accs[str(v)].pop())
 		sub_dict[k].append(sub_accs[k][0])
 		gene_counts.append(v)
+		#print(k)
 
 	#If you specified you wanted another y axis
 	if(args.sub_count_yaxis):
@@ -156,4 +173,8 @@ if __name__ == '__main__':
 			gene_counts.append(v)
 
 
-	plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+	#plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+	# for i in gene_counts:
+	#  	print(i)
+	calc_pval(rand_dict.values(),sub_dict.values())
+	#get_mid(sub_dict.values())
