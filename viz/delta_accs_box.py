@@ -123,11 +123,6 @@ def plotDeltaBoxPlots(ran_accs, sub_accs,out,gene_counts,data_set):
 	plt.tight_layout()
 	#plt.show()
 	plt.savefig(out)
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 9507adefe2fd9143721b8397ea40bf424d7158d2
 
 if __name__ == '__main__':
 
@@ -173,8 +168,8 @@ if __name__ == '__main__':
 			gene_counts.append(v)
 
 
-	#plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+	plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
 	# for i in gene_counts:
 	#  	print(i)
-	calc_pval(rand_dict.values(),sub_dict.values())
+	#calc_pval(rand_dict.values(),sub_dict.values())
 	#get_mid(sub_dict.values())
