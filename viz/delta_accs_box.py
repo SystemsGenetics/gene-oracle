@@ -32,15 +32,15 @@ from scipy.stats import ttest_ind
 
 
 def calc_pval(list1,list2):
-	#print(list1[0][0])
 	for i in range(len(list1)):
 		t, p = ttest_ind(list1[i][0], list2[i][0])
+		#print(list1[i][0])
+		#print(list2[i][0])
 		print(p)
 
 def get_mid(list1):
 	for i in range(len(list1)):
 		print(list1[i][0][2])
-
 
 # read in the accuracy files
 def read_fileAvg(file):
@@ -64,8 +64,8 @@ def read_file(file):
 		for line in f:
 			line = line.split()
 			info = []
-			info.append(float(line[1]) + float(line[2]))#/math.sqrt(num_samples))# the average plus the standarddev
-			info.append(float(line[1]) - float(line[2]))#/math.sqrt(num_samples))# the average minus the standarddev
+			info.append(float(line[1]) + float(line[2]))#/math.sqrt(53))# the average plus the standarddev
+			info.append(float(line[1]) - float(line[2]))#/math.sqrt(53))# the average minus the standarddev
 			info.append(float(line[1]))#avg
 			info.append(float(line[3]))#max
 			info.append(float(line[4]))#min
@@ -76,6 +76,44 @@ def read_file(file):
 				accs[line[0]].append(info)
 
 	return accs
+
+def read_file_50iters(file):
+		accs = {}
+		matrix = np.matrix([0,0,0,0,0])
+		iters = 50
+		with open(file, 'r') as f:
+			next(f) # skip the first line which has string header info
+			for line in f:
+				line = line.split()
+				info = []
+				info.append(float(line[1]) + float(line[2]))#/math.sqrt(53))# the average plus the standarddev
+				info.append(float(line[1]) - float(line[2]))#/math.sqrt(53))# the average minus the standarddev
+				info.append(float(line[1]))#avg
+				info.append(float(line[3]))#max
+				info.append(float(line[4]))#min
+
+				if iters <= 1:
+					matrix = np.vstack([matrix,info])
+					single = matrix.sum(axis=0)
+					for i in range(len(single)):
+						single[i] = single[i] / 50
+
+					#reset
+					iters = 50
+					matrix = np.matrix([0,0,0,0,0])
+
+					#same old
+					single = single.tolist()
+					if line[0] not in accs:
+						accs[line[0]] = [single[0]]
+					else:
+						accs[line[0]].append(single[0])
+				else:#still in iters
+					iters = iters - 1
+					matrix = np.vstack([matrix,info])
+		#print(accs)
+		return accs
+
 
 
 def plotDeltaBoxPlots(ran_accs, sub_accs,out,gene_counts,data_set):
@@ -137,7 +175,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	# read two accuracy files
-	rand_accs = read_file(args.rand_accs)
+	rand_accs = read_file_50iters(args.rand_accs)
 	sub_accs = read_file(args.sub_accs)
 
 	#read a json file containing the count of genes for each subset
@@ -159,7 +197,6 @@ if __name__ == '__main__':
 		rand_dict[k].append(rand_accs[str(v)].pop())
 		sub_dict[k].append(sub_accs[k][0])
 		gene_counts.append(v)
-		#print(k)
 
 	#If you specified you wanted another y axis
 	if(args.sub_count_yaxis):
@@ -168,8 +205,11 @@ if __name__ == '__main__':
 			gene_counts.append(v)
 
 
-	plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+	#plotDeltaBoxPlots(rand_dict,sub_dict,args.out,gene_counts,args.data_set)
+
 	# for i in gene_counts:
-	#  	print(i)
-	#calc_pval(rand_dict.values(),sub_dict.values())
+	#print(rand_dict)
+	# print()
+	#print(sub_dict)
+	calc_pval(rand_dict.values(),sub_dict.values())
 	#get_mid(sub_dict.values())
