@@ -26,6 +26,11 @@ def count_interactions(gene_list):
     total_interactions = 0
     #read in BioGRID
     biogrid = pd.read_table("./BIOGRID-ALL-3.5.165.tab2.txt", sep='\t',usecols=[7,8])
+    
+    # only use human genes
+    biogrid = biogrid[biogrid['ORGANISM_A_ID'] == 9606]
+    biogrid = biogrid[biogrid['ORGANISM_B_ID'] == 9606]
+
     pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
 
     for gene in gene_list:
