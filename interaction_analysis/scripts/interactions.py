@@ -23,39 +23,25 @@ def read_file(subset,dataset,set):
     return data[subset][dataset][set]
 
 def count_interactions(gene_list):
-    gene_dict = {}
     total_interactions = 0
     #read in BioGRID
     biogrid = pd.read_table("./BIOGRID-ALL-3.5.165.tab2.txt", sep='\t',usecols=[7,8])
     pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
 
     for gene in gene_list:
-        #print("Gene: " + str(gene))
-        current_iterations = 0
         gene_pairs = []
-        #get all pairs
-        for pair in pairs:
-            if gene in pair:
-                gene_pairs.append(pair)
-        #get list of all pairs
-        pairs_list = []
-        [pairs_list.append(g) for pair in gene_pairs for g in pair]
-        uniq = set(pairs_list)
-        uniq.remove(str(gene))
-        gene_dict[str(gene)] = uniq
 
-        current_iterations = len(uniq)#-1 for the gene
-        #check if prev interaction recorded
-        for new_gene in uniq:
-            if new_gene in gene_dict.keys():
-                for old_gene in gene_dict[new_gene]:
-                    if old_gene == gene:
-                        print("repeat")
-                        current_iterations += -1
-        #add genes to the total_interactions ( minus 1 for the gene searched)
-        #print(str(gene) + "interactions is " + str(current_iterations))
-        total_interactions += current_iterations
-        #print("total_interactions is " + str(total_interactions))
+        # get locations where gene occurs in pairs
+        locs = np.where(pairs==gene)
+
+        # get list of genes that occur in interactions... remove gene of interest
+        uniq = list(np.unique(pairs[locs[0]]))
+        uniq.remove(str(gene))
+
+        pairs = np.delete(pairs, locs[0], axis=0)
+
+        total_interactions += len(uniq)
+
     return total_interactions
 
 if __name__ == '__main__':
