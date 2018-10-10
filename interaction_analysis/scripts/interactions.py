@@ -13,11 +13,12 @@
 import sys, argparse
 import json
 import csv
+import numpy as np
 import pandas as pd
 
 
 def read_file(subset,dataset,set):
-    with open("lists.json") as f:
+    with open("../lists.json") as f:
         data = json.load(f)
 
     return data[subset][dataset][set]
@@ -25,11 +26,11 @@ def read_file(subset,dataset,set):
 def count_interactions(gene_list):
     total_interactions = 0
     #read in BioGRID
-    biogrid = pd.read_table("./BIOGRID-ALL-3.5.165.tab2.txt", sep='\t',usecols=[7,8])
-    
+    biogrid = pd.read_table("../data/BIOGRID-ALL-3.5.165.tab2.txt", sep='\t')
+
     # only use human genes
-    biogrid = biogrid[biogrid['ORGANISM_A_ID'] == 9606]
-    biogrid = biogrid[biogrid['ORGANISM_B_ID'] == 9606]
+    biogrid = biogrid[biogrid['Organism Interactor A'] == 9606]
+    biogrid = biogrid[biogrid['Organism Interactor B'] == 9606]
 
     pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
 
@@ -41,7 +42,8 @@ def count_interactions(gene_list):
 
         # get list of genes that occur in interactions... remove gene of interest
         uniq = list(np.unique(pairs[locs[0]]))
-        uniq.remove(str(gene))
+        if(len(uniq)):
+            uniq.remove(str(gene))
 
         pairs = np.delete(pairs, locs[0], axis=0)
 
@@ -60,8 +62,13 @@ if __name__ == '__main__':
     print("Current Gene List is ...")
     print(gene_list)
 
-    if(args.set == "RANDOM"){
+    if(args.set == "RANDOM"):
+        print("Running Randoms...")
+        total_ran_interactions = 0
+        for i in range(5):
+            total_ran_interactions += count_interactions(gene_list[i])
+        print(total_ran_interactions / 5)#average
 
-    }
+    else:
 
-    print(count_interactions(gene_list))
+        print(count_interactions(gene_list))
