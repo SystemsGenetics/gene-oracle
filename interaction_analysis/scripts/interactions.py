@@ -1,3 +1,5 @@
+
+
 '''
     This script can be used to find the number unique interactions in a list of genes based on the BIOGRID database.
 
@@ -23,7 +25,7 @@ def read_file(subset,dataset,set):
 
     return data[subset][dataset][set]
 
-def count_interactions(gene_list):
+def count_edges_all(gene_list):
     total_interactions = 0
     #read in BioGRID
     biogrid = pd.read_table("../data/BIOGRID-ALL-3.5.165.tab2.txt", sep='\t')
@@ -35,13 +37,11 @@ def count_interactions(gene_list):
     pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
 
     for gene in gene_list:
-        gene_pairs = []
-
         # get locations where gene occurs in pairs
         locs = np.where(pairs==gene)
 
         # get list of genes that occur in interactions... remove gene of interest
-        uniq = list(np.unique(pairs[locs[0]]))
+        uniq = list((np.unique(pairs[locs[0]])))
         if(len(uniq)):
             uniq.remove(str(gene))
 
@@ -49,7 +49,87 @@ def count_interactions(gene_list):
 
         total_interactions += len(uniq)
 
-    return total_interactions
+    return len(list(set(uniq)))    
+
+
+def count_edges_all(gene_list):
+    total_interactions = 0
+    #read in BioGRID
+    biogrid = pd.read_table("../data/BIOGRID-ALL-3.5.165.tab2.txt", sep='\t')
+
+    # only use human genes
+    biogrid = biogrid[biogrid['Organism Interactor A'] == 9606]
+    biogrid = biogrid[biogrid['Organism Interactor B'] == 9606]
+
+    pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
+
+    for gene in gene_list:
+        # get locations where gene occurs in pairs
+        locs = np.where(pairs==gene)
+
+        # get list of genes that occur in interactions... remove gene of interest
+        uniq = list((np.unique(pairs[locs[0]])))
+        if(len(uniq)):
+            uniq.remove(str(gene))
+
+        uniq = [g for g in uniq if g in gene_list]
+
+        pairs = np.delete(pairs, locs[0], axis=0)
+
+        total_interactions += len(uniq)
+
+    return len(list(set(uniq)))    
+
+
+def count_nodes_within(gene_list):
+    total_interactions = 0
+    #read in BioGRID
+    biogrid = pd.read_table("../data/BIOGRID-ALL-3.5.165.tab2.txt", sep='\t')
+
+    # only use human genes
+    biogrid = biogrid[biogrid['Organism Interactor A'] == 9606]
+    biogrid = biogrid[biogrid['Organism Interactor B'] == 9606]
+
+    pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
+
+    uniq = []
+
+    for gene in gene_list:
+        # get locations where gene occurs in pairs
+        locs = np.where(pairs==gene)
+
+        # get list of genes that occur in interactions...
+        uniq.extend(np.unique(pairs[locs[0]]))
+
+        uniq = [g for g in uniq if g in gene_list]
+
+    return len(list(set(uniq)))
+
+
+
+
+def count_nodes_all(gene_list):
+    total_interactions = 0
+    #read in BioGRID
+    biogrid = pd.read_table("../data/BIOGRID-ALL-3.5.165.tab2.txt", sep='\t')
+
+    # only use human genes
+    biogrid = biogrid[biogrid['Organism Interactor A'] == 9606]
+    biogrid = biogrid[biogrid['Organism Interactor B'] == 9606]
+
+    pairs = biogrid[['Official Symbol Interactor A','Official Symbol Interactor B']].values
+
+    uniq = []
+
+    for gene in gene_list:
+        # get locations where gene occurs in pairs
+        locs = np.where(pairs==gene)
+
+        # get list of genes that occur in interactions...
+        uniq.extend(np.unique(pairs[locs[0]]))
+
+    return len(list(set(uniq)))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get the Interactions of the given gene set')
@@ -66,9 +146,8 @@ if __name__ == '__main__':
         print("Running Randoms...")
         total_ran_interactions = 0
         for i in range(5):
-            total_ran_interactions += count_interactions(gene_list[i])
+            total_ran_interactions += count_nodes_all(gene_list[i])
         print(total_ran_interactions / 5)#average
 
     else:
-
-        print(count_interactions(gene_list))
+        print(count_nodes_all(gene_list))
