@@ -47,14 +47,15 @@ from utils.dataset import DataContainer as DC
 #	out_file: the file to write to
 #	kfold_val: Number of folds for K fold cross validation
 def random_classification(data, total_gene_list, config, \
-							num_genes, iters, out_file, kfold_val, \
+							num_genes, iters, out_file, kfold_val, verbose=True,\
 							interaction_genes=None, interaction_list=None):
 	if out_file:
 		f = open(out_file, 'w')
 		f.write('Num\tAverage\tStd Dev\n')
 
 	for num in num_genes:
-		print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
+		if verbose:
+			print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
 		# set up the neural network
 		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
@@ -89,7 +90,8 @@ def random_classification(data, total_gene_list, config, \
 		std = np.std(accs_np)
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
-		print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
+		if verbose:
+			print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		if out_file:
 			f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
@@ -105,7 +107,7 @@ def random_classification(data, total_gene_list, config, \
 #	subsets: gmt/gct file containing subsets
 #	out_file: the file to write to
 #	kfold_val: Number of folds for K fold cross validation, set at 1
-def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=1):
+def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=10, verbose=True):
 	if out_file:
 		f = open(out_file, 'w')
 		f.write('Num\tAverage\tStd_Dev\tMax\tMin\n')
@@ -137,7 +139,8 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		std = np.std(accs_np)
 		mx = np.max(accs_np)
 		mn = np.min(accs_np)
-		print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
+		if verbose:
+			print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
 		if out_file:
 			f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
 
@@ -152,7 +155,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 #	config: json file containing network specifications
 #	out_file: the file to write to
 #	kfold_val: Number of folds for K fold cross validation, set at 1
-def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
+def full_classification(data, total_gene_list, config, out_file, kfold_val=10):
 	if out_file:
 		f = open(out_file, 'w')
 		f.write('Num\tAverage\tStd Dev\n')
@@ -203,12 +206,13 @@ if __name__ == '__main__':
 	parser.add_argument('--subset_list', help='gmt/gct file containing subsets', type=str, required=False)
 	parser.add_argument('--set', help='specific subset to run', type=str, required=False)
 	parser.add_argument('--random_test', help='Perform random test', action='store_true', required=False)
-	parser.add_argument('--num_random_genes', help='Number of random genes to assess', nargs='+', \
+	parser.add_argument('--range_random_genes', help='range of random genes to assess', nargs='+', \
 		type=int, required=False)
 	parser.add_argument('--rand_iters', help='Number of iterations to perform for random classification', \
-		type=int, nargs='?', const=10, required=False)
+		type=int, default=50, required=False)
 	parser.add_argument('--k_fold', help='Number of folds for K fold cross validation', \
-		type=int, nargs='?', const=10, required=False)
+		type=int, default=10, required=False)
+	parser.add_argument('--verbose', help='verbose if true', action='store_true', required=False)
 	parser.add_argument('--interaction_genes', help='list of valid genes from interaction list', \
 		type=str, required=False, default=None)
 	parser.add_argument('--interaction_list', help='pairwise list of interacting genes', \
@@ -285,14 +289,16 @@ if __name__ == '__main__':
 			sub[args.set.upper()] = subsets[args.set.upper()]
 			subsets = sub
 
-		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=10)
+		subset_classification(data, total_gene_list, config, subsets, args.out_file, kfold_val=args.k_fold, verbose=args.verbose)
 
 
 	#RUN RANDOM CLASSIFICATION
 	# if random is selectioned, run random
 	if args.random_test:
-		if args.num_random_genes:
-			random_classification(data, total_gene_list, config, args.num_random_genes, args.rand_iters, args.out_file, kfold_val=10)
+		if args.range_random_genes:
+			gene_range = range(args.range_random_genes[0], args.range_random_genes[1] + 1)
+			random_classification(data, total_gene_list, config, gene_range, \
+									args.rand_iters, args.out_file, kfold_val=args.k_fold, verbose=args.verbose)
 		elif args.subset_list:
 			# get the number of genes for each subset
 			num = []
