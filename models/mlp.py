@@ -167,7 +167,6 @@ class MLP:
         acc = accuracy.eval({x: dataset.test.data, y: dataset.test.labels}, session=sess)
 
         if self.roc:
-            print("ROC YO!")
             print("Y:" + str(y.eval({y:dataset.test.labels}, session=sess)))
             print("Pred:" + str(result.eval({x:dataset.test.data}, session=sess)))
             #y is the test Output
@@ -178,7 +177,6 @@ class MLP:
             roc_plt(33,y_label,y_pred,dataset.label_names_ordered)
 
         if self.confusion:
-            print("CONFUSION MATRIX YO!")
             # generate confusion matrices for brain data and dataset data
             temp = pred.eval({x: dataset.test.data}, session=sess)
             preds = np.argmax(temp, 1)
