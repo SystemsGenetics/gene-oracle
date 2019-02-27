@@ -36,6 +36,7 @@ from models.mlp import MLP
 from utils.dataset import DataContainer as DC
 
 
+
 # USAGE:
 # 		- perform random classification based on the given parameters
 # PARAMS:
@@ -51,7 +52,7 @@ def random_classification(data, total_gene_list, config, \
 							interaction_genes=None, interaction_list=None):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('\t'.join(['Name'] + ['%d' % (i) for i in xrange(kfold_val * len(num_genes))]) + '\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val * len(num_genes))]) + '\n')
 
 	for num in num_genes:
 		if verbose:
@@ -67,7 +68,7 @@ def random_classification(data, total_gene_list, config, \
 
 		accuracies = []
 
-		for i in xrange(iters):
+		for i in range(iters):
 			# generate random set of genes from the total gene list
 			if interaction_genes:
 				r_genes = create_random_subset_from_NON_interactions(num, \
@@ -76,12 +77,12 @@ def random_classification(data, total_gene_list, config, \
 																interaction_list)
 			else:
 				r_genes = create_random_subset(num, total_gene_list)
-			
+
 
 			# set up the DataContainer class to partition data
 			dataset = DC(data, total_gene_list, r_genes)
-			
-			for _ in xrange(kfold_val):
+
+			for _ in range(kfold_val):
 				# run the neural net
 				accuracies.append(mlp.run(dataset))
 
@@ -110,12 +111,12 @@ def random_classification(data, total_gene_list, config, \
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=10, verbose=True):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('\t'.join(['Name'] + ['%d' % (i) for i in xrange(kfold_val)]) + '\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val)]) + '\n')
 
 	for subset_name in subsets:
 		accuracies = []
 
-		for i in xrange(kfold_val):
+		for i in range(kfold_val):
 			# set up the gtex class to partition data
 			dataset = DC(data, total_gene_list, subsets[subset_name])
 
@@ -157,11 +158,11 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 def full_classification(data, total_gene_list, config, out_file, kfold_val=10, verbose=True):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('\t'.join(['Name'] + ['%d' % (i) for i in xrange(kfold_val)]) + '\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val)]) + '\n')
 
 	accuracies = []
 
-	for i in xrange(kfold_val):
+	for i in range(kfold_val):
 		# set up the data class to partition data
 		dataset = DC(data, total_gene_list)
 

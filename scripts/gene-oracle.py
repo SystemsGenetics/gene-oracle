@@ -50,7 +50,7 @@ def run_kmeans(data,total_gene_list,combos):
 
 	# run k means k times
 	print("Running Kmeans")
-	for i in xrange(1,5):
+	for i in range(1,5):
 		print(str(i))
 		kmeans = KMeans(n_clusters=i, n_jobs=1, n_init=30, precompute_distances=False, copy_x=False)
 		kmeans.fit(gene_set_data)
@@ -62,7 +62,7 @@ def run_kmeans(data,total_gene_list,combos):
 
 		# approximate second derivatives to determine where the 'elbow' in the curve is
 		second_dervs = []
-		for i in xrange(1, len(inertias) - 1):
+		for i in range(1, len(inertias) - 1):
 			xpp = inertias[i + 1] + inertias[i - 1] - 2 * inertias[i]
 			second_dervs.append(xpp)
 
@@ -102,7 +102,7 @@ def generate_new_subsets_wo_clustering(file, data, total_gene_list, genes, max_e
 	combos, prev_accs = get_combos_and_accs(file)
 
 	combo_info = {}
-	for i in xrange(len(combos)):
+	for i in range(len(combos)):
 		combo_info[str(combos[i])] = (prev_accs[i])#, final_model.labels_[i])
 
 	# sort the combo info descending by accuracy
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 		f.close()
 
 	print('beginning search for optimal combinations...')
-	for i in xrange(1, len(genes) + 1):
+	for i in range(1, len(genes) + 1):
 		print('--------ITERATION ' + str(i) + '--------')
 
 		# read in the previous accuracy file

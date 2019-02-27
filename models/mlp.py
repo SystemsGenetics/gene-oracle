@@ -1,14 +1,14 @@
 #/usr/bin/python
 
 # multilayer perceptron neural network with softmax layer to classify genetic data
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from sklearn import preprocessing
 import sys, argparse
 import os
 
-import matplotlib.pyplot as plt
-from validation import confusion_heatmap, roc_plt
+from models.validation import confusion_heatmap, roc_plt
 
 class MLP:
     def __init__(self, lr=0.001, epochs=75, n_layers=3, h_units=[512,512,512], \
@@ -39,7 +39,7 @@ class MLP:
     def multilayer_perceptron(self, x, weights, biases):
 
         layer = x
-        for i in xrange(1, self.n_layers + 1):
+        for i in range(1, self.n_layers + 1):
             w = 'h' + str(i)
             b = 'b' + str(i)
 
@@ -72,7 +72,7 @@ class MLP:
 
         weights = {}
         biases = {}
-        for i in xrange(1, self.n_layers + 1):
+        for i in range(1, self.n_layers + 1):
             w = 'h' + str(i)
             b = 'b' + str(i)
             weights[w] = tf.get_variable(w, shape=[units[i - 1], units[i]], initializer=tf.contrib.layers.xavier_initializer())
@@ -185,7 +185,6 @@ class MLP:
             mycm = cm.eval(feed_dict=None, session=sess)
 
             confusion_heatmap(mycm, dataset.label_names_ordered)
-            #print mycm
             np.savetxt('./confusion_matrix_dataset.txt', mycm, fmt='%4d', delimiter=' ')
 
 

@@ -29,8 +29,8 @@ def confusion_heatmap(conf_arr, labels=None):
 
     width, height = conf_arr.shape
 
-    # for x in xrange(width):
-    #     for y in xrange(height):
+    # for x in range(width):
+    #     for y in range(height):
     #         ax.annotate(str(conf_arr[x][y]), xy=(y, x),
     #                     horizontalalignment='center',
     #                     verticalalignment='center')
