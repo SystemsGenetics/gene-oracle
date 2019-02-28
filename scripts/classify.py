@@ -1,5 +1,3 @@
-#/usr/bin/python
-
 '''
 	This script can be used to run a specified dataset, a specified subset of genes,
 	or a specified number of random genes for classification.
@@ -52,7 +50,7 @@ def random_classification(data, total_gene_list, config, \
 							interaction_genes=None, interaction_list=None):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val * len(num_genes))]) + '\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val * iters)]) + '\n')
 
 	for num in num_genes:
 		if verbose:

@@ -5,17 +5,20 @@ This repository contains all code, scripts, and other for the Gene Oracle projec
 ## Requirements and Setup
 
 Create a virtual environment with anaconda3 on Clemson's Palmetto Cluster:
-
-    module add anaconda3/5.1.0
-    conda create -n gene-oracle python=3.5 tensorflow-gpu=1.8.0 matplotlib numpy scikit-learn
+```bash
+module add anaconda3/5.1.0
+conda create -n gene-oracle python=3.5 tensorflow-gpu=1.8.0 matplotlib numpy pandas scikit-learn
+```
 
 To activate your environment, simply do:
-
-    source activate gene-oracle
+```bash
+source activate gene-oracle
+```
 
 To deactivate your environment, simply do:
-
-    source deactivate
+```bash
+source deactivate
+```
 
 ## Usage
 
@@ -28,30 +31,31 @@ Users are required to input a path to three files:
     * note: the dataset is assumed to be in order of the json file
 
 The following contains the example usage:
+```
+usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
+                   SAMPLE_JSON --config CONFIG --out_file OUT_FILE
+                   [--subset_list SUBSET_LIST] [--random_test]
+                   [--num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]]
+                   [--rand_iters [RAND_ITERS]]
 
-    usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
-                       SAMPLE_JSON --config CONFIG --out_file OUT_FILE
-                       [--subset_list SUBSET_LIST] [--random_test]
-                       [--num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]]
-                       [--rand_iters [RAND_ITERS]]
-
-    arguments:
-      -h, --help            show this help message and exit
-      --dataset DATASET     dataset to be used
-      --gene_list GENE_LIST
-                            list of genes in dataset (same order as dataset)
-      --sample_json SAMPLE_JSON
-                            json file containing number of samples per class
-      --config CONFIG       json file containing network specifications
-      --out_file OUT_FILE   output file to send results to
-      --subset_list SUBSET_LIST
-                            gmt/gct file containing subsets
-      --random_test         Perform random test
-      --num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]
-                            Number of random genes to assess
-      --rand_iters [RAND_ITERS]
-                            Number of iterations to perform for random
-                            classification
+arguments:
+  -h, --help            show this help message and exit
+  --dataset DATASET     dataset to be used
+  --gene_list GENE_LIST
+                        list of genes in dataset (same order as dataset)
+  --sample_json SAMPLE_JSON
+                        json file containing number of samples per class
+  --config CONFIG       json file containing network specifications
+  --out_file OUT_FILE   output file to send results to
+  --subset_list SUBSET_LIST
+                        gmt/gct file containing subsets
+  --random_test         Perform random test
+  --num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]
+                        Number of random genes to assess
+  --rand_iters [RAND_ITERS]
+                        Number of iterations to perform for random
+                        classification
+```
 
 ## Feature Engineering
 

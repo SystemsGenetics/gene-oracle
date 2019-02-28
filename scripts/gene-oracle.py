@@ -1,5 +1,3 @@
-#/usr/bin/python
-
 '''
 	This file takes divides a hallmark subset into user-specified subsets in order to
 	determine the best combination of genes for classification purposes.

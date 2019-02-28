@@ -1,5 +1,3 @@
-#/usr/bin/python
-
 '''
 	This file allows users to visualize sets of genes with tsne
 '''
