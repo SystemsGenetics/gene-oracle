@@ -1,6 +1,30 @@
+"""
+This script uses Welch's t-test to determine whether a gene set exhibits
+significantly higher classification accuracy over equivalent random sets. The
+script takes three inputs -- a list of gene sets and their accuracies, a list of
+random sets and their accuracies, and a list of gene sets and their member
+genes -- and produces a list of t-test results for each gene set. The lower the
+p-value, the more likely it is that the corresponding gene set performs
+significantly better over random.
+"""
 import argparse
 import pandas as pd
 import scipy.stats
+
+
+
+def evaluate_samples(df_subset, df_random, subset_name, subset_size):
+	return scipy.stats.ttest_ind(df_subset.loc[subset_name], df_random.loc[subset_size], equal_var=False)
+
+
+
+def evaluate_stats(df_subset, df_random, subset_name, subset_size):
+	return scipy.stats.ttest_ind_from_stats( \
+		df_subset.loc[subset_name, "Average"], df_subset.loc[subset_name, "Std_Dev"], 10, \
+		df_random.loc[subset_size, "Average"], df_random.loc[subset_size, "Std_Dev"], 500, \
+		equal_var=False)
+
+
 
 if __name__ == "__main__":
 	# parse command-line arguments
@@ -17,7 +41,7 @@ if __name__ == "__main__":
 	
 	# load gene set dictionary
 	lines = [line.rstrip() for line in open(args.dict, "r")]
-	lines = [line.split(",") for line in lines]
+	lines = [line.split("\t") for line in lines]
 	subset_dict = {line[0]: line[1:] for line in lines}
 
 	# evaluate each curated gene set
@@ -26,6 +50,6 @@ if __name__ == "__main__":
 	for subset_name in df_subset.index:
 		subset_size = len(subset_dict[subset_name])
 
-		t, p = scipy.stats.ttest_ind(df_subset.loc[subset_name], df_random.loc[subset_size], equal_var=False)
+		t, p = evaluate_samples(df_subset, df_random, subset_name, subset_size)
 
-		print("%s\t%f\t%f" % (subset_name, t, p))
+		print("%-80s %0.12f" % (subset_name, p))
