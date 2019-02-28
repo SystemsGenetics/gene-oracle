@@ -45,7 +45,7 @@ if __name__ == "__main__":
 	subset_dict = {line[0]: line[1:] for line in lines}
 
 	# evaluate each curated gene set
-	print("%s\t%s\t%s" % ("Name", "t", "p"))
+	print("%-80s %s" % ("Name", "p"))
 
 	for subset_name in df_subset.index:
 		subset_size = len(subset_dict[subset_name])
