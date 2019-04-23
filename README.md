@@ -29,6 +29,8 @@ Users are required to input a path to three files:
 * a numpy data array that contains a list of every gene (str) in the exact order as the dataset
 * a json file that contains the number of samples per class
     * note: the dataset is assumed to be in order of the json file
+    * Example: {"Adipose-Subcutaneous": 350, "Adipose-Visceral": 227,...,"Whole-Blood": 393}
+    so for class Adipose-Subcutaneous there are 350 samples etc etc
 
 The following contains the example usage:
 ```
