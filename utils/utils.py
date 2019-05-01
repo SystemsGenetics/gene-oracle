@@ -284,10 +284,10 @@ def convert_subset_to_interactions(subsets, interaction_file):
 			for gene in total_interacting_genes:
 				if gene in subsets[s] and gene not in interacted_subsets[s]:
 					interacted_subsets[s].append(gene)
-					print gene
+					print(gene)
 					if g not in interacted_subsets[s]:
 						interacted_subsets[s].append(g)
-						print g
+						print(g)
 
 	return interacted_subsets
 

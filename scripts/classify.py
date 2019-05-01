@@ -66,7 +66,7 @@ def random_classification(data, total_gene_list, config, \
 
 		accs = []
 
-		for i in xrange(iters):
+		for i in range(iters):
 			# generate random set of genes from the total gene list
 			if interaction_genes:
 				r_genes = create_random_subset_from_NON_interactions(num, \
@@ -80,7 +80,7 @@ def random_classification(data, total_gene_list, config, \
 			# set up the DataContainer class to partition data
 			dataset = DC(data, total_gene_list, r_genes)
 			
-			for _ in xrange(kfold_val):
+			for _ in range(kfold_val):
 				# run the neural net
 				accs.append(mlp.run(dataset))
 
@@ -116,7 +116,7 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 		accs = []
 		# set up the neural network
 
-		for i in xrange(kfold_val):
+		for i in range(kfold_val):
 			# set up the gtex class to partition data
 			dataset = DC(data, total_gene_list, subsets[s])
 
@@ -155,14 +155,14 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 #	config: json file containing network specifications
 #	out_file: the file to write to
 #	kfold_val: Number of folds for K fold cross validation, set at 1
-def full_classification(data, total_gene_list, config, out_file, kfold_val=10):
+def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 	if out_file:
 		f = open(out_file, 'w')
 		f.write('Num\tAverage\tStd Dev\n')
 
 	accs = []
 
-	for i in xrange(kfold_val):
+	for i in range(kfold_val):
 		# set up the data class to partition data
 		dataset = DC(data, total_gene_list)
 

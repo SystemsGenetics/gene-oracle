@@ -50,7 +50,7 @@ class DataContainer:
 		for k in sorted(orig_data.keys()):
 			reduced_data = np.zeros((len(gene_indexes), orig_data[k].shape[1]))
 
-			for idx in xrange(0, len(gene_indexes)):
+			for idx in range(0, len(gene_indexes)):
 				reduced_data[idx] = orig_data[k][gene_indexes[idx][0],:]
 
 			req_data[k] = reduced_data
@@ -69,7 +69,7 @@ class DataContainer:
 		new_data = []
 		new_labels = []
 
-		samples = random.sample(xrange(len(data)),len(data))
+		samples = random.sample(range(len(data)),len(data))
 
 		for i in samples:
 			new_data.append(data[i])
@@ -127,11 +127,11 @@ class DataContainer:
 
 			num_train = int(data[k].shape[1] * train_split / 100)
 
-			samples = random.sample(xrange(data[k].shape[1]),data[k].shape[1])
+			samples = random.sample(range(data[k].shape[1]),data[k].shape[1])
 			samples_train = samples[0:num_train]
 			samples_test = samples[num_train:]
 
-			for i in xrange(len(samples_train)):
+			for i in range(len(samples_train)):
 				train_data.append(data[k][:,samples_train[i]])
 
 				label = np.zeros(self.num_classes)
@@ -139,7 +139,7 @@ class DataContainer:
 
 				train_labels.append(label)
 
-			for i in xrange(len(samples_test)):
+			for i in range(len(samples_test)):
 				test_data.append(data[k][:,samples_test[i]])
 
 				label = np.zeros(self.num_classes)
