@@ -224,7 +224,7 @@ if __name__ == '__main__':
 	# load the data
 	print('loading genetic data...')
 	gtex_gct_flt = np.load(args.dataset)
-	total_gene_list = np.load(args.gene_list)
+	total_gene_list = np.load(args.gene_list).astype(np.str)
 	data = load_data(args.sample_json, gtex_gct_flt)
 
 	# load interaction data, if passed
