@@ -31,10 +31,10 @@ Users are required to input a path to three files:
     * note: the dataset is assumed to be in order of the json file
     * Example: {"Adipose-Subcutaneous": 350, "Adipose-Visceral": 227,...,"Whole-Blood": 393}
     so for class Adipose-Subcutaneous there are 350 samples etc etc
-* if a subset list is input, it is expected to be of the following format, the same as provided by the Molecular Signatures Database:
+* if a subset list is input, it is expected to be of the following format:
 ```
-SetName1 Description Gene1 Gene2 Gene3
-SetName2 Description Gene2 Gene4 Gene5 Gene6
+SetName1,Gene1,Gene2,Gene3
+SetName2,Gene2,Gene4,Gene5,Gene6
 ...
 ```
 * note: working towards a more robust data loading scheme
