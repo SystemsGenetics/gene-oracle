@@ -131,7 +131,7 @@ def create_random_subset_from_NON_interactions(num_genes, total_gene_list, \
 
 		locs = np.where(interaction_list == rand_gene)
 
-		for i in xrange(locs[0].shape[0]):
+		for i in range(locs[0].shape[0]):
 			cand_gene = interaction_list[locs[0][i], 1 - locs[1][i]]
 			if cand_gene in final_genes:
 				interact = 1
@@ -209,7 +209,7 @@ def convert_sets_to_vecs(data, total_gene_list, combo_list, set_size):
 
 		concat_genes = dataset.train.data[:,0]
 
-		for i in xrange(1, set_size):
+		for i in range(1, set_size):
 			concat_genes = np.append(concat_genes, dataset.train.data[:,i])
 
 		feature_list.append(concat_genes)
@@ -352,4 +352,3 @@ def write_subsets_to_file(subsets, file):
 			for g in subsets[s]:
 				f.write(g + '\t')
 			f.write('\n')
-

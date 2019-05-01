@@ -1,6 +1,7 @@
 #/usr/bin/python
 
 # multilayer perceptron neural network with softmax layer to classify genetic data
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from sklearn import preprocessing
@@ -185,7 +186,6 @@ class MLP:
             mycm = cm.eval(feed_dict=None, session=sess)
 
             confusion_heatmap(mycm, dataset.label_names_ordered)
-            #print mycm
             np.savetxt('./confusion_matrix_dataset.txt', mycm, fmt='%4d', delimiter=' ')
 
 

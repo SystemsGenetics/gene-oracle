@@ -1,5 +1,3 @@
-#/usr/bin/python
-
 '''
 	This script can be used to run a specified dataset, a specified subset of genes,
 	or a specified number of random genes for classification.
@@ -36,6 +34,7 @@ from models.mlp import MLP
 from utils.dataset import DataContainer as DC
 
 
+
 # USAGE:
 # 		- perform random classification based on the given parameters
 # PARAMS:
@@ -51,11 +50,12 @@ def random_classification(data, total_gene_list, config, \
 							interaction_genes=None, interaction_list=None):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('Num\tAverage\tStd Dev\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val * iters)]) + '\n')
 
 	for num in num_genes:
 		if verbose:
 			print('classifying ' + str(num) + ' random genes ' + str(iters) + ' times')
+
 		# set up the neural network
 		mlp = MLP(n_input=num, n_classes=len(data), batch_size=config['mlp']['batch_size'], \
 			lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
@@ -64,7 +64,7 @@ def random_classification(data, total_gene_list, config, \
 			load=config['mlp']['load'], dropout=config['mlp']['dropout'], \
 			disp_step=config['mlp']['display_step'])#, confusion=config['mlp']['confusion'], roc=config['mlp']['roc'], pr=config['mlp']['pr'])
 
-		accs = []
+		accuracies = []
 
 		for i in range(iters):
 			# generate random set of genes from the total gene list
@@ -75,28 +75,27 @@ def random_classification(data, total_gene_list, config, \
 																interaction_list)
 			else:
 				r_genes = create_random_subset(num, total_gene_list)
-			
+
 
 			# set up the DataContainer class to partition data
 			dataset = DC(data, total_gene_list, r_genes)
-			
+
 			for _ in range(kfold_val):
 				# run the neural net
-				accs.append(mlp.run(dataset))
+				accuracies.append(mlp.run(dataset))
 
 		# print the results to a file
-		accs_np = np.asarray(accs)
-		mean = np.mean(accs_np)
-		std = np.std(accs_np)
-		mx = np.max(accs_np)
-		mn = np.min(accs_np)
+		line = '\t'.join(['%d' % (num)] + ['%.6f' % (acc) for acc in accuracies])
+
 		if verbose:
-			print(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
+			print(line)
 		if out_file:
-			f.write(str(num) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+			f.write(line + '\n')
 
 	if out_file:
 		f.close()
+
+
 
 # USAGE:
 # 		- perform classification on each of the subsets provided in the subset_list argument
@@ -110,16 +109,16 @@ def random_classification(data, total_gene_list, config, \
 def subset_classification(data, total_gene_list, config, subsets, out_file, kfold_val=10, verbose=True):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('Num\tAverage\tStd_Dev\tMax\tMin\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val)]) + '\n')
 
-	for s in subsets:
-		accs = []
-		# set up the neural network
+	for subset_name in subsets:
+		accuracies = []
 
 		for i in range(kfold_val):
 			# set up the gtex class to partition data
-			dataset = DC(data, total_gene_list, subsets[s])
+			dataset = DC(data, total_gene_list, subsets[subset_name])
 
+			# set up the neural network
 			mlp = MLP(n_input=dataset.train.data.shape[1], n_classes=len(data), \
 				batch_size=config['mlp']['batch_size'], \
 				lr=config['mlp']['lr'], epochs=config['mlp']['epochs'], \
@@ -130,22 +129,21 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 
 			# run the neural net
 			acc = mlp.run(dataset)
-			accs.append(acc)
+			accuracies.append(acc)
 			#print('acc is ' + str(acc) + ' time is ' + str(stop - start))
 
 		# print the results to a file
-		accs_np = np.asarray(accs)
-		mean = np.mean(accs_np)
-		std = np.std(accs_np)
-		mx = np.max(accs_np)
-		mn = np.min(accs_np)
+		line = '\t'.join([subset_name] + ['%.6f' % (acc) for acc in accuracies])
+
 		if verbose:
-			print(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn))
+			print(line)
 		if out_file:
-			f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\t' + str(mx) + '\t' + str(mn) + '\n')
+			f.write(line + '\n')
 
 	if out_file:
 		f.close()
+
+
 
 # USAGE:
 # 		- perform classification on every gene
@@ -155,12 +153,12 @@ def subset_classification(data, total_gene_list, config, subsets, out_file, kfol
 #	config: json file containing network specifications
 #	out_file: the file to write to
 #	kfold_val: Number of folds for K fold cross validation, set at 1
-def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
+def full_classification(data, total_gene_list, config, out_file, kfold_val=10, verbose=True):
 	if out_file:
 		f = open(out_file, 'w')
-		f.write('Num\tAverage\tStd Dev\n')
+		f.write('\t'.join(['Name'] + ['%d' % (i) for i in range(kfold_val)]) + '\n')
 
-	accs = []
+	accuracies = []
 
 	for i in range(kfold_val):
 		# set up the data class to partition data
@@ -176,16 +174,16 @@ def full_classification(data, total_gene_list, config, out_file, kfold_val=1):
 
 		# run the neural net
 		acc = mlp.run(dataset)
-		accs.append(acc)
+		accuracies.append(acc)
 
 	# print the results to a file
-	accs_np = np.asarray(accs)
-	mean = np.mean(accs_np)
-	std = np.std(accs_np)
-	s = 'EVERY FEATURE'
-	print(str(s) + '\t' + str(mean))
+	line = '\t'.join(['EVERY_FEATURE'] + ['%.6f' % (acc) for acc in accuracies])
+
+	if verbose:
+		print(line)
+
 	if out_file:
-		f.write(str(s) + '\t' + str(mean) + '\t' + str(std) + '\n')
+		f.write(line + '\n')
 		f.close()
 
 

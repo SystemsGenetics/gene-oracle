@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	
 	new_gm = []
 	# format the gene mapping
-	for i in xrange(gm.shape[0]):
+	for i in range(gm.shape[0]):
 		new_gm.append(gm[i].split(','))
 	gm = np.asarray(new_gm)
 
