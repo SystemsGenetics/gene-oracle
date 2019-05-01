@@ -12,12 +12,12 @@ conda create -n gene-oracle python=3.5 tensorflow-gpu=1.8.0 matplotlib numpy pan
 
 To activate your environment, simply do:
 ```bash
-source activate gene-oracle
+conda activate gene-oracle
 ```
 
 To deactivate your environment, simply do:
 ```bash
-source deactivate
+conda deactivate
 ```
 
 ## Usage
