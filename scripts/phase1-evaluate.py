@@ -1,3 +1,6 @@
+"""
+This script evaluates the classification potential of gene sets on a dataset.
+"""
 import argparse
 import dataframe_helper
 import json
@@ -64,8 +67,7 @@ def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, outfile=None)
 		scores += evaluate(data, labels, clf, genes, cv=cv)
 
 	# print results
-	name = "random-%d" % n_genes
-	line = "\t".join([name] + ["%.3f" % (score) for score in scores])
+	line = "\t".join([str(n_genes)] + ["%.3f" % (score) for score in scores])
 
 	print(line)
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model_config", help="json file containing network specifications", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
-	parser.add_argument("--gene_sets", help="list of gene sets to evaluate (GMT/GCT format)")
+	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT format)")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=2, type=int)
@@ -155,10 +157,9 @@ if __name__ == "__main__":
 
 	print("evaluating gene sets...")
 
-	# write header to output file
+	# initialize output file
 	if args.outfile:
 		outfile = open(args.outfile, "w")
-		outfile.write("\t".join(["Name"] + ["%d" % (i) for i in range(args.num_folds)]) + "\n")
 
 	# evaluate input gene sets
 	for (name, genes) in gene_sets:

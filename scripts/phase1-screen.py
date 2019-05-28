@@ -13,15 +13,27 @@ import scipy.stats
 
 
 
-def evaluate_samples(df_subset, df_random, subset_name, subset_size):
-	return scipy.stats.ttest_ind(df_subset.loc[subset_name], df_random.loc[subset_size], equal_var=False)
+def load_gene_sets(filename):
+	# load file into list
+	lines = [line.strip() for line in open(filename, "r")]
+	lines = [line.split("\t") for line in lines]
+
+	# map each gene set into a tuple of the name and genes in the set
+	gene_sets = [(line[0], line[1:]) for line in lines]
+
+	return gene_sets
 
 
 
-def evaluate_stats(df_subset, df_random, subset_name, subset_size):
+def evaluate_from_samples(df_subset, df_random, name, n_genes):
+	return scipy.stats.ttest_ind(df_subset.loc[name], df_random.loc[n_genes], equal_var=False)
+
+
+
+def evaluate_from_stats(df_subset, df_random, name, n_genes):
 	return scipy.stats.ttest_ind_from_stats( \
-		df_subset.loc[subset_name, "Average"], df_subset.loc[subset_name, "Std_Dev"], 10, \
-		df_random.loc[subset_size, "Average"], df_random.loc[subset_size, "Std_Dev"], 500, \
+		df_subset.loc[name, "Average"], df_subset.loc[name, "Std_Dev"], 10, \
+		df_random.loc[n_genes, "Average"], df_random.loc[n_genes, "Std_Dev"], 500, \
 		equal_var=False)
 
 
@@ -29,27 +41,21 @@ def evaluate_stats(df_subset, df_random, subset_name, subset_size):
 if __name__ == "__main__":
 	# parse command-line arguments
 	parser = argparse.ArgumentParser(description="Select gene sets which perform significantly better than equivalent random sets.")
-	parser.add_argument("--random", help="Log file of accuracies for random sets", required=True)
-	parser.add_argument("--subset", help="Log file of accuracies for specific gene sets", required=True)
-	parser.add_argument("--dict", help="Text file of gene lists", required=True)
+	parser.add_argument("--random", help="list of accuracies for random gene sets", required=True)
+	parser.add_argument("--subset", help="list of accuracies for curated gene sets", required=True)
+	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT format)")
 
 	args = parser.parse_args()
 
 	# load input files
-	df_random = pd.read_csv(args.random, sep="\t", index_col=0)
-	df_subset = pd.read_csv(args.subset, sep="\t", index_col=0)
-	
-	# load gene set dictionary
-	lines = [line.rstrip() for line in open(args.dict, "r")]
-	lines = [line.split("\t") for line in lines]
-	subset_dict = {line[0]: line[1:] for line in lines}
+	df_random = pd.read_csv(args.random, sep="\t", header=None, index_col=0)
+	df_subset = pd.read_csv(args.subset, sep="\t", header=None, index_col=0)
+	gene_sets = load_gene_sets(args.gene_sets)
 
 	# evaluate each curated gene set
 	print("%-80s %s" % ("Name", "p"))
 
-	for subset_name in df_subset.index:
-		subset_size = len(subset_dict[subset_name])
+	for name, genes in gene_sets:
+		t, p = evaluate_from_samples(df_subset, df_random, name, len(genes))
 
-		t, p = evaluate_samples(df_subset, df_random, subset_name, subset_size)
-
-		print("%-80s %0.12f" % (subset_name, p))
+		print("%-80s %0.12f" % (name, p))
