@@ -3,6 +3,7 @@ import dataframe_helper
 import json
 import numpy as np
 import pandas as pd
+import random
 import sklearn.dummy
 import sklearn.model_selection
 import sklearn.preprocessing
@@ -22,12 +23,7 @@ def load_gene_sets(filename):
 
 
 
-def evaluate_random():
-	pass
-
-
-
-def evaluate_set(data, labels, clf, name, genes, cv=5, outfile=None):
+def evaluate(data, labels, clf, genes, cv=5):
 	# extract dataset
 	X = data[genes]
 
@@ -37,7 +33,38 @@ def evaluate_set(data, labels, clf, name, genes, cv=5, outfile=None):
 	# evaluate gene set
 	scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
 
+	return list(scores)
+
+
+
+def evaluate_set(data, labels, clf, name, genes, cv=5, outfile=None):
+	# evaluate gene set
+	scores = evaluate(data, labels, clf, genes, cv=cv)
+
 	# print results
+	line = "\t".join([name] + ["%.3f" % (score) for score in scores])
+
+	print(line)
+
+	# write results to output file
+	if outfile:
+		outfile.write(line + "\n")
+
+
+
+def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, outfile=None):
+	# evaluate n_iters random sets
+	scores = []
+
+	for i in range(n_iters):
+		# generate random gene set
+		genes = random.sample(list(data.columns), n_genes)
+
+		# evaluate gene set
+		scores += evaluate(data, labels, clf, genes, cv=cv)
+
+	# print results
+	name = "random-%d" % n_genes
 	line = "\t".join([name] + ["%.3f" % (score) for score in scores])
 
 	print(line)
@@ -56,6 +83,7 @@ if __name__ == "__main__":
 	parser.add_argument("--model_config", help="json file containing network specifications", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
 	parser.add_argument("--gene_sets", help="list of gene sets to evaluate (GMT/GCT format)")
+	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=2, type=int)
 	parser.add_argument("--random_iters", help="number of iterations to perform for random classification", type=int, default=100)
@@ -63,8 +91,6 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	# TODO: validate args
-	
 	# load input data
 	print("loading input dataset...")
 
@@ -104,23 +130,30 @@ if __name__ == "__main__":
 	else:
 		gene_sets = []
 
+	# include the set of all genes if specified
+	if args.full:
+		gene_sets.append(("FULL", df_genes))
+
 	# initialize list of random set sizes
 	if args.random:
+		# determine random set sizes from range
 		if args.random_range != None:
 			print("initializing random set sizes from range...")
 			random_sets = range(args.random_range[0], args.random_range[1] + 1)
+
+		# determine random set sizes from gene sets
 		elif args.gene_sets != None:
 			print("initializing random set sizes from gene sets...")
 			random_sets = sorted(set([len(genes) for (name, genes) in gene_sets]))
+
+		# print error and exit
 		else:
-			print("error: --random was specified without any way to determine random set sizes")
+			print("error: --gene_sets or --random_range must be provided to determine random set sizes")
 			sys.exit(1)
 	else:
 		random_sets = []
 
-	# evaluate the set of all genes if no gene sets or random sets were provided
-	if args.gene_sets == None and not args.random:
-		gene_sets.append(("FULL", df_genes))
+	print("evaluating gene sets...")
 
 	# write header to output file
 	if args.outfile:
@@ -128,15 +161,9 @@ if __name__ == "__main__":
 		outfile.write("\t".join(["Name"] + ["%d" % (i) for i in range(args.num_folds)]) + "\n")
 
 	# evaluate input gene sets
-	print("evaluating input gene sets...")
-
 	for (name, genes) in gene_sets:
 		evaluate_set(df, labels[1], clf, name, genes, cv=args.num_folds, outfile=outfile)
 
 	# evaluate random gene sets
-	print("evaluating random gene sets...")
-
-	for size in random_sets:
-		print("  evaluating random %d..." % (size))
-
-		evaluate_random()
+	for n_genes in random_sets:
+		evaluate_random(df, labels[1], clf, n_genes, cv=args.num_folds, n_iters=args.random_iters, outfile=outfile)
