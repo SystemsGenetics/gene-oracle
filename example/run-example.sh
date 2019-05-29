@@ -1,4 +1,5 @@
 #!/bin/bash
+# Example usage of gene-oracle on a synthetic dataset.
 
 # create synthetic input data
 python scripts/make-classification.py
@@ -28,5 +29,11 @@ python scripts/phase1-screen.py \
 	--subset    phase1-genesets.txt \
 	--gene_sets example_genesets.txt
 
-# perform candidate selection on gene sets
-# python scripts/gene-oracle.py # ...
+# perform combinatorial analysis on gene sets
+python scripts/phase2.py \
+	--dataset      example_data.txt \
+	--labels       example_labels.txt \
+	--model_config example/model_config.json \
+	--gene_sets    example_genesets.txt \
+	--random \
+	--logdir       logs

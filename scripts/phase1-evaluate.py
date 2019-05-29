@@ -82,9 +82,9 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Evaluate classification potential of gene sets")
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
-	parser.add_argument("--model_config", help="json file containing network specifications", required=True)
+	parser.add_argument("--model_config", help="model configuration file (JSON)", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
-	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT format)")
+	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT)")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=2, type=int)
@@ -107,11 +107,9 @@ if __name__ == "__main__":
 	print("initializing classifier...")
 
 	model_config = json.load(open(args.model_config))
-
-	# TODO: initialize MLP
 	clf = sklearn.dummy.DummyClassifier()
 
-	# load subset file if it was provided
+	# load gene sets file if it was provided
 	if args.gene_sets != None:
 		print("loading gene sets...")
 
