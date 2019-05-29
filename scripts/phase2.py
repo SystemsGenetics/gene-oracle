@@ -3,6 +3,7 @@ This script decomposes a gene set into subsets and evaluates them in order to
 identify the subsets with the highest classification potential.
 """
 import argparse
+import copy
 import itertools
 import json
 import numpy as np
@@ -71,6 +72,7 @@ def evaluate(data, labels, clf, genes):
 	X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
 
 	# evaluate gene set
+	clf = copy.deepcopy(clf)
 	clf.fit(X_train, y_train)
 
 	return clf.score(X_test, y_test)
@@ -164,6 +166,7 @@ if __name__ == "__main__":
 
 	# perform combinatorial analysis on each gene set
 	for name, genes in gene_sets:
+		print()
 		print("decomposing %s..." % name)
 
 		# initialize log directory
