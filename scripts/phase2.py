@@ -3,7 +3,6 @@ This script decomposes a gene set into subsets and evaluates them in order to
 identify the subsets with the highest classification potential.
 """
 import argparse
-import dataframe_helper
 import itertools
 import json
 import numpy as np
@@ -11,9 +10,11 @@ import operator
 import os
 import pandas as pd
 import random
-import sklearn.dummy
 import sklearn.model_selection
 import sklearn.preprocessing
+
+import dataframe_helper
+import models
 
 
 
@@ -94,15 +95,27 @@ if __name__ == "__main__":
 	df = dataframe_helper.load(args.dataset)
 	df_samples = df.index
 	df_genes = df.columns
+
 	labels = pd.read_csv(args.labels, sep="\t", header=None, index_col=0)
+	labels = labels[1].values
+	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
 
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 
 	# initialize classifier
 	print("initializing classifier...")
 
-	model_config = json.load(open(args.model_config))
-	clf = sklearn.dummy.DummyClassifier()
+	config = json.load(open(args.model_config))
+	clf = models.MLP( \
+		layers=config["mlp"]["layers"], \
+		activations=config["mlp"]["activations"], \
+		dropout=config["mlp"]["dropout"], \
+		lr=config["mlp"]["lr"], \
+		epochs=config["mlp"]["epochs"], \
+		batch_size=config["mlp"]["batch_size"], \
+		load=config["mlp"]["load"], \
+		save=config["mlp"]["save"], \
+		verbose=config["mlp"]["verbose"])
 
 	# load gene sets file if it was provided
 	if args.gene_sets != None:
@@ -194,7 +207,7 @@ if __name__ == "__main__":
 			# evaluate each subset
 			for subset in subsets:
 				# evaluate subset
-				score = evaluate(df, labels[1], clf, subset)
+				score = evaluate(df, labels, clf, subset)
 
 				# write results to file
 				logfile.write("%s\t%0.3f\n" % (",".join(subset), score))

@@ -1,0 +1,13 @@
+{
+  "mlp": {
+    "layers": [512, 256, 128],
+    "activations": ["relu", "relu", "relu"],
+    "dropout": false,
+    "lr": 0.001,
+    "epochs": 75,
+    "batch_size": 1024,
+    "load": false,
+    "save": false,
+    "verbose": false
+  }
+}

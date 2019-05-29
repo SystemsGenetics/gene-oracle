@@ -2,15 +2,16 @@
 This script evaluates the classification potential of gene sets on a dataset.
 """
 import argparse
-import dataframe_helper
 import json
 import numpy as np
 import pandas as pd
 import random
-import sklearn.dummy
 import sklearn.model_selection
 import sklearn.preprocessing
 import sys
+
+import dataframe_helper
+import models
 
 
 
@@ -99,15 +100,27 @@ if __name__ == "__main__":
 	df = dataframe_helper.load(args.dataset)
 	df_samples = df.index
 	df_genes = df.columns
+
 	labels = pd.read_csv(args.labels, sep="\t", header=None, index_col=0)
+	labels = labels[1].values
+	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
 
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 
 	# initialize classifier
 	print("initializing classifier...")
 
-	model_config = json.load(open(args.model_config))
-	clf = sklearn.dummy.DummyClassifier()
+	config = json.load(open(args.model_config))
+	clf = models.MLP( \
+		layers=config["mlp"]["layers"], \
+		activations=config["mlp"]["activations"], \
+		dropout=config["mlp"]["dropout"], \
+		lr=config["mlp"]["lr"], \
+		epochs=config["mlp"]["epochs"], \
+		batch_size=config["mlp"]["batch_size"], \
+		load=config["mlp"]["load"], \
+		save=config["mlp"]["save"], \
+		verbose=config["mlp"]["verbose"])
 
 	# load gene sets file if it was provided
 	if args.gene_sets != None:
@@ -161,8 +174,8 @@ if __name__ == "__main__":
 
 	# evaluate input gene sets
 	for (name, genes) in gene_sets:
-		evaluate_set(df, labels[1], clf, name, genes, cv=args.num_folds, outfile=outfile)
+		evaluate_set(df, labels, clf, name, genes, cv=args.num_folds, outfile=outfile)
 
 	# evaluate random gene sets
 	for n_genes in random_sets:
-		evaluate_random(df, labels[1], clf, n_genes, cv=args.num_folds, n_iters=args.random_iters, outfile=outfile)
+		evaluate_random(df, labels, clf, n_genes, cv=args.num_folds, n_iters=args.random_iters, outfile=outfile)
