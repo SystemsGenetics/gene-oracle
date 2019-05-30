@@ -18,7 +18,7 @@ python scripts/phase1-evaluate.py \
 	--labels       example_labels.txt \
 	--model_config example/models.json \
 	--random \
-	--random_range 1 20 \
+	--random_range 1 20 1 \
 	--random_iters 10 \
 	--num_folds    5 \
 	--outfile      phase1-random.txt

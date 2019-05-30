@@ -76,7 +76,7 @@ if __name__ == "__main__":
 	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT)")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
-	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=2, type=int)
+	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
 	parser.add_argument("--random_iters", help="number of iterations to perform for random classification", type=int, default=100)
 	parser.add_argument("--num_folds", help="number of folds for k-fold cross validation", type=int, default=5)
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 		# determine random set sizes from range
 		if args.random_range != None:
 			print("initializing random set sizes from range...")
-			random_sets = range(args.random_range[0], args.random_range[1] + 1)
+			random_sets = range(args.random_range[0], args.random_range[1] + 1, args.random_range[2])
 
 		# determine random set sizes from gene sets
 		elif args.gene_sets != None:
