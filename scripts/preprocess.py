@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import sys
 
-import dataframe_helper
+import utils
 
 
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 	# load dataframe from input format
 	print("loading %s..." % args.infile)
 
-	df = dataframe_helper.load(args.infile)
+	df = utils.load_dataframe(args.infile)
 
 	# transpose dataframe if specified
 	if args.transpose:
@@ -33,4 +33,4 @@ if __name__ == "__main__":
 	# save dataframe in output format
 	print("saving %s..." % args.outfile)
 
-	dataframe_helper.save(args.outfile, df)
+	utils.save_dataframe(args.outfile, df)

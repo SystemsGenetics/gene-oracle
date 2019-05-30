@@ -11,7 +11,7 @@ def split_filename(filename):
 
 
 
-def load(filename):
+def load_dataframe(filename):
 	basename, ext = split_filename(filename)
 
 	if ext == "txt":
@@ -33,7 +33,7 @@ def load(filename):
 
 
 
-def save(filename, df):
+def save_dataframe(filename, df):
 	basename, ext = split_filename(filename)
 
 	if ext == "txt":
@@ -49,3 +49,15 @@ def save(filename, df):
 	else:
 		print("error: filename %s is invalid" % (filename))
 		sys.exit(-1)
+
+
+
+def load_gene_sets(filename):
+	# load file into list
+	lines = [line.strip() for line in open(filename, "r")]
+	lines = [line.split("\t") for line in lines]
+
+	# map each gene set into a tuple of the name and genes in the set
+	gene_sets = [(line[0], line[1:]) for line in lines]
+
+	return gene_sets

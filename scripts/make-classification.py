@@ -1,5 +1,5 @@
 import argparse
-import dataframe_helper
+import utils
 import numpy as np
 import pandas as pd
 import random
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 		gene_sets.append(["gene-set-%d" % i] + genes)
 
 	# save dataset to file
-	dataframe_helper.save("example_data.txt", X)
+	utils.save_dataframe("example_data.txt", X)
 
 	# save labels to file
 	y.to_csv("example_labels.txt", sep="\t", header=None)

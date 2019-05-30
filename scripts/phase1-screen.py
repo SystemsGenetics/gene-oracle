@@ -11,17 +11,7 @@ import argparse
 import pandas as pd
 import scipy.stats
 
-
-
-def load_gene_sets(filename):
-	# load file into list
-	lines = [line.strip() for line in open(filename, "r")]
-	lines = [line.split("\t") for line in lines]
-
-	# map each gene set into a tuple of the name and genes in the set
-	gene_sets = [(line[0], line[1:]) for line in lines]
-
-	return gene_sets
+import utils
 
 
 
@@ -30,10 +20,10 @@ def evaluate_from_samples(df_subset, df_random, name, n_genes):
 
 
 
-def evaluate_from_stats(df_subset, df_random, name, n_genes):
+def evaluate_from_stats(df_subset, n_subset, df_random, n_random, name, n_genes):
 	return scipy.stats.ttest_ind_from_stats( \
-		df_subset.loc[name, "Average"], df_subset.loc[name, "Std_Dev"], 10, \
-		df_random.loc[n_genes, "Average"], df_random.loc[n_genes, "Std_Dev"], 500, \
+		df_subset.loc[name, "Average"], df_subset.loc[name, "Std_Dev"], n_subset, \
+		df_random.loc[n_genes, "Average"], df_random.loc[n_genes, "Std_Dev"], n_random, \
 		equal_var=False)
 
 
@@ -50,7 +40,7 @@ if __name__ == "__main__":
 	# load input files
 	df_random = pd.read_csv(args.random, sep="\t", header=None, index_col=0)
 	df_subset = pd.read_csv(args.subset, sep="\t", header=None, index_col=0)
-	gene_sets = load_gene_sets(args.gene_sets)
+	gene_sets = utils.load_gene_sets(args.gene_sets)
 
 	# evaluate each curated gene set
 	print("%-80s %s" % ("Name", "p"))

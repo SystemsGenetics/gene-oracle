@@ -10,20 +10,8 @@ import sklearn.model_selection
 import sklearn.preprocessing
 import sys
 
-import dataframe_helper
 import models
-
-
-
-def load_gene_sets(filename):
-	# load file into list
-	lines = [line.strip() for line in open(filename, "r")]
-	lines = [line.split("\t") for line in lines]
-
-	# map each gene set into a tuple of the name and genes in the set
-	gene_sets = [(line[0], line[1:]) for line in lines]
-
-	return gene_sets
+import utils
 
 
 
@@ -97,7 +85,7 @@ if __name__ == "__main__":
 	# load input data
 	print("loading input dataset...")
 
-	df = dataframe_helper.load(args.dataset)
+	df = utils.load_dataframe(args.dataset)
 	df_samples = df.index
 	df_genes = df.columns
 
@@ -126,7 +114,7 @@ if __name__ == "__main__":
 	if args.gene_sets != None:
 		print("loading gene sets...")
 
-		gene_sets = load_gene_sets(args.gene_sets)
+		gene_sets = utils.load_gene_sets(args.gene_sets)
 
 		print("loaded %d gene sets" % (len(gene_sets)))
 
