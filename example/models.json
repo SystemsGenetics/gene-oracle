@@ -1,13 +1,26 @@
 {
-  "mlp-tf": {
-    "layers": [512, 256, 128],
-    "activations": ["relu", "relu", "relu"],
-    "dropout": false,
-    "lr": 0.001,
-    "epochs": 75,
-    "batch_size": 1024,
-    "load": false,
-    "save": false,
-    "verbose": false
-  }
+	"lr": {
+		"solver": "lbfgs"
+	},
+	"mlp": {
+		"max_iter": 1000
+	},
+	"mlp-tf": {
+		"layers": [512, 256, 128],
+		"activations": ["relu", "relu", "relu"],
+		"dropout": false,
+		"lr": 0.001,
+		"epochs": 75,
+		"batch_size": 1024,
+		"load": false,
+		"save": false,
+		"verbose": false
+	},
+	"rf": {
+		"n_estimators": 100
+	},
+	"svm": {
+		"kernel": "rbf",
+		"gamma": "scale"
+	}
 }

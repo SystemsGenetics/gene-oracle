@@ -101,7 +101,7 @@ def load_classifier(config_file, name):
 		"mlp": sklearn.neural_network.MLPClassifier,
 		"mlp-tf": models.MLP,
 		"rf": sklearn.ensemble.RandomForestClassifier,
-		"svc": sklearn.svm.SVC
+		"svm": sklearn.svm.SVC
 	}
 
 	# initialize classifier
