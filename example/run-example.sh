@@ -11,7 +11,7 @@ python scripts/phase1-evaluate.py \
 	--model-config example/models.json \
 	--gene-sets    example_genesets.txt \
 	--num-folds    5 \
-	--outfile      phase1-genesets.txt
+	--outfile      phase1-curated.txt
 
 python scripts/phase1-evaluate.py \
 	--dataset      example_data.txt \
@@ -25,8 +25,8 @@ python scripts/phase1-evaluate.py \
 
 # perform Welch's t-test on gene sets
 python scripts/phase1-select.py \
-	--random    phase1-random.txt \
-	--subset    phase1-genesets.txt \
+	--scores-fg phase1-curated.txt \
+	--scores-bg phase1-random.txt \
 	--gene-sets example_genesets.txt
 
 # perform combinatorial analysis on gene sets

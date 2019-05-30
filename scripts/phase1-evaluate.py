@@ -57,7 +57,7 @@ if __name__ == "__main__":
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
-	parser.add_argument("--gene-sets", help="list of gene sets (GMT/GCT)")
+	parser.add_argument("--gene-sets", help="list of gene sets")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
@@ -96,26 +96,26 @@ if __name__ == "__main__":
 	if args.gene_sets != None:
 		print("loading gene sets...")
 
-		gene_sets = utils.load_gene_sets(args.gene_sets)
+		curated_sets = utils.load_gene_sets(args.gene_sets)
 
-		print("loaded %d gene sets" % (len(gene_sets)))
+		print("loaded %d gene sets" % (len(curated_sets)))
 
 		# remove genes which do not exist in the dataset
-		genes = list(set(sum([genes for (name, genes) in gene_sets], [])))
+		genes = list(set(sum([genes for (name, genes) in curated_sets], [])))
 		missing_genes = [g for g in genes if g not in df_genes]
 
-		gene_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in gene_sets]
+		curated_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in curated_sets]
 
 		print("%d / %d (%0.1f%%) genes from gene sets were not found in the input dataset" % (
 			len(missing_genes),
 			len(genes),
 			len(missing_genes) / len(genes) * 100))
 	else:
-		gene_sets = []
+		curated_sets = []
 
 	# include the set of all genes if specified
 	if args.full:
-		gene_sets.append(("FULL", df_genes))
+		curated_sets.append(("FULL", df_genes))
 
 	# initialize list of random set sizes
 	if args.random:
@@ -126,8 +126,8 @@ if __name__ == "__main__":
 
 		# determine random set sizes from gene sets
 		elif args.gene_sets != None:
-			print("initializing random set sizes from gene sets...")
-			random_sets = sorted(set([len(genes) for (name, genes) in gene_sets]))
+			print("initializing random set sizes from curated sets...")
+			random_sets = sorted(set([len(genes) for (name, genes) in curated_sets]))
 
 		# print error and exit
 		else:
@@ -142,8 +142,8 @@ if __name__ == "__main__":
 	if args.outfile:
 		outfile = open(args.outfile, "w")
 
-	# evaluate input gene sets
-	for (name, genes) in gene_sets:
+	# evaluate curated gene sets
+	for (name, genes) in curated_sets:
 		evaluate_curated(df, labels, clf, name, genes, cv=args.num_folds, outfile=outfile)
 
 	# evaluate random gene sets
