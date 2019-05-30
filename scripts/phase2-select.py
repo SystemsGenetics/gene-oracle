@@ -44,6 +44,9 @@ def compute_frequency_matrix(genes, subsets):
 		for gene in subset_genes:
 			freq_matrix[k - 1, gene_dict[gene]] += 1
 
+	# normalize freqency matrix by the number of genes in each iteration
+	freq_matrix /= freq_matrix.sum(axis=1, keepdims=True)
+
 	return freq_matrix
 
 
