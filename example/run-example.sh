@@ -13,7 +13,8 @@ python scripts/phase1-evaluate.py \
 	--gene-sets    example_genesets.txt \
 	--random \
 	--random-iters 10 \
-	--num-folds    5 \
+	--cv           5 \
+	--n-jobs       2 \
 	--outfile      phase1-scores.txt
 
 # select gene sets which score higher over random

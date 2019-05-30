@@ -117,7 +117,7 @@ def load_classifier(config_file, name):
 
 
 
-def evaluate_gene_set(data, labels, clf, genes, cv=None):
+def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=None):
 	# extract dataset
 	X = data[genes]
 
@@ -138,6 +138,6 @@ def evaluate_gene_set(data, labels, clf, genes, cv=None):
 	# otherwise use cross-validation
 	else:
 		# evaluate gene set
-		scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
+		scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv, n_jobs=n_jobs)
 
 		return list(scores)

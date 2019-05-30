@@ -11,9 +11,9 @@ import utils
 
 
 
-def evaluate_curated(data, labels, clf, name, genes, cv=5, verbose=True, outfile=None):
+def evaluate_curated(data, labels, clf, name, genes, cv=5, n_jobs=None, verbose=True, outfile=None):
 	# evaluate gene set
-	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
+	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
 
 	# compute stats
 	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
@@ -28,7 +28,7 @@ def evaluate_curated(data, labels, clf, name, genes, cv=5, verbose=True, outfile
 
 
 
-def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, verbose=True, outfile=None):
+def evaluate_random(data, labels, clf, n_genes, n_iters=100, cv=5, n_jobs=None, verbose=True, outfile=None):
 	# evaluate n_iters random sets
 	scores = []
 
@@ -37,7 +37,7 @@ def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, verbose=True,
 		genes = random.sample(list(data.columns), n_genes)
 
 		# evaluate gene set
-		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
+		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
 
 	# compute stats
 	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
@@ -65,7 +65,8 @@ if __name__ == "__main__":
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
 	parser.add_argument("--random-iters", help="number of iterations to perform for random classification", type=int, default=100)
-	parser.add_argument("--num-folds", help="number of folds for k-fold cross validation", type=int, default=5)
+	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=None)
+	parser.add_argument("--cv", help="number of folds for k-fold cross validation", type=int, default=5)
 
 	args = parser.parse_args()
 
@@ -140,8 +141,8 @@ if __name__ == "__main__":
 
 	# evaluate curated gene sets
 	for (name, genes) in curated_sets:
-		evaluate_curated(df, labels, clf, name, genes, cv=args.num_folds, outfile=outfile)
+		evaluate_curated(df, labels, clf, name, genes, cv=args.cv, n_jobs=args.n_jobs, outfile=outfile)
 
 	# evaluate random gene sets
 	for n_genes in random_sets:
-		evaluate_random(df, labels, clf, n_genes, cv=args.num_folds, n_iters=args.random_iters, outfile=outfile)
+		evaluate_random(df, labels, clf, n_genes, n_iters=args.random_iters, cv=args.cv, n_jobs=args.n_jobs, outfile=outfile)

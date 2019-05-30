@@ -29,11 +29,8 @@ class MLP(sklearn.base.BaseEstimator):
 			self._session.close()
 
 
+
 	def _initialize(self, n_input, n_classes):
-		os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-		tf.reset_default_graph()
-
 		x = tf.placeholder("float", [None, n_input])
 		y = tf.placeholder("float", [None, n_classes])
 
@@ -93,10 +90,7 @@ class MLP(sklearn.base.BaseEstimator):
 		self._x = x
 		self._y = y
 
-		# initialize computational graph
-		if not hasattr(self, "_session"):
-			self._session = tf.Session()
-
+		# initialize tf variables
 		init = tf.global_variables_initializer()
 		self._session.run(init)
 
@@ -136,39 +130,46 @@ class MLP(sklearn.base.BaseEstimator):
 		# shuffle training data
 		x, y = self._shuffle(x, y)
 
-		# initialize model
-		self._initialize(n_input, n_classes)
+		# initialize tf graph and session
+		if not hasattr(self, "_graph"):
+			os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+			self._graph = tf.Graph()
+			self._session = tf.Session(graph=self._graph)
 
-		# initialize checkpoint saver
-		saver = tf.train.Saver()
+		with self._graph.as_default():
+			# initialize model
+			self._initialize(n_input, n_classes)
 
-		# restore checkpoint if specified
-		if self.load:
-			saver.restore(self._session, "../checkpoints/dataset_nn")
+			# initialize checkpoint saver
+			saver = tf.train.Saver()
 
-		# perform training
-		for epoch in range(self.epochs):
-			# determine number of batches
-			n_batches = int(n_samples / self.batch_size)
-			avg_loss = 0
+			# restore checkpoint if specified
+			if self.load:
+				saver.restore(self._session, "../checkpoints/dataset_nn")
 
-			# train on each batch
-			for i in range(n_batches):
-				# extract batch
-				batch_x, batch_y = self._next_batch(x, y, self.batch_size, i)
+			# perform training
+			for epoch in range(self.epochs):
+				# determine number of batches
+				n_batches = int(n_samples / self.batch_size)
+				avg_loss = 0
 
-				# compute loss
-				_, loss, _ = self._session.run([self._optimizer, self._loss, self._model], feed_dict={ self._x: batch_x, self._y: batch_y })
+				# train on each batch
+				for i in range(n_batches):
+					# extract batch
+					batch_x, batch_y = self._next_batch(x, y, self.batch_size, i)
 
-				avg_loss += loss / n_batches
+					# compute loss
+					_, loss, _ = self._session.run([self._optimizer, self._loss, self._model], feed_dict={ self._x: batch_x, self._y: batch_y })
 
-			# print results
-			if self.verbose:
-				print("epoch: %04d, lr: %0.6f, loss: %0.6f" % (epoch + 1, self._lr.eval(feed_dict=None, session=self._session), avg_loss))
+					avg_loss += loss / n_batches
 
-		# save checkpoint if specified
-		if self.save:
-			saver.save(self._session, "../checkpoints/dataset_nn")
+				# print results
+				if self.verbose:
+					print("epoch: %04d, lr: %0.6f, loss: %0.6f" % (epoch + 1, self._lr.eval(feed_dict=None, session=self._session), avg_loss))
+
+			# save checkpoint if specified
+			if self.save:
+				saver.save(self._session, "../checkpoints/dataset_nn")
 
 
 
@@ -181,8 +182,9 @@ class MLP(sklearn.base.BaseEstimator):
 		# transform labels to one-hot encoding
 		y = self._onehot_encode(y)
 
-		# compute accuracy of model on test data
-		accuracy = tf.equal(tf.argmax(self._model, 1), tf.argmax(self._y, 1))
-		accuracy = tf.reduce_mean(tf.cast(accuracy, "float"))
+		with self._graph.as_default():
+			# compute accuracy of model on test data
+			accuracy = tf.equal(tf.argmax(self._model, 1), tf.argmax(self._y, 1))
+			accuracy = tf.reduce_mean(tf.cast(accuracy, "float"))
 
-		return accuracy.eval({ self._x: x, self._y: y }, session=self._session)
+			return accuracy.eval({ self._x: x, self._y: y }, session=self._session)
