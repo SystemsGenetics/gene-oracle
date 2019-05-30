@@ -13,22 +13,24 @@ import utils
 
 
 
-def evaluate_curated(data, labels, clf, name, genes, cv=5, outfile=None):
+def evaluate_curated(data, labels, clf, name, genes, cv=5, verbose=True, outfile=None):
 	# evaluate gene set
 	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
 
-	# print results
-	line = "\t".join([name] + ["%.3f" % (score) for score in scores])
+	# compute stats
+	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
 
-	print(line)
+	# print results
+	if verbose:
+		print("%-40s %3d %8.3f %8.3f" % (name, n, mu, sigma))
 
 	# write results to output file
 	if outfile:
-		outfile.write(line + "\n")
+		outfile.write("%s\t%d\t%.3f\t%.3f\n" % (name, n, mu, sigma))
 
 
 
-def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, outfile=None):
+def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, verbose=True, outfile=None):
 	# evaluate n_iters random sets
 	scores = []
 
@@ -39,14 +41,16 @@ def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, outfile=None)
 		# evaluate gene set
 		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
 
-	# print results
-	line = "\t".join([str(n_genes)] + ["%.3f" % (score) for score in scores])
+	# compute stats
+	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
 
-	print(line)
+	# print results
+	if verbose:
+		print("%-40s %3d %8.3f %8.3f" % (str(n_genes), n, mu, sigma))
 
 	# write results to output file
 	if outfile:
-		outfile.write(line + "\n")
+		outfile.write("%s\t%d\t%.3f\t%.3f\n" % (str(n_genes), n, mu, sigma))
 
 
 
@@ -57,7 +61,7 @@ if __name__ == "__main__":
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
-	parser.add_argument("--gene-sets", help="list of gene sets")
+	parser.add_argument("--gene-sets", help="list of curated gene sets")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
@@ -141,6 +145,7 @@ if __name__ == "__main__":
 	# initialize output file
 	if args.outfile:
 		outfile = open(args.outfile, "w")
+		outfile.write("%s\t%s\t%s\t%s\n" % ("name", "n", "sigma", "mu"))
 
 	# evaluate curated gene sets
 	for (name, genes) in curated_sets:

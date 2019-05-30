@@ -64,7 +64,7 @@ def select_candidate_genes(genes, freq_matrix):
 if __name__ == "__main__":
 	# parse command-line arguments
 	parser = argparse.ArgumentParser(description="Identify candidate / non-candidate genes in a gene set")
-	parser.add_argument("--gene-sets", help="list of gene sets", required=True)
+	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
 
 	args = parser.parse_args()

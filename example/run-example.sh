@@ -10,32 +10,22 @@ python scripts/phase1-evaluate.py \
 	--labels       example_labels.txt \
 	--model-config example/models.json \
 	--gene-sets    example_genesets.txt \
-	--num-folds    5 \
-	--outfile      phase1-curated.txt
-
-python scripts/phase1-evaluate.py \
-	--dataset      example_data.txt \
-	--labels       example_labels.txt \
-	--model-config example/models.json \
 	--random \
-	--random-range 1 20 1 \
 	--random-iters 10 \
 	--num-folds    5 \
-	--outfile      phase1-random.txt
+	--outfile      phase1-scores.txt
 
-# perform Welch's t-test on gene sets
+# select gene sets which score higher over random
 python scripts/phase1-select.py \
-	--scores-fg phase1-curated.txt \
-	--scores-bg phase1-random.txt \
+	--scores    phase1-scores.txt \
 	--gene-sets example_genesets.txt
 
-# perform combinatorial analysis on gene sets
+# perform combinatorial analysis on selected gene sets
 python scripts/phase2-evaluate.py \
 	--dataset      example_data.txt \
 	--labels       example_labels.txt \
 	--model-config example/models.json \
 	--gene-sets    example_genesets.txt \
-	--random \
 	--logdir       logs
 
 # select candidate genes for each gene set
