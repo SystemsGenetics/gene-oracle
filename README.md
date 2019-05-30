@@ -1,6 +1,6 @@
 # Gene Oracle
 
-This repository contains the code for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes using gene expression data. Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM) with rows being samples and columns being genes (features), (2) a list of sample labels, and (3) a list of gene sets. From these inputs, Gene Oracle identifies gene sets which provide the most predictive power, based on how well they classify the given gene expression dataset.
+This repository contains the code for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes using gene expression data. Gene Oracle identifies gene sets which provide the most predictive power, based on how well they classify samples in a gene expression dataset.
 
 ## Installation
 
@@ -22,78 +22,60 @@ conda activate gene-oracle
 conda deactivate
 ```
 
-After that, simply clone this repo to use Gene Oracle.
+After that, simply clone this repository to use Gene Oracle.
+```bash
+git clone https://github.com/SystemsGenetics/gene-oracle.git
+cd gene-oracle
+
+# run the example
+example/run-example.sh
+```
 
 ## Usage
 
-The script `classify.py` can be used to classify a dataset using all the features, a random subset of features, or a specified subset of features.  
+Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-classification.py`.
 
-Users are required to input a path to three files:
-* a numpy data array that has features (genes) row-wise and samples column wise
-* a numpy data array that contains a list of every gene (str) in the exact order as the dataset
-* a json file that contains the number of samples per class
-    * note: the dataset is assumed to be in order of the json file
-    * Example: {"Adipose-Subcutaneous": 350, "Adipose-Visceral": 227,...,"Whole-Blood": 393}
-    so for class Adipose-Subcutaneous there are 350 samples etc etc
-* if a subset list is input, it is expected to be of the following format:
-```
-SetName1,Gene1,Gene2,Gene3
-SetName2,Gene2,Gene4,Gene5,Gene6
-...
-```
-* note: working towards a more robust data loading scheme
+### Input Data
 
-The following contains the example usage:
-```
-usage: classify.py [-h] --dataset DATASET --gene_list GENE_LIST --sample_json
-                   SAMPLE_JSON --config CONFIG --out_file OUT_FILE
-                   [--subset_list SUBSET_LIST] [--random_test]
-                   [--num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]]
-                   [--rand_iters [RAND_ITERS]]
+Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM), (2) a list of sample labels, and (3) a list of gene sets. These inputs are described below.
 
-arguments:
-  -h, --help            show this help message and exit
-  --dataset DATASET     dataset to be used
-  --gene_list GENE_LIST
-                        list of genes in dataset (same order as dataset)
-  --sample_json SAMPLE_JSON
-                        json file containing number of samples per class
-  --config CONFIG       json file containing network specifications
-  --out_file OUT_FILE   output file to send results to
-  --subset_list SUBSET_LIST
-                        gmt/gct file containing subsets
-  --random_test         Perform random test
-  --num_random_genes NUM_RANDOM_GENES [NUM_RANDOM_GENES ...]
-                        Number of random genes to assess
-  --rand_iters [RAND_ITERS]
-                        Number of iterations to perform for random
-                        classification
+The __gene expression matrix__ should be a plaintext file with rows being samples and columns being genes (features). Values in each row should be separated by tabs.
+```
+        Gene1	Gene2	Gene3	Gene4
+Sample1	0.523	0.991	0.421	0.829
+Sample2	8.891	7.673	3.333	9.103
+Sample3	4.444	5.551	6.102	0.013
 ```
 
-## Candidate Selection
-
-To determine the relevance of a particular gene or a subgroup of genes, `gene-oracle.py` can be used to generate subgroups from sets of genes. This file expects data to be the in the same format as the classification script above. 
+For large GEM files, it is recommended that you convert the GEM to numpy format using `preprocess.py`, as Gene Oracle can load this binary format much more quickly than it does the plaintext format. The `preprocess.py` script can also transpose your GEM if it is arranged the wrong way:
+```bash
+python scripts/preprocess.py GEM.txt GEM.npy --transpose
 ```
-usage: gene-oracle.py [-h] --dataset DATASET --gene_list GENE_LIST
-                      --sample_json SAMPLE_JSON --config CONFIG
-                      [--subset_list SUBSET_LIST] --set SET
-                      [--num_genes NUM_GENES] --log_dir LOG_DIR
 
-Run tests on specified subsets of a hallmark or random set
+This example will create three files: `GEM.npy`, `GEM_rownames.txt`, and `GEM_colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --dataset DATASET     dataset to be used
-  --gene_list GENE_LIST
-                        list of genes in dataset (same order as dataset)
-  --sample_json SAMPLE_JSON
-                        json file containing number of samples per class
-  --config CONFIG       json file containing network specifications
-  --subset_list SUBSET_LIST
-                        gmt/gct/txt file containing subsets
-  --set SET             subset to be used
-  --num_genes NUM_GENES
-                        number of genes
-  --log_dir LOG_DIR     directory where logs are stored
+The __label file__ should contain a label for each sample, corresponding to something such as a condition or phenotype state for the sample. This file should contain two columns, the first being the sample names and the second being the labels. Values in each row should be separated by tabs.
 ```
-The file expects a set to be the name of group of genes in the subset_list file. This is the set that is decomposed to subsets according to phase 2 of the algorithm. Additionally, input the number of genes in the set and a log directory to put the output files in.
+Sample1	Label1
+Sample2	Label2
+Sample3	Label3
+Sample4	Label4
+```
+
+The __gene set list__ should contain the name and genes for a gene set on each line, similar to the GMT format. The gene names should be identical to those used in the GEM file. Values on each row should be separated by tabs.
+```
+GeneSet1	Gene1	Gene2	Gene3
+GeneSet2	Gene2	Gene4	Gene5	Gene6
+```
+
+### Phase 1: Gene Set Analysis
+
+The script `phase1-evaluate.py` takes a list of gene sets and evaluates each gene set by training and evaluating a classifier on the input dataset with only the genes in the set. This script can also evaluate the entire set of genes in the input dataset, as well as random gene sets.
+
+The script `phase1-screen.py` takes evaluation results for gene sets and compares them to results for random sets of equal size. It uses Welch's _t_-test (Student's _t_-test) to determine the statistical significance of a gene set's score as compared to a null distribution for the given set size. Larger gene sets tend to yield higher classification accuracies, so the _t_-test is used to eliminate this bias when selecting gene sets for subset analysis.
+
+### Phase 2: Gene Subset Analysis
+
+The script `phase2-evaluate.py` takes a list of gene sets and evaluates subsets of each gene set in order to determine the most salient genes in the gene set. This script can also analyze random gene sets in the same manner.
+
+The script `phase2-screen.py` takes evaluation results for the subsets selected by the previous script, measures the saliency of each gene by how frequently it appeared in all subsets, and separates "candidate" genes from "non-candidate" genes according to a threshold.
