@@ -1,24 +1,28 @@
 # Gene Oracle
 
-This repository contains all code, scripts, and other for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes given RNA expression data. The data is expected to be preprocessed and in numpy float format with rows being genes (features) and columns being samples (each data point being an RNA expression level). Additionally, a list of genes, also in numpy format, is expected as input in the same order in which the float data is constructed. Finally, a json file containing class names and number of samples per class, in sample order, is required. 
+This repository contains the code for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes using gene expression data. Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM) with rows being samples and columns being genes (features), (2) a list of sample labels, and (3) a list of gene sets. From these inputs, Gene Oracle identifies gene sets which provide the most predictive power, based on how well they classify the given gene expression dataset.
 
-## Requirements and Setup
+## Installation
 
-Create a virtual environment with anaconda3 (this example assumes Clemson's Palmetto Cluster, but any compute cluster should work):
+All of Gene Oracle's dependencies can be installed via Anaconda. On a shared system (such as a university research cluster), it is recommended that you install everything in an Anaconda environment:
+
 ```bash
+# specific to Clemson's Palmetto cluster
 module add anaconda3/5.1.0
+
 conda create -n gene-oracle python=3.5 tensorflow-gpu=1.8.0 matplotlib numpy pandas scikit-learn
 ```
 
-To activate your environment, simply do:
+You must then "activate" your environment in order to use it:
 ```bash
 conda activate gene-oracle
-```
 
-To deactivate your environment, simply do:
-```bash
+# use gene-oracle
+
 conda deactivate
 ```
+
+After that, simply clone this repo to use Gene Oracle.
 
 ## Usage
 
