@@ -1,5 +1,8 @@
+import copy
 import numpy as np
 import pandas as pd
+import sklearn.model_selection
+import sklearn.preprocessing
 import sys
 
 
@@ -52,6 +55,18 @@ def save_dataframe(filename, df):
 
 
 
+def load_labels(filename):
+	# load labels file
+	labels = pd.read_csv(filename, sep="\t", header=None, index_col=0)
+
+	# convert categorical labels to numerical labels
+	labels = labels[1].values
+	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
+
+	return labels
+
+
+
 def load_gene_sets(filename):
 	# load file into list
 	lines = [line.strip() for line in open(filename, "r")]
@@ -61,3 +76,30 @@ def load_gene_sets(filename):
 	gene_sets = [(line[0], line[1:]) for line in lines]
 
 	return gene_sets
+
+
+
+def evaluate_gene_set(data, labels, clf, genes, cv=None):
+	# extract dataset
+	X = data[genes]
+
+	# normalize dataset
+	X = sklearn.preprocessing.MaxAbsScaler().fit_transform(X)
+
+	# perform a single train/test split if cv is not specified
+	if cv == None or cv == 1:
+		# create train/test sets
+		X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
+
+		# evaluate gene set
+		clf = copy.deepcopy(clf)
+		clf.fit(X_train, y_train)
+
+		return [clf.score(X_test, y_test)]
+
+	# otherwise use cross-validation
+	else:
+		# evaluate gene set
+		scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
+
+		return list(scores)

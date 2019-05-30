@@ -3,7 +3,6 @@ This script decomposes a gene set into subsets and evaluates them in order to
 identify the subsets with the highest classification potential.
 """
 import argparse
-import copy
 import itertools
 import json
 import numpy as np
@@ -11,8 +10,6 @@ import operator
 import os
 import pandas as pd
 import random
-import sklearn.model_selection
-import sklearn.preprocessing
 
 import models
 import utils
@@ -49,24 +46,6 @@ def select_subsets(prev_subsets, genes, n_subsets=50, r=0.5):
 
 
 
-def evaluate(data, labels, clf, genes):
-	# extract dataset
-	X = data[genes]
-
-	# normalize dataset
-	X = sklearn.preprocessing.MaxAbsScaler().fit_transform(X)
-
-	# create train/test sets
-	X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
-
-	# evaluate gene set
-	clf = copy.deepcopy(clf)
-	clf.fit(X_train, y_train)
-
-	return clf.score(X_test, y_test)
-
-
-
 if __name__ == "__main__":
 	# parse command-line arguments
 	parser = argparse.ArgumentParser(description="Generate and evaluate subsets of a gene set.")
@@ -86,9 +65,7 @@ if __name__ == "__main__":
 	df_samples = df.index
 	df_genes = df.columns
 
-	labels = pd.read_csv(args.labels, sep="\t", header=None, index_col=0)
-	labels = labels[1].values
-	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
+	labels = utils.load_labels(args.labels)
 
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 
@@ -198,7 +175,7 @@ if __name__ == "__main__":
 			# evaluate each subset
 			for subset in subsets:
 				# evaluate subset
-				score = evaluate(df, labels, clf, subset)
+				scores = utils.evaluate_gene_set(df, labels, clf, subset)
 
 				# write results to file
-				logfile.write("%s\t%0.3f\n" % (",".join(subset), score))
+				logfile.write("%s\t%0.3f\n" % (",".join(subset), scores[0]))

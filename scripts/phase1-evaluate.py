@@ -6,8 +6,6 @@ import json
 import numpy as np
 import pandas as pd
 import random
-import sklearn.model_selection
-import sklearn.preprocessing
 import sys
 
 import models
@@ -15,23 +13,9 @@ import utils
 
 
 
-def evaluate(data, labels, clf, genes, cv=5):
-	# extract dataset
-	X = data[genes]
-
-	# normalize dataset
-	X = sklearn.preprocessing.MaxAbsScaler().fit_transform(X)
-
+def evaluate_curated(data, labels, clf, name, genes, cv=5, outfile=None):
 	# evaluate gene set
-	scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
-
-	return list(scores)
-
-
-
-def evaluate_set(data, labels, clf, name, genes, cv=5, outfile=None):
-	# evaluate gene set
-	scores = evaluate(data, labels, clf, genes, cv=cv)
+	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
 
 	# print results
 	line = "\t".join([name] + ["%.3f" % (score) for score in scores])
@@ -53,7 +37,7 @@ def evaluate_random(data, labels, clf, n_genes, cv=5, n_iters=100, outfile=None)
 		genes = random.sample(list(data.columns), n_genes)
 
 		# evaluate gene set
-		scores += evaluate(data, labels, clf, genes, cv=cv)
+		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv)
 
 	# print results
 	line = "\t".join([str(n_genes)] + ["%.3f" % (score) for score in scores])
@@ -89,9 +73,7 @@ if __name__ == "__main__":
 	df_samples = df.index
 	df_genes = df.columns
 
-	labels = pd.read_csv(args.labels, sep="\t", header=None, index_col=0)
-	labels = labels[1].values
-	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
+	labels = utils.load_labels(args.labels)
 
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 
@@ -162,7 +144,7 @@ if __name__ == "__main__":
 
 	# evaluate input gene sets
 	for (name, genes) in gene_sets:
-		evaluate_set(df, labels, clf, name, genes, cv=args.num_folds, outfile=outfile)
+		evaluate_curated(df, labels, clf, name, genes, cv=args.num_folds, outfile=outfile)
 
 	# evaluate random gene sets
 	for n_genes in random_sets:
