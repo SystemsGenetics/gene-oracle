@@ -24,13 +24,13 @@ python scripts/phase1-evaluate.py \
 	--outfile      phase1-random.txt
 
 # perform Welch's t-test on gene sets
-python scripts/phase1-screen.py \
+python scripts/phase1-select.py \
 	--random    phase1-random.txt \
 	--subset    phase1-genesets.txt \
 	--gene_sets example_genesets.txt
 
 # perform combinatorial analysis on gene sets
-python scripts/phase2.py \
+python scripts/phase2-evaluate.py \
 	--dataset      example_data.txt \
 	--labels       example_labels.txt \
 	--model_config example/models.json \

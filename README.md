@@ -72,10 +72,10 @@ GeneSet2	Gene2	Gene4	Gene5	Gene6
 
 The script `phase1-evaluate.py` takes a list of gene sets and evaluates each gene set by training and evaluating a classifier on the input dataset with only the genes in the set. This script can also evaluate the entire set of genes in the input dataset, as well as random gene sets.
 
-The script `phase1-screen.py` takes evaluation results for gene sets and compares them to results for random sets of equal size. It uses Welch's _t_-test (Student's _t_-test) to determine the statistical significance of a gene set's score as compared to a null distribution for the given set size. Larger gene sets tend to yield higher classification accuracies, so the _t_-test is used to eliminate this bias when selecting gene sets for subset analysis.
+The script `phase1-select.py` takes evaluation results for gene sets and compares them to results for random sets of equal size. It uses Welch's _t_-test (Student's _t_-test) to determine the statistical significance of a gene set's score as compared to a null distribution for the given set size. Larger gene sets tend to yield higher classification accuracies, so the _t_-test is used to eliminate this bias when selecting gene sets for subset analysis.
 
 ### Phase 2: Gene Subset Analysis
 
 The script `phase2-evaluate.py` takes a list of gene sets and evaluates subsets of each gene set in order to determine the most salient genes in the gene set. This script can also analyze random gene sets in the same manner.
 
-The script `phase2-screen.py` takes evaluation results for the subsets selected by the previous script, measures the saliency of each gene by how frequently it appeared in all subsets, and separates "candidate" genes from "non-candidate" genes according to a threshold.
+The script `phase2-select.py` takes evaluation results for the subsets selected by the previous script, measures the saliency of each gene by how frequently it appeared in all subsets, and separates "candidate" genes from "non-candidate" genes according to a threshold.
