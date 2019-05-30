@@ -1,8 +1,0 @@
-## declare an array variable
-declare -a gtex=(32 36 42 44 58)
-
-## now loop through the above array
-for i in "${gtex[@]}"
-do
-	for((j=1;j<=5;j++)); do qsub subset_test_random.pbs -v NUM=$j -v GENE=$i; done
-done

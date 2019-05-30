@@ -1,9 +1,0 @@
-## declare an array variable
-declare -a arr=(1 2 3)
-
-## now loop through the above array
-for i in "${arr[@]}"
-do
-   echo "$i"
-   # or do whatever with individual element of the array
-done
