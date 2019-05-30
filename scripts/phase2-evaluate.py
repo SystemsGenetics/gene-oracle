@@ -23,10 +23,11 @@ def select_subsets(prev_subsets, genes, n_subsets=50, r=0.5):
 
 	# select the highest scoring subsets from prev subsets
 	seed_subsets = prev_subsets[0:n_subsets]
+	prev_subsets = prev_subsets[n_subsets:]
 
 	# additionally select random subsets from the remaining prev subsets
-	n_random = min(int(r * n_subsets), len(prev_subsets) - n_subsets)
-	seed_subsets += random.sample(prev_subsets[n_subsets:], n_random)
+	n_random = min(int(r * n_subsets), len(prev_subsets))
+	seed_subsets += random.sample(prev_subsets, n_random)
 
 	# generate new subsets by augmenting the seed subsets with individual genes
 	subsets = []
@@ -56,6 +57,7 @@ if __name__ == "__main__":
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=2, type=int)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
+
 	args = parser.parse_args()
 
 	# load input data

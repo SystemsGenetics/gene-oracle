@@ -37,3 +37,8 @@ python scripts/phase2-evaluate.py \
 	--gene-sets    example_genesets.txt \
 	--random \
 	--logdir       logs
+
+# select candidate genes for each gene set
+python scripts/phase2-select.py \
+	--gene-sets example_genesets.txt \
+	--logdir    logs
