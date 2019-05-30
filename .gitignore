@@ -1,31 +1,23 @@
-#mac stuff
+# mac stuff
 .DS_Store
 
 # data and log files
 *.dat
 *.log
 *.txt
-*.json
 *.png
+*.npy
+*.gct
+*.gmt
 
 # palmetto outputs
 *.o*
 *.e*
 
 # folders
-data
-datasets
-test_data
-train_data
 checkpoints
+data
 logs
-subsets
-graphs
 
 # python byte code
 *.pyc
-
-# genetic data
-*.npy
-*.gct
-*.gmt

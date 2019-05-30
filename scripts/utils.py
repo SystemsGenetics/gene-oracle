@@ -1,9 +1,18 @@
 import copy
+import json
 import numpy as np
 import pandas as pd
+import sklearn.dummy
+import sklearn.ensemble
+import sklearn.linear_model
 import sklearn.model_selection
+import sklearn.neighbors
+import sklearn.neural_network
 import sklearn.preprocessing
+import sklearn.svm
 import sys
+
+import models
 
 
 
@@ -32,7 +41,7 @@ def load_dataframe(filename):
 		return pd.DataFrame(X, index=rownames, columns=colnames)
 	else:
 		print("error: filename %s is invalid" % (filename))
-		sys.exit(-1)
+		sys.exit(1)
 
 
 
@@ -51,7 +60,7 @@ def save_dataframe(filename, df):
 		np.savetxt("%s_colnames.txt" % basename, df.columns, fmt="%s")
 	else:
 		print("error: filename %s is invalid" % (filename))
-		sys.exit(-1)
+		sys.exit(1)
 
 
 
@@ -76,6 +85,35 @@ def load_gene_sets(filename):
 	gene_sets = [(line[0], line[1:]) for line in lines]
 
 	return gene_sets
+
+
+
+def load_classifier(config_file, name):
+	# load model params
+	config = json.load(open(config_file))
+	params = config[name] if name in config else {}
+
+	# define dictionary of classifiers
+	classifiers = {
+		"dummy": sklearn.dummy.DummyClassifier,
+		"knn": sklearn.neighbors.KNeighborsClassifier,
+		"lr": sklearn.linear_model.LogisticRegression,
+		"mlp": sklearn.neural_network.MLPClassifier,
+		"mlp-tf": models.MLP,
+		"rf": sklearn.ensemble.RandomForestClassifier,
+		"svc": sklearn.svm.SVC
+	}
+
+	# initialize classifier
+	if name in classifiers:
+		clf = classifiers[name](**params)
+
+	# or print error if model name is invalid
+	else:
+		print("error: classifier \"%s\" not recognized" % name)
+		sys.exit(1)
+
+	return clf
 
 
 

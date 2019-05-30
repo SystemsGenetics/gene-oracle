@@ -1,5 +1,5 @@
 {
-  "mlp": {
+  "mlp-tf": {
     "layers": [512, 256, 128],
     "activations": ["relu", "relu", "relu"],
     "dropout": false,

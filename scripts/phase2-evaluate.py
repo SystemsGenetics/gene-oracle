@@ -4,14 +4,12 @@ identify the subsets with the highest classification potential.
 """
 import argparse
 import itertools
-import json
 import numpy as np
 import operator
 import os
 import pandas as pd
 import random
 
-import models
 import utils
 
 
@@ -53,6 +51,7 @@ if __name__ == "__main__":
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
+	parser.add_argument("--model", help="classifier model to use", default="mlp")
 	parser.add_argument("--gene-sets", help="list of curated gene sets")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=2, type=int)
@@ -74,17 +73,9 @@ if __name__ == "__main__":
 	# initialize classifier
 	print("initializing classifier...")
 
-	config = json.load(open(args.model_config))
-	clf = models.MLP( \
-		layers=config["mlp"]["layers"], \
-		activations=config["mlp"]["activations"], \
-		dropout=config["mlp"]["dropout"], \
-		lr=config["mlp"]["lr"], \
-		epochs=config["mlp"]["epochs"], \
-		batch_size=config["mlp"]["batch_size"], \
-		load=config["mlp"]["load"], \
-		save=config["mlp"]["save"], \
-		verbose=config["mlp"]["verbose"])
+	clf = utils.load_classifier(args.model_config, args.model)
+
+	print("initialized %s classifier" % args.model)
 
 	# load gene sets file if it was provided
 	if args.gene_sets != None:

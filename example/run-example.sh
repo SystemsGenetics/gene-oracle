@@ -9,6 +9,7 @@ python scripts/phase1-evaluate.py \
 	--dataset      example_data.txt \
 	--labels       example_labels.txt \
 	--model-config example/models.json \
+	--model        mlp-tf \
 	--gene-sets    example_genesets.txt \
 	--random \
 	--random-iters 10 \
@@ -25,6 +26,7 @@ python scripts/phase2-evaluate.py \
 	--dataset      example_data.txt \
 	--labels       example_labels.txt \
 	--model-config example/models.json \
+	--model        mlp-tf \
 	--gene-sets    example_genesets.txt \
 	--logdir       logs
 
