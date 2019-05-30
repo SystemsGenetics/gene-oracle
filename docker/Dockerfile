@@ -5,7 +5,10 @@ MAINTAINER Colin Targonski <ctargon@clemson.edu>
 
 # install package dependencies
 RUN apt-get update -qq \
-	&& apt-get install -qq -y git python-tk
+	&& apt-get install -qq -y git python3-pip python-tk
+
+# install python dependencies
+RUN pip3 install -q numpy pandas scikit-learn
 
 # install gene-oracle
 WORKDIR /opt
