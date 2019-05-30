@@ -72,10 +72,10 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Generate and evaluate subsets of a gene set.")
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
-	parser.add_argument("--model_config", help="model configuration file (JSON)", required=True)
-	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT)")
+	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
+	parser.add_argument("--gene-sets", help="list of gene sets (GMT/GCT)")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
-	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=2, type=int)
+	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=2, type=int)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
 	args = parser.parse_args()
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
 		# print error and exit
 		else:
-			print("error: --gene_sets or --random_range must be provided to determine random set sizes")
+			print("error: --gene-sets or --random-range must be provided to determine random set sizes")
 			sys.exit(1)
 
 		# generate random gene sets

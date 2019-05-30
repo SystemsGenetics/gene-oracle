@@ -33,7 +33,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Select gene sets which perform significantly better than equivalent random sets.")
 	parser.add_argument("--random", help="list of accuracies for random gene sets", required=True)
 	parser.add_argument("--subset", help="list of accuracies for curated gene sets", required=True)
-	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT)")
+	parser.add_argument("--gene-sets", help="list of gene sets (GMT/GCT)")
 
 	args = parser.parse_args()
 

@@ -71,14 +71,14 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Evaluate classification potential of gene sets")
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
-	parser.add_argument("--model_config", help="model configuration file (JSON)", required=True)
+	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
 	parser.add_argument("--outfile", help="output file to save results")
-	parser.add_argument("--gene_sets", help="list of gene sets (GMT/GCT)")
+	parser.add_argument("--gene-sets", help="list of gene sets (GMT/GCT)")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
-	parser.add_argument("--random_range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
-	parser.add_argument("--random_iters", help="number of iterations to perform for random classification", type=int, default=100)
-	parser.add_argument("--num_folds", help="number of folds for k-fold cross validation", type=int, default=5)
+	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
+	parser.add_argument("--random-iters", help="number of iterations to perform for random classification", type=int, default=100)
+	parser.add_argument("--num-folds", help="number of folds for k-fold cross validation", type=int, default=5)
 
 	args = parser.parse_args()
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 		# print error and exit
 		else:
-			print("error: --gene_sets or --random_range must be provided to determine random set sizes")
+			print("error: --gene-sets or --random-range must be provided to determine random set sizes")
 			sys.exit(1)
 	else:
 		random_sets = []
