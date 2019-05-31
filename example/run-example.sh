@@ -14,7 +14,7 @@ python scripts/phase1-evaluate.py \
 	--random \
 	--random-iters 10 \
 	--cv           5 \
-	--n-jobs       2 \
+	--n-jobs       1 \
 	--outfile      phase1-scores.txt
 
 # select gene sets which score higher over random
