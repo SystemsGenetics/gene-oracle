@@ -2,7 +2,10 @@
 # Example usage of gene-oracle on a synthetic dataset.
 
 # create synthetic input data
-python scripts/make-classification.py
+python scripts/make-classification.py \
+	--n-samples 10000 \
+	--n-genes 200 \
+	--n-classes 10
 
 # evaluate gene sets
 python scripts/phase1-evaluate.py \

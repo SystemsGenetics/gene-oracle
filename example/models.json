@@ -6,7 +6,7 @@
 		"hidden_layer_sizes": [512, 256, 128],
 		"activation": "relu",
 		"solver": "adam",
-		"batch_size": 32,
+		"batch_size": 256,
 		"learning_rate_init": 0.001,
 		"max_iter": 10000
 	},
@@ -16,7 +16,7 @@
 		"dropout": false,
 		"lr": 0.001,
 		"epochs": 50,
-		"batch_size": 32,
+		"batch_size": 256,
 		"verbose": false
 	},
 	"rf": {
