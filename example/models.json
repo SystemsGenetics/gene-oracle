@@ -3,15 +3,20 @@
 		"solver": "lbfgs"
 	},
 	"mlp": {
-		"max_iter": 1000
+		"hidden_layer_sizes": [512, 256, 128],
+		"activation": "relu",
+		"solver": "adam",
+		"batch_size": 32,
+		"learning_rate_init": 0.001,
+		"max_iter": 10000
 	},
 	"mlp-tf": {
 		"layers": [512, 256, 128],
 		"activations": ["relu", "relu", "relu"],
 		"dropout": false,
 		"lr": 0.001,
-		"epochs": 75,
-		"batch_size": 1024,
+		"epochs": 50,
+		"batch_size": 32,
 		"load": false,
 		"save": false,
 		"verbose": false
