@@ -125,7 +125,7 @@ if __name__ == "__main__":
 	# perform combinatorial analysis on each gene set
 	for name, genes in gene_sets:
 		print()
-		print("decomposing %s..." % name)
+		print("decomposing %s (%d genes)..." % (name, len(genes)))
 
 		# initialize log directory
 		logdir = "%s/%s" % (args.logdir, name)

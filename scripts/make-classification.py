@@ -25,8 +25,8 @@ if __name__ == "__main__":
 	X, y = sklearn.datasets.make_classification(args.n_samples, args.n_genes, n_informative=n_informative, n_redundant=n_redundant, n_classes=args.n_classes)
 
 	# initialize gene names, sample names
-	X_samples = ["sample-%d" % i for i in range(args.n_samples)]
-	X_genes = ["gene-%d" % i for i in range(args.n_genes)]
+	X_samples = ["sample-%08d" % i for i in range(args.n_samples)]
+	X_genes = ["gene-%06d" % i for i in range(args.n_genes)]
 
 	# initialize dataframes
 	X = pd.DataFrame(X, index=X_samples, columns=X_genes)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 		n_genes = random.randint(3, min(max(10, args.n_genes // 10), args.n_genes))
 		genes = random.sample(X_genes, n_genes)
 
-		gene_sets.append(["gene-set-%d" % i] + genes)
+		gene_sets.append(["gene-set-%03d" % i] + genes)
 
 	# save dataset to file
 	utils.save_dataframe("example_data.txt", X)
