@@ -58,7 +58,7 @@ if __name__ == "__main__":
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
-	parser.add_argument("--model", help="classifier model to use", default="mlp")
+	parser.add_argument("--model", help="classifier model to use", default="mlp-tf")
 	parser.add_argument("--outfile", help="output file to save results")
 	parser.add_argument("--gene-sets", help="list of curated gene sets")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
