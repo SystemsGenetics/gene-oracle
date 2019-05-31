@@ -99,7 +99,7 @@ def load_classifier(config_file, name):
 		"knn": sklearn.neighbors.KNeighborsClassifier,
 		"lr": sklearn.linear_model.LogisticRegression,
 		"mlp": sklearn.neural_network.MLPClassifier,
-		"mlp-tf": models.MLP,
+		"mlp-tf": models.TensorflowMLP,
 		"rf": sklearn.ensemble.RandomForestClassifier,
 		"svm": sklearn.svm.SVC
 	}

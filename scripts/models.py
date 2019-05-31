@@ -4,12 +4,14 @@ import sklearn.base
 import sys
 import tensorflow as tf
 
+from tensorflow import keras
 
 
-class MLP(sklearn.base.BaseEstimator):
 
-	def __init__(self, layers=[512,512,512], activations=["relu", "relu", "relu"], \
-		dropout=False, lr=0.001, epochs=75, batch_size=16, \
+class TensorflowMLP(sklearn.base.BaseEstimator):
+
+	def __init__(self, layers=[100], activations=["relu"], \
+		dropout=False, lr=0.001, epochs=50, batch_size=32, \
 		load=False, save=False, verbose=False):
 
 		self.layers = layers
@@ -188,3 +190,87 @@ class MLP(sklearn.base.BaseEstimator):
 			accuracy = tf.reduce_mean(tf.cast(accuracy, "float"))
 
 			return accuracy.eval({ self._x: x, self._y: y }, session=self._session)
+
+
+
+class KerasMLP(sklearn.base.BaseEstimator):
+
+	def __init__(self, layers=[100], activations=["relu"], \
+		dropout=False, lr=0.001, epochs=50, batch_size=32, \
+		verbose=False):
+
+		self.layers = layers
+		self.activations = activations
+		self.dropout = dropout
+		self.lr = lr
+		self.epochs = epochs
+		self.batch_size = batch_size
+		self.verbose = verbose
+
+		os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+
+
+	def _initialize(self, n_input, n_classes):
+		# initialize layers
+		model = keras.models.Sequential()
+
+		for i, (units, activation) in enumerate(zip(self.layers, self.activations)):
+			if i == 0:
+				model.add(keras.layers.Dense(units=units, activation=activation, input_shape=(n_input,)))
+			else:
+				model.add(keras.layers.Dense(units=units, activation=activation))
+			
+			if self.dropout:
+				model.add(keras.layers.Dropout(0.5))
+
+		model.add(keras.layers.Dense(units=n_classes, activation="softmax"))
+
+		# initialize training method
+		optimizer = keras.optimizers.Adam(lr=self.lr)
+		loss = "categorical_crossentropy"
+
+		model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+
+		# save model
+		self._model = model
+
+
+
+	def _onehot_encode(self, y):
+		return np.array([self._classes == y_i for y_i in y])
+
+
+
+	def fit(self, x, y):
+		n_samples = x.shape[0]
+		n_input = x.shape[1]
+
+		# transform labels to one-hot encoding
+		self._classes = np.array(list(set(y)))
+
+		n_classes = len(self._classes)
+		y = self._onehot_encode(y)
+
+		# initialize model
+		self._initialize(n_input, n_classes)
+
+		# train model
+		self._model.fit(x=x, y=y, batch_size=self.batch_size, epochs=self.epochs, verbose=self.verbose)
+
+
+
+	def predict(self, x):
+		return self._model.predict(x)
+
+
+
+	def score(self, x, y):
+		# transform labels to one-hot encoding
+		y = self._onehot_encode(y)
+
+		# evaluate model
+		metrics = self._model.evaluate(x, y, verbose=self.verbose)
+
+		# return accuracy
+		return metrics[1]
