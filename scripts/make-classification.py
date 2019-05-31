@@ -24,10 +24,13 @@ if __name__ == "__main__":
 
 	X, y = sklearn.datasets.make_classification(args.n_samples, args.n_genes, n_informative=n_informative, n_redundant=n_redundant, n_classes=args.n_classes)
 
-	# initialize dataframe
-	X = pd.DataFrame(X)
-	X_genes = [str(i) for i in X.columns]
-	y = pd.DataFrame(y)
+	# initialize gene names, sample names
+	X_samples = ["sample-%d" % i for i in range(args.n_samples)]
+	X_genes = ["gene-%d" % i for i in range(args.n_genes)]
+
+	# initialize dataframes
+	X = pd.DataFrame(X, index=X_samples, columns=X_genes)
+	y = pd.DataFrame(y, index=X_samples)
 
 	# create synthetic gene sets
 	gene_sets = []

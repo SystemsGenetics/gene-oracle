@@ -41,7 +41,7 @@ Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM), (2) 
 
 The __gene expression matrix__ should be a plaintext file with rows being samples and columns being genes (features). Values in each row should be separated by tabs.
 ```
-        Gene1	Gene2	Gene3	Gene4
+	Gene1	Gene2	Gene3	Gene4
 Sample1	0.523	0.991	0.421	0.829
 Sample2	8.891	7.673	3.333	9.103
 Sample3	4.444	5.551	6.102	0.013
