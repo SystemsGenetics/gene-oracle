@@ -8,6 +8,7 @@ p-value, the more likely it is that the corresponding gene set performs
 significantly better over random.
 """
 import argparse
+import operator
 import pandas as pd
 import scipy.stats
 
@@ -20,6 +21,9 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Select gene sets which perform significantly better than equivalent random sets.")
 	parser.add_argument("--scores", help="list of scores for curated and random gene sets", required=True)
 	parser.add_argument("--gene-sets", help="list of curated gene sets")
+	parser.add_argument("--threshold", help="maximum p-value required for a gene set to be selected", type=float, default=1)
+	parser.add_argument("--n-sets", help="maximum number of gene sets that can be selected", type=int, default=-1)
+	parser.add_argument("--outfile", help="output file to save results", required=True)
 
 	args = parser.parse_args()
 
@@ -28,6 +32,8 @@ if __name__ == "__main__":
 	gene_sets = utils.load_gene_sets(args.gene_sets)
 
 	# evaluate each curated gene set
+	results = []
+
 	for name, genes in gene_sets:
 		# perform t-test between gene set score and background score
 		index_fg = name
@@ -38,5 +44,18 @@ if __name__ == "__main__":
 			scores.loc[index_bg, "mu"], scores.loc[index_bg, "sigma"], scores.loc[index_bg, "n"], \
 			equal_var=False)
 
+		results.append((name, genes, p))
+
 		# print result
 		print("%-40s %0.12f" % (name, p))
+
+	# select gene sets
+	results.sort(key=operator.itemgetter(2))
+	results = results[0:args.n_sets]
+	results = [(name, genes) for (name, genes, p) in results if p <= args.threshold]
+
+	# save selected gene sets to output file
+	outfile = open(args.outfile, "w")
+
+	for (name, genes) in results:
+		outfile.write("\t".join([name] + genes) + "\n")

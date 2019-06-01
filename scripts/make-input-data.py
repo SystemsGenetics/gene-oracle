@@ -15,6 +15,9 @@ if __name__ == "__main__":
 	parser.add_argument("--n-genes", help="number of genes", type=int, default=20)
 	parser.add_argument("--n-classes", help="number of classes", type=int, default=2)
 	parser.add_argument("--n-sets", help="number of gene sets", type=int, default=10)
+	parser.add_argument("--dataset", help="name of dataset file", default="example_data.txt")
+	parser.add_argument("--labels", help="name of label file", default="example_labels.txt")
+	parser.add_argument("--gene-sets", help="name of gene sets file", default="example_genesets.txt")
 
 	args = parser.parse_args()
 
@@ -42,11 +45,11 @@ if __name__ == "__main__":
 		gene_sets.append(["gene-set-%03d" % i] + genes)
 
 	# save dataset to file
-	utils.save_dataframe("example_data.txt", X)
+	utils.save_dataframe(args.dataset, X)
 
 	# save labels to file
-	y.to_csv("example_labels.txt", sep="\t", header=None)
+	y.to_csv(args.labels, sep="\t", header=None)
 
 	# save gene sets to file
-	f = open("example_genesets.txt", "w")
+	f = open(args.gene_sets, "w")
 	f.write("\n".join(["\t".join(gene_set) for gene_set in gene_sets]))
