@@ -33,7 +33,7 @@ example/run-example.sh
 
 ## Usage
 
-Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-classification.py`.
+Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-input-data.py`.
 
 ### Input Data
 
