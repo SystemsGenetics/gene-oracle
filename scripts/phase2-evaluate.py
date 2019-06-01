@@ -33,7 +33,7 @@ def select_subsets(prev_subsets, genes, n_subsets=50, r=0.5):
 	for seed_subset in seed_subsets:
 		# determine the set of genes not in the seed subset
 		extra_genes = list(set(genes) - set(seed_subset))
-		
+
 		# generate new subsets by appending each extra gene to seed subset
 		subsets += [(seed_subset + [gene]) for gene in extra_genes]
 
@@ -128,14 +128,7 @@ if __name__ == "__main__":
 		print("decomposing %s (%d genes)..." % (name, len(genes)))
 
 		# initialize log directory
-		logdir = "%s/%s" % (args.logdir, name)
-
-		os.makedirs(logdir, exist_ok=True)
-
-		# write gene list to a file
-		f = open("%s/genes.txt" % logdir, "w")
-		f.write("\n".join(genes))
-		f.close()
+		os.makedirs(args.logdir, exist_ok=True)
 
 		# perform combinatorial analysis
 		n_genes = len(genes)
@@ -152,8 +145,8 @@ if __name__ == "__main__":
 			# or select some combinations using a heuristic
 			else:
 				# load subsets from previous iteration
-				logfile = "%s/scores_%03d.txt" % (logdir, k - 1)
-				lines = [line.strip() for line in open(logfile, "r")]
+				logfile = open("%s/%s_scores_%03d.txt" % (args.logdir, name, k - 1), "r")
+				lines = [line.strip() for line in logfile]
 				lines = [line.split("\t") for line in lines]
 
 				# generate new subsets of size k from previous subsets
@@ -163,7 +156,7 @@ if __name__ == "__main__":
 			print("  evaluating %d subsets..." % len(subsets))
 
 			# initialize log file
-			logfile = open("%s/scores_%03d.txt" % (logdir, k), "w")
+			logfile = open("%s/%s_scores_%03d.txt" % (args.logdir, name, k), "w")
 
 			# evaluate each subset
 			for subset in subsets:

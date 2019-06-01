@@ -14,12 +14,12 @@ import utils
 
 
 
-def load_subsets(logdir, n_genes):
+def load_subsets(logdir, name, n_genes):
 	# load all subset scores for a gene set
 	subsets = []
 
 	for k in range(1, n_genes + 1):
-		logfile = open("%s/scores_%03d.txt" % (logdir, k), "r")
+		logfile = open("%s/%s_scores_%03d.txt" % (logdir, name, k), "r")
 		lines = [line.strip() for line in logfile]
 		lines = [line.split("\t") for line in lines]
 
@@ -77,8 +77,7 @@ if __name__ == "__main__":
 		print(name)
 
 		# compute frequency matrix
-		logdir = "%s/%s" % (args.logdir, name)
-		subsets = load_subsets(logdir, len(genes))
+		subsets = load_subsets(args.logdir, name, len(genes))
 		freq_matrix = compute_frequency_matrix(genes, subsets)
 
 		# plot heatmap of frequency matrix
