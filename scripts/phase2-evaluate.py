@@ -14,6 +14,24 @@ import utils
 
 
 
+def load_scores(filename):
+	infile = open(filename, "r")
+	lines = [line.strip() for line in infile]
+	lines = [line.split("\t") for line in lines]
+	subsets = [(line[0].split(","), float(line[1])) for line in lines]
+	
+	return subsets
+
+
+
+def save_scores(filename, subsets):
+	outfile = open(filename, "w")
+
+	for subset, score in subsets:
+		outfile.write("%s\t%0.3f\n" % (",".join(subset), score))
+
+
+
 def select_subsets(prev_subsets, genes, n_subsets=50, r=0.5):
 	# sort previous subsets by score (descending)
 	prev_subsets.sort(key=operator.itemgetter(1), reverse=True)
@@ -42,6 +60,39 @@ def select_subsets(prev_subsets, genes, n_subsets=50, r=0.5):
 	subsets = [list(s) for s in set(tuple(s) for s in subsets)]
 
 	return subsets
+
+
+
+def chunk_select(genes, k, infile=None):
+	n_genes = len(genes)
+
+	# generate all combinations of size k
+	if k <= 3 or n_genes - k <= 1:
+		subsets = [list(s) for s in itertools.combinations(genes, k)]
+
+	# or select some combinations using a heuristic
+	elif infile != None:
+		# load subsets from previous iteration
+		prev_subsets = load_scores(infile)
+
+		# generate new subsets of size k from previous subsets
+		subsets = select_subsets(prev_subsets, genes)
+
+	# augment with empty scores
+	subsets = [(subset, 0) for subset in subsets]
+
+	return subsets
+
+
+
+def chunk_evaluate(df, labels, clf, subsets, outfile):
+	# evaluate each subset
+	scores = [utils.evaluate_gene_set(df, labels, clf, subset) for subset, _ in subsets]
+	scores = [s[0] for s in scores]
+	subsets = [(subset, score) for ((subset, _), score) in zip(subsets, scores)]
+
+	# save results to output file
+	save_scores(outfile, subsets)
 
 
 
@@ -122,46 +173,24 @@ if __name__ == "__main__":
 
 			gene_sets.append((name, genes))
 
+	# initialize log directory
+	os.makedirs(args.logdir, exist_ok=True)
+
 	# perform combinatorial analysis on each gene set
 	for name, genes in gene_sets:
 		print()
 		print("decomposing %s (%d genes)..." % (name, len(genes)))
 
-		# initialize log directory
-		os.makedirs(args.logdir, exist_ok=True)
-
 		# perform combinatorial analysis
 		n_genes = len(genes)
 
 		for k in range(1, n_genes + 1):
-			print("iteration %d" % k)
+			# select subsets
+			print("  selecting subsets of size %d" % k)
 
-			print("  generating subsets...")
+			subsets = chunk_select(genes, k, "%s/%s_scores_%03d.txt" % (args.logdir, name, k - 1))
 
-			# generate all combinations of size k
-			if k <= 3 or n_genes - k <= 1:
-				subsets = [list(s) for s in itertools.combinations(genes, k)]
-
-			# or select some combinations using a heuristic
-			else:
-				# load subsets from previous iteration
-				logfile = open("%s/%s_scores_%03d.txt" % (args.logdir, name, k - 1), "r")
-				lines = [line.strip() for line in logfile]
-				lines = [line.split("\t") for line in lines]
-
-				# generate new subsets of size k from previous subsets
-				prev_subsets = [(line[0].split(","), float(line[1])) for line in lines]
-				subsets = select_subsets(prev_subsets, genes)
-
+			# evaluate subsets
 			print("  evaluating %d subsets..." % len(subsets))
 
-			# initialize log file
-			logfile = open("%s/%s_scores_%03d.txt" % (args.logdir, name, k), "w")
-
-			# evaluate each subset
-			for subset in subsets:
-				# evaluate subset
-				scores = utils.evaluate_gene_set(df, labels, clf, subset)
-
-				# write results to file
-				logfile.write("%s\t%0.3f\n" % (",".join(subset), scores[0]))
+			chunk_evaluate(df, labels, clf, subsets, "%s/%s_scores_%03d.txt" % (args.logdir, name, k))
