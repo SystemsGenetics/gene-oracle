@@ -41,4 +41,5 @@ python scripts/phase2-evaluate.py \
 # select candidate genes for each gene set
 python scripts/phase2-select.py \
 	--gene-sets phase1-genesets.txt \
-	--logdir    logs
+	--logdir    logs \
+	--outfile   phase2-genesets.txt

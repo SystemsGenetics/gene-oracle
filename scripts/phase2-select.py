@@ -5,10 +5,12 @@ evaluated. Genes with a higher "aggregate frequency" are selected as "candidate"
 genes, while the other genes are labeled as "non-candidate" genes.
 """
 import argparse
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import sklearn.mixture
 
 import utils
 
@@ -51,13 +53,36 @@ def compute_frequency_matrix(genes, subsets):
 
 
 
-def select_candidate_genes(genes, freq_matrix):
+def compute_threshold(genes, freq_matrix):
 	# compute aggregate frequency of each gene
-	frequency_sums = freq_matrix.sum(axis=0)
+	scores = freq_matrix.sum(axis=0)
 
-	# plot distribution of aggregate frequencies
-	sns.distplot(frequency_sums)
-	plt.show()
+	# fit a Gaussian mixture model to the gene scores
+	X = scores.reshape(-1, 1)
+
+	gmm = sklearn.mixture.GaussianMixture(n_components=2)
+	gmm.fit(X)
+
+	# compute the intersection between the two modes
+	m1 = gmm.means_[0, 0]
+	m2 = gmm.means_[1, 0]
+	s1 = gmm.covariances_[0, 0, 0]
+	s2 = gmm.covariances_[1, 0, 0]
+
+	num = m2*s1**2 - m1*s2**2
+	delta = s1 * s2 * math.sqrt((m1 - m2)**2 + 2 * (s1**2 - s2**2) * math.log(s1/s2))
+	denom = s1**2 - s2**2
+
+	m = (m1 + m2) / 2
+	c1 = (num + delta) / denom
+	c2 = (num - delta) / denom
+
+	if abs(c1 - m) < abs(c2 - m):
+		threshold = c1
+	else:
+		threshold = c2
+
+	return threshold, scores
 
 
 
@@ -66,23 +91,42 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Identify candidate / non-candidate genes in a gene set")
 	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
+	parser.add_argument("--visualize", help="visualize frequency heatmap and candidate threshold", action="store_true")
+	parser.add_argument("--outfile", help="output file to save results", required=True)
 
 	args = parser.parse_args()
 
 	# load gene sets
 	gene_sets = utils.load_gene_sets(args.gene_sets)
 
+	# initialize output file
+	outfile = open(args.outfile, "w")
+
 	# select candidate genes for each gene set
 	for name, genes in gene_sets:
-		print(name)
-
 		# compute frequency matrix
 		subsets = load_subsets(args.logdir, name, len(genes))
 		freq_matrix = compute_frequency_matrix(genes, subsets)
 
 		# plot heatmap of frequency matrix
-		sns.heatmap(freq_matrix, xticklabels=genes, yticklabels=range(1, len(genes) + 1))
-		plt.title(name)
-		plt.show()
+		if args.visualize:
+			sns.heatmap(freq_matrix, xticklabels=genes, yticklabels=range(1, len(genes) + 1))
+			plt.title(name)
+			plt.show()
 
-		select_candidate_genes(genes, freq_matrix)
+		# select candidate genes
+		threshold, scores = compute_threshold(genes, freq_matrix)
+
+		candidate_genes = [gene for i, gene in enumerate(genes) if scores[i] > threshold]
+
+		# plot distribution of gene scores
+		if args.visualize:
+			sns.distplot(scores)
+			ymin, ymax = plt.gca().get_ylim()
+			y = [ymin, ymax / 2]
+			plt.plot([threshold, threshold], y, "r")
+			plt.title(name)
+			plt.show()
+
+		# save results to output file
+		outfile.write("\t".join([name] + candidate_genes) + "\n")

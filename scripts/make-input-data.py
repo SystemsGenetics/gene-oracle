@@ -39,7 +39,7 @@ if __name__ == "__main__":
 	gene_sets = []
 
 	for i in range(args.n_sets):
-		n_genes = random.randint(3, min(max(10, args.n_genes // 10), args.n_genes))
+		n_genes = random.randint(5, min(max(10, args.n_genes // 10), args.n_genes))
 		genes = random.sample(X_genes, n_genes)
 
 		gene_sets.append(["gene-set-%03d" % i] + genes)
