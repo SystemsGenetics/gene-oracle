@@ -107,6 +107,11 @@ if __name__ == "__main__":
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=2, type=int)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
+	parser.add_argument("--chunk-geneset", help="current gene set for chunk runs")
+	parser.add_argument("--chunk-iteration", help="current iteration for chunk runs", type=int)
+	parser.add_argument("--chunk-op", help="operation to perform for chunk runs", choices=["select", "evaluate"])
+	parser.add_argument("--chunk-infile", help="input file for chunk runs")
+	parser.add_argument("--chunk-outfile", help="output file for chunk runs")
 
 	args = parser.parse_args()
 
@@ -176,21 +181,39 @@ if __name__ == "__main__":
 	# initialize log directory
 	os.makedirs(args.logdir, exist_ok=True)
 
-	# perform combinatorial analysis on each gene set
-	for name, genes in gene_sets:
+	# perform chunk run if specified
+	if args.chunk_geneset != None and args.chunk_iteration != None:
 		print()
-		print("decomposing %s (%d genes)..." % (name, len(genes)))
+		print("performing iteration %d for gene set %s" % (args.chunk_iteration, args.chunk_geneset))
 
-		# perform combinatorial analysis
-		n_genes = len(genes)
+		# search gene set from list
+		genes = next(genes for (name, genes) in gene_sets if name == args.chunk_geneset)
 
-		for k in range(1, n_genes + 1):
-			# select subsets
-			print("  selecting subsets of size %d" % k)
+		# perform selection or evaluation for the current iteration
+		if args.chunk_op == "select":
+			subsets = chunk_select(genes, args.chunk_iteration, args.chunk_infile)
 
-			subsets = chunk_select(genes, k, "%s/%s_scores_%03d.txt" % (args.logdir, name, k - 1))
+			save_scores(args.chunk_outfile, subsets)
 
-			# evaluate subsets
-			print("  evaluating %d subsets..." % len(subsets))
+		elif args.chunk_op == "evaluate":
+			subsets = load_scores(args.chunk_infile)
 
-			chunk_evaluate(df, labels, clf, subsets, "%s/%s_scores_%03d.txt" % (args.logdir, name, k))
+			chunk_evaluate(df, labels, clf, subsets, args.chunk_outfile)
+
+	# otherwise perform full combinatorial analysis on each gene set
+	else:
+		for name, genes in gene_sets:
+			print()
+			print("decomposing %s (%d genes)..." % (name, len(genes)))
+
+			# perform combinatorial analysis
+			for k in range(1, len(genes) + 1):
+				# select subsets
+				print("  selecting subsets of size %d" % k)
+
+				subsets = chunk_select(genes, k, "%s/%s_scores_%03d.txt" % (args.logdir, name, k - 1))
+
+				# evaluate subsets
+				print("  evaluating %d subsets..." % len(subsets))
+
+				chunk_evaluate(df, labels, clf, subsets, "%s/%s_scores_%03d.txt" % (args.logdir, name, k))
