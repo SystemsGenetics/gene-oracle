@@ -53,6 +53,11 @@ def compute_frequency_matrix(genes, subsets):
 
 
 
+def compute_scores(freq_matrix):
+	return freq_matrix.sum(axis=0)
+
+
+
 def compute_threshold(genes, freq_matrix):
 	# compute aggregate frequency of each gene
 	scores = freq_matrix.sum(axis=0)
@@ -91,6 +96,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Identify candidate / non-candidate genes in a gene set")
 	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
+	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float)
 	parser.add_argument("--visualize", help="visualize frequency heatmap and candidate threshold", action="store_true")
 	parser.add_argument("--outfile", help="output file to save results", required=True)
 
@@ -115,9 +121,18 @@ if __name__ == "__main__":
 			plt.savefig("%s-frequency-heatmap.png" % (name))
 			plt.close()
 
-		# select candidate genes
-		threshold, scores = compute_threshold(genes, freq_matrix)
+		# compute aggregate frequency of each gene
+		scores = compute_scores(freq_matrix)
 
+		# use a percentile threshold if specified
+		if args.threshold != None:
+			threshold = np.percentile(scores, args.threshold)
+
+		# otherwise compute threshold automatically
+		else:
+			threshold = compute_threshold(genes, scores)
+
+		# select candidate genes
 		candidate_genes = [gene for i, gene in enumerate(genes) if scores[i] > threshold]
 
 		# plot distribution of gene scores
