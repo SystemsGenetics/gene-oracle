@@ -112,7 +112,8 @@ if __name__ == "__main__":
 		if args.visualize:
 			sns.heatmap(freq_matrix, xticklabels=genes, yticklabels=range(1, len(genes) + 1))
 			plt.title(name)
-			plt.show()
+			plt.savefig("%s-frequency-heatmap.png" % (name))
+			plt.close()
 
 		# select candidate genes
 		threshold, scores = compute_threshold(genes, freq_matrix)
@@ -126,7 +127,8 @@ if __name__ == "__main__":
 			y = [ymin, ymax / 2]
 			plt.plot([threshold, threshold], y, "r")
 			plt.title(name)
-			plt.show()
+			plt.savefig("%s-candidate-threshold.png" % (name))
+			plt.close()
 
 		# save results to output file
 		outfile.write("\t".join([name] + candidate_genes) + "\n")

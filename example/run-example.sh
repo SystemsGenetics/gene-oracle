@@ -42,4 +42,5 @@ python scripts/phase2-evaluate.py \
 python scripts/phase2-select.py \
 	--gene-sets phase1-genesets.txt \
 	--logdir    logs \
+	--visualize \
 	--outfile   phase2-genesets.txt
