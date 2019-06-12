@@ -58,10 +58,7 @@ def compute_scores(freq_matrix):
 
 
 
-def compute_threshold(genes, freq_matrix):
-	# compute aggregate frequency of each gene
-	scores = freq_matrix.sum(axis=0)
-
+def compute_threshold(genes, scores):
 	# fit a Gaussian mixture model to the gene scores
 	X = scores.reshape(-1, 1)
 
@@ -87,7 +84,7 @@ def compute_threshold(genes, freq_matrix):
 	else:
 		threshold = c2
 
-	return threshold, scores
+	return threshold
 
 
 
