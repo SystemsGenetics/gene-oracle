@@ -102,10 +102,7 @@ if __name__ == "__main__":
 
 		curated_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in curated_sets]
 
-		print("%d / %d (%0.1f%%) genes from gene sets were not found in the input dataset" % (
-			len(missing_genes),
-			len(genes),
-			len(missing_genes) / len(genes) * 100))
+		print("%d / %d genes from gene sets were not found in the input dataset" % (len(missing_genes), len(genes)))
 	else:
 		curated_sets = []
 
