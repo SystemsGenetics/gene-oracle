@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This script uses Welch's t-test to determine whether a gene set exhibits
 significantly higher classification accuracy over equivalent random sets. The

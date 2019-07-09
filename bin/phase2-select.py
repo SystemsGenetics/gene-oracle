@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This script takes the subset scores for a gene set and measures the saliency of
 each individual gene by how frequently it occurs in all subsets that were

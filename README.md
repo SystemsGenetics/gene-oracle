@@ -79,3 +79,45 @@ The script `phase1-select.py` takes evaluation results for gene sets and compare
 The script `phase2-evaluate.py` takes a list of gene sets and evaluates subsets of each gene set in order to determine the most salient genes in the gene set. This script can also analyze random gene sets in the same manner.
 
 The script `phase2-select.py` takes evaluation results for the subsets selected by the previous script, measures the saliency of each gene by how frequently it appeared in all subsets, and separates "candidate" genes from "non-candidate" genes according to a threshold.
+
+## Nextflow
+
+### Dependencies
+
+This repository also provides a Nextflow pipeline for running Gene Oracle. All you need is [nextflow](https://nextflow.io/), [Docker](https://docker.com/), and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker). On HPC systems, you can use [Singularity](https://www.sylabs.io/singularity/) in lieu of Docker. If for some reason you can't use either container software, you will have to install Gene Oracle and its dependencies on your local machine.
+
+### Input Data
+
+The nextflow pipeline assumes you have your input data arranged as follows:
+```
+input/
+  {dataset1}_data.txt
+  {dataset1}_labels.txt
+  {dataset2}.npy
+  {dataset2}_rownames.txt
+  {dataset2}_colnames.txt
+  {dataset2}_labels.txt
+  ...
+  {genesets1}_genesets.txt
+  {genesets2}_genesets.txt
+  ...
+```
+
+This way, you can place as many gene subsets and datasets and the pipeline will process all of them in a single run.
+
+### Usage
+
+Here is a basic usage:
+```
+nextflow run systemsgenetics/gene-oracle
+```
+
+This example will download this pipeline to your machine and use the default `nextflow.config` in this repo. It will assume that you have Gene Oracle installed natively, and it will process all input files in the `input` directory, saving all output files to the `output` directory, as defined in `nextflow.config`.
+
+You can also create your own `nextflow.config` file; nextflow will check for a config file in your current directory before defaulting to config file in this repo. You will most likely need to customize this config file as it provides options such as which experiments to run, how many chunks to use where applicable, and various other command-line parameters for Gene Oracle. The config file also allows you to define your own "profiles" for running this pipeline in different environments. Consult the Nextflow documentation for more information on what environments are supported.
+
+To use Docker or Singularity, run nextflow with the `-with-docker` or `-with-singularity` flag. You can resume a failed run with the `-resume` flag. Consult the Nextflow documentation for more information on these and other options.
+
+### Kubernetes
+
+You can run this pipeline, as well as any other Nextflow pipeline, on a [Kubernetes](https://kubernetes.io/) cluster with minimal effort. Consult the [kube-runner](https://github.com/SystemsGenetics/kube-runner) repo for instructions.

@@ -15,9 +15,12 @@
 *.e*
 
 # folders
-checkpoints
+.nextflow*
 data
+input
 logs
+output
+work
 
 # python byte code
 *.pyc

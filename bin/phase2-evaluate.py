@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This script decomposes a gene set into subsets and evaluates them in order to
 identify the subsets with the highest classification potential.

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This script evaluates the classification potential of gene sets on a dataset.
 """
