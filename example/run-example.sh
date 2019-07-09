@@ -42,5 +42,6 @@ python scripts/phase2-evaluate.py \
 python scripts/phase2-select.py \
 	--gene-sets phase1-genesets.txt \
 	--logdir    logs \
+	--threshold 75 \
 	--visualize \
 	--outfile   phase2-genesets.txt
