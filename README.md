@@ -47,9 +47,9 @@ Sample2	8.891	7.673	3.333	9.103
 Sample3	4.444	5.551	6.102	0.013
 ```
 
-For large GEM files, it is recommended that you convert the GEM to numpy format using `preprocess.py`, as Gene Oracle can load this binary format much more quickly than it does the plaintext format. The `preprocess.py` script can also transpose your GEM if it is arranged the wrong way:
+For large GEM files, it is recommended that you convert the GEM to numpy format using `convert.py` from the [GEMprep](https://github.com/SystemsGenetics/GEMprep) repo, as TSPG can load this binary format much more quickly than it does the plaintext format. The `convert.py` script can also transpose your GEM if it is arranged the wrong way:
 ```bash
-python scripts/preprocess.py GEM.txt GEM.npy --transpose
+python bin/convert.py GEM.txt GEM.npy --transpose
 ```
 
 This example will create three files: `GEM.npy`, `GEM_rownames.txt`, and `GEM_colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
