@@ -69,10 +69,12 @@ def load_labels(filename):
 	labels = pd.read_csv(filename, sep="\t", header=None, index_col=0)
 
 	# convert categorical labels to numerical labels
-	labels = labels[1].values
-	labels = sklearn.preprocessing.LabelEncoder().fit_transform(labels)
+	encoder = sklearn.preprocessing.LabelEncoder()
 
-	return labels
+	labels = labels[1].values
+	labels = encoder.fit_transform(labels)
+
+	return labels, encoder.classes_
 
 
 

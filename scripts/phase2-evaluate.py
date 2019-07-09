@@ -122,7 +122,7 @@ if __name__ == "__main__":
 	df_samples = df.index
 	df_genes = df.columns
 
-	labels = utils.load_labels(args.labels)
+	labels, classes = utils.load_labels(args.labels)
 
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 

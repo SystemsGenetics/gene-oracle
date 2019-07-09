@@ -25,27 +25,31 @@ if __name__ == "__main__":
 	n_informative = args.n_genes // 10
 	n_redundant = args.n_genes - n_informative
 
-	X, y = sklearn.datasets.make_classification(args.n_samples, args.n_genes, n_informative=n_informative, n_redundant=n_redundant, n_classes=args.n_classes)
+	x, y = sklearn.datasets.make_classification(args.n_samples, args.n_genes, n_informative=n_informative, n_redundant=n_redundant, n_classes=args.n_classes)
+
+	# initialize class names
+	classes = ["class-%02d" % i for i in range(args.n_classes)]
+	y = [classes[y_i] for y_i in y]
 
 	# initialize gene names, sample names
-	X_samples = ["sample-%08d" % i for i in range(args.n_samples)]
-	X_genes = ["gene-%06d" % i for i in range(args.n_genes)]
+	x_samples = ["sample-%08d" % i for i in range(args.n_samples)]
+	x_genes = ["gene-%06d" % i for i in range(args.n_genes)]
 
 	# initialize dataframes
-	X = pd.DataFrame(X, index=X_samples, columns=X_genes)
-	y = pd.DataFrame(y, index=X_samples)
+	x = pd.DataFrame(x, index=x_samples, columns=x_genes)
+	y = pd.DataFrame(y, index=x_samples)
 
 	# create synthetic gene sets
 	gene_sets = []
 
 	for i in range(args.n_sets):
 		n_genes = random.randint(5, min(max(10, args.n_genes // 10), args.n_genes))
-		genes = random.sample(X_genes, n_genes)
+		genes = random.sample(x_genes, n_genes)
 
 		gene_sets.append(["gene-set-%03d" % i] + genes)
 
 	# save dataset to file
-	utils.save_dataframe(args.dataset, X)
+	utils.save_dataframe(args.dataset, x)
 
 	# save labels to file
 	y.to_csv(args.labels, sep="\t", header=None)

@@ -129,9 +129,6 @@ class TensorflowMLP(sklearn.base.BaseEstimator):
 		n_classes = len(self._classes)
 		y = self._onehot_encode(y)
 
-		# shuffle training data
-		x, y = self._shuffle(x, y)
-
 		# initialize tf graph and session
 		if not hasattr(self, "_graph"):
 			os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -151,6 +148,9 @@ class TensorflowMLP(sklearn.base.BaseEstimator):
 
 			# perform training
 			for epoch in range(self.epochs):
+				# shuffle training data
+				x, y = self._shuffle(x, y)
+
 				# determine number of batches
 				n_batches = int(n_samples / self.batch_size)
 				avg_loss = 0
