@@ -36,6 +36,7 @@ python bin/phase2-evaluate.py \
 	--model-config example/models.json \
 	--model        lr \
 	--gene-sets    phase1-genesets.txt \
+	--n-jobs       1 \
 	--logdir       logs
 
 # select candidate genes for each gene set

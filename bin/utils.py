@@ -10,6 +10,7 @@ import sklearn.neighbors
 import sklearn.neural_network
 import sklearn.preprocessing
 import sklearn.svm
+import sklearn.utils
 import sys
 
 import models
@@ -119,27 +120,29 @@ def load_classifier(config_file, name):
 
 
 
-def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=None):
+def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=1):
 	# extract dataset
 	X = data[genes]
 
 	# normalize dataset
 	X = sklearn.preprocessing.MaxAbsScaler().fit_transform(X)
 
-	# perform a single train/test split if cv is not specified
-	if cv == None or cv == 1:
-		# create train/test sets
-		X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
+	# enable parallel backend
+	with sklearn.utils.parallel_backend("loky", n_jobs=n_jobs):
+		# perform a single train/test split if cv is not specified
+		if cv == None or cv == 1:
+			# create train/test sets
+			X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
 
-		# evaluate gene set
-		clf = copy.deepcopy(clf)
-		clf.fit(X_train, y_train)
+			# evaluate gene set
+			clf = copy.deepcopy(clf)
+			clf.fit(X_train, y_train)
 
-		return [clf.score(X_test, y_test)]
+			return [clf.score(X_test, y_test)]
 
-	# otherwise use cross-validation
-	else:
-		# evaluate gene set
-		scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv, n_jobs=n_jobs)
+		# otherwise use cross-validation
+		else:
+			# evaluate gene set
+			scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
 
-		return list(scores)
+			return list(scores)

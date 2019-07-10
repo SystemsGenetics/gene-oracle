@@ -67,7 +67,7 @@ if __name__ == "__main__":
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=3, type=int, metavar=("START", "STOP", "STEP"))
 	parser.add_argument("--random-iters", help="number of iterations to perform for random classification", type=int, default=100)
-	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=None)
+	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
 	parser.add_argument("--cv", help="number of folds for k-fold cross validation", type=int, default=5)
 
 	args = parser.parse_args()

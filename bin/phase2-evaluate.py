@@ -89,7 +89,7 @@ def chunk_select(genes, k, infile=None):
 
 def chunk_evaluate(df, labels, clf, subsets, outfile):
 	# evaluate each subset
-	scores = [utils.evaluate_gene_set(df, labels, clf, subset) for subset, _ in subsets]
+	scores = [utils.evaluate_gene_set(df, labels, clf, subset, n_jobs=args.n_jobs) for subset, _ in subsets]
 	scores = [s[0] for s in scores]
 	subsets = [(subset, score) for ((subset, _), score) in zip(subsets, scores)]
 
@@ -108,6 +108,7 @@ if __name__ == "__main__":
 	parser.add_argument("--gene-sets", help="list of curated gene sets")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
 	parser.add_argument("--random-range", help="range of random gene sizes to evaluate", nargs=2, type=int)
+	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
 	parser.add_argument("--chunk-geneset", help="current gene set for chunk runs")
 	parser.add_argument("--chunk-iteration", help="current iteration for chunk runs", type=int)
