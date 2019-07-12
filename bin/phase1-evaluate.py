@@ -98,13 +98,7 @@ if __name__ == "__main__":
 
 		print("loaded %d gene sets" % (len(curated_sets)))
 
-		# remove genes which do not exist in the dataset
-		genes = list(set(sum([genes for (name, genes) in curated_sets], [])))
-		missing_genes = [g for g in genes if g not in df_genes]
-
-		curated_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in curated_sets]
-
-		print("%d / %d genes from gene sets were not found in the input dataset" % (len(missing_genes), len(genes)))
+		curated_sets = utils.filter_gene_sets(curated_sets, df_genes)
 	else:
 		curated_sets = []
 

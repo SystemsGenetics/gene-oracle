@@ -91,6 +91,22 @@ def load_gene_sets(filename):
 
 
 
+def filter_gene_sets(gene_sets, df_genes):
+	# compute the union of all gene sets
+	genes = list(set(sum([genes for (name, genes) in gene_sets], [])))
+
+	# determine the genes which are not in the dataset
+	missing_genes = [g for g in genes if g not in df_genes]
+
+	# remove missing genes from each gene set
+	gene_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in gene_sets]
+
+	print("%d / %d genes from gene sets were not found in the input dataset" % (len(missing_genes), len(genes)))
+
+	return gene_sets
+
+
+
 def load_classifier(config_file, name):
 	# load model params
 	config = json.load(open(config_file))
