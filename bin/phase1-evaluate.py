@@ -95,10 +95,9 @@ if __name__ == "__main__":
 		print("loading gene sets...")
 
 		curated_sets = utils.load_gene_sets(args.gene_sets)
+		curated_sets = utils.filter_gene_sets(curated_sets, df_genes)
 
 		print("loaded %d gene sets" % (len(curated_sets)))
-
-		curated_sets = utils.filter_gene_sets(curated_sets, df_genes)
 	else:
 		curated_sets = []
 

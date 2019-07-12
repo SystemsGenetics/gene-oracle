@@ -141,10 +141,9 @@ if __name__ == "__main__":
 		print("loading gene sets...")
 
 		gene_sets = utils.load_gene_sets(args.gene_sets)
+		gene_sets = utils.filter_gene_sets(gene_sets, df_genes)
 
 		print("loaded %d gene sets" % (len(gene_sets)))
-
-		gene_sets = utils.filter_gene_sets(gene_sets, df_genes)
 	else:
 		gene_sets = []
 
