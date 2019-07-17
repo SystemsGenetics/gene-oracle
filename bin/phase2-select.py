@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script takes the subset scores for a gene set and measures the saliency of
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Identify candidate / non-candidate genes in a gene set")
 	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
-	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float)
+	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float, default=-1)
 	parser.add_argument("--visualize", help="visualize frequency heatmap and candidate threshold", action="store_true")
 	parser.add_argument("--outfile", help="output file to save results", required=True)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 		scores = compute_scores(freq_matrix)
 
 		# use a percentile threshold if specified
-		if args.threshold != None:
+		if args.threshold != -1:
 			threshold = np.percentile(scores, args.threshold)
 
 		# otherwise compute threshold automatically
@@ -136,13 +136,16 @@ if __name__ == "__main__":
 
 		# plot distribution of gene scores
 		if args.visualize:
-			sns.distplot(scores)
-			ymin, ymax = plt.gca().get_ylim()
-			y = [ymin, ymax / 2]
-			plt.plot([threshold, threshold], y, "r")
-			plt.title(name)
-			plt.savefig("%s-candidate-threshold.png" % (name))
-			plt.close()
+			try:
+				sns.distplot(scores)
+				ymin, ymax = plt.gca().get_ylim()
+				y = [ymin, ymax / 2]
+				plt.plot([threshold, threshold], y, "r")
+				plt.title(name)
+				plt.savefig("%s-candidate-threshold.png" % (name))
+				plt.close()
+			except:
+				print("warning: failed to plot candidate threshold for %s" % (name))
 
 		# save results to output file
 		outfile.write("\t".join([name] + candidate_genes) + "\n")

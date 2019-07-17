@@ -1,21 +1,23 @@
-FROM tensorflow/tensorflow:latest-gpu
+FROM tensorflow/tensorflow:1.13.2-gpu-py3
 MAINTAINER Cole McKnight <cbmckni@clemson.edu>
 MAINTAINER Ben Shealy <btsheal@g.clemson.edu>
 MAINTAINER Colin Targonski <ctargon@clemson.edu>
 
 # install package dependencies
+ENV DEBIAN_FRONTEND=noninteractive 
+
 RUN apt-get update -qq \
 	&& apt-get install -qq -y git python3-pip python-tk
 
 # install python dependencies
-RUN pip3 install -q numpy pandas scikit-learn
+RUN pip3 install -q matplotlib numpy pandas scikit-learn seaborn
 
 # install gene-oracle
 WORKDIR /opt
-RUN git clone https://github.com/SystemsGenetics/gene-oracle.git
+RUN git clone -q https://github.com/SystemsGenetics/gene-oracle.git
 
 ENV GENEORACLE_PATH "/opt/gene-oracle"
 ENV PYTHONPATH "$PYTHONPATH:$GENEORACLE_PATH"
 
-# move to home directory
-WORKDIR /root
+# initialize default work directory
+WORKDIR /workspace

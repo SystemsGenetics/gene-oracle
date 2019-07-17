@@ -48,11 +48,11 @@ python bin/phase2-select.py \
 	--outfile   phase2-genesets.txt
 
 # select candidate genes using random forest
-python bin/phase2-evaluate-rf.py \
+python bin/phase2-rf.py \
 	--dataset   example_data.txt \
 	--labels    example_labels.txt \
 	--gene-sets phase1-genesets.txt \
 	--n-jobs    1 \
 	--threshold 75 \
 	--visualize \
-	--outfile   phase2-genesets.txt
+	--outfile   phase2-rf-genesets.txt

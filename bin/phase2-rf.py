@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script uses a random forest classifier to measure the saliency of each
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
 	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
-	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float)
+	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float, default=-1)
 	parser.add_argument("--visualize", help="visualize candidate threshold", action="store_true")
 	parser.add_argument("--outfile", help="output file to save results", required=True)
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 		scores = clf.feature_importances_
 
 		# use a percentile threshold if specified
-		if args.threshold != None:
+		if args.threshold != -1:
 			threshold = np.percentile(scores, args.threshold)
 
 		# otherwise compute threshold automatically
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 			y = [ymin, ymax / 2]
 			plt.plot([threshold, threshold], y, "r")
 			plt.title(name)
-			plt.savefig("%s-candidate-threshold-rf.png" % (name))
+			plt.savefig("%s-rf-candidate-threshold.png" % (name))
 			plt.close()
 
 		# save results to output file

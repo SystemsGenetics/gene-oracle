@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script uses Welch's t-test to determine whether a gene set exhibits

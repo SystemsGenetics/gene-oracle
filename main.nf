@@ -45,7 +45,8 @@ Channel.empty()
 	.into {
 		DATASETS_FOR_PHASE1_FG;
 		DATASETS_FOR_PHASE1_BG;
-		DATASETS_FOR_PHASE2_EVALUATE
+		DATASETS_FOR_PHASE2_EVALUATE;
+		DATASETS_FOR_PHASE2_RF
 	}
 
 
@@ -250,7 +251,8 @@ process phase1_select {
  */
 PHASE1_GENESETS.into {
 	GENESETS_FOR_PHASE2_EVALUATE;
-	GENESETS_FOR_PHASE2_SELECT
+	GENESETS_FOR_PHASE2_SELECT;
+	GENESETS_FOR_PHASE2_RF
 }
 
 
@@ -272,7 +274,7 @@ process phase2_split {
 
 	script:
 		"""
-		split -d -n l/${params.chunks} ${gmt_file} ""
+		split -d -l 1 ${gmt_file} ""
 		"""
 }
 
@@ -313,6 +315,7 @@ process phase2_evaluate {
 			--model-config ${baseDir}/example/models.json \
 			--model        ${params.phase2.model} \
 			--gene-sets    ${gmt_file} \
+			--n-jobs       1 \
 			--logdir       .
 		"""
 }
@@ -354,7 +357,43 @@ process phase2_select {
 		phase2-select.py \
 			--gene-sets phase1-genesets.txt \
 			--logdir    . \
+			--threshold ${params.phase2.threshold} \
 			${params.phase2.visualize ? "--visualize" : ""} \
 			--outfile   phase2-genesets.txt
+		"""
+}
+
+
+
+/**
+ * The phase2_rf process takes a list of gene sets selected by phase 1 and
+ * uses the feature importances of a random forest to select candidate genes
+ * for each gene set.
+ */
+process phase2_rf {
+	publishDir "${params.output.dir}/${dataset}", mode: "copy"
+	tag "${dataset}/${gmt_name}"
+
+	input:
+		set val(dataset), file(data_files), file(labels) from DATASETS_FOR_PHASE2_RF
+		set val(dataset), val(gmt_name), file("phase1-genesets.txt") from GENESETS_FOR_PHASE2_RF
+
+	output:
+		set val(dataset), val(gmt_name), file("phase2-rf-genesets.txt") into PHASE2_RF_GENESETS
+		file("*.png") optional true into PHASE2_RF_PLOTS
+
+	when:
+		params.phase2_rf.enabled == true
+
+	script:
+		"""
+		phase2-rf.py \
+			--dataset   ${data_files[0]} \
+			--labels    ${labels} \
+			--gene-sets phase1-genesets.txt \
+			--n-jobs    1 \
+			--threshold ${params.phase2_rf.threshold} \
+			${params.phase2_rf.visualize ? "--visualize" : ""} \
+			--outfile   phase2-rf-genesets.txt
 		"""
 }
