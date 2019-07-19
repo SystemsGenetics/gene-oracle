@@ -53,7 +53,8 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Identify candidate / non-candidate genes in a gene set")
 	parser.add_argument("--dataset", help="input dataset (samples x genes)", required=True)
 	parser.add_argument("--labels", help="list of sample labels", required=True)
-	parser.add_argument("--gene-sets", help="list of curated gene sets", required=True)
+	parser.add_argument("--gene-sets", help="list of curated gene sets")
+	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
 	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float, default=-1)
 	parser.add_argument("--visualize", help="visualize candidate threshold", action="store_true")
@@ -73,12 +74,19 @@ if __name__ == "__main__":
 	print("loaded input dataset (%s genes, %s samples)" % (df.shape[1], df.shape[0]))
 
 	# load gene sets
-	print("loading gene sets...")
+	if args.gene_sets != None:
+		print("loading gene sets...")
 
-	gene_sets = utils.load_gene_sets(args.gene_sets)
-	gene_sets = utils.filter_gene_sets(gene_sets, df_genes)
+		gene_sets = utils.load_gene_sets(args.gene_sets)
+		gene_sets = utils.filter_gene_sets(gene_sets, df_genes)
 
-	print("loaded %d gene sets" % (len(gene_sets)))
+		print("loaded %d gene sets" % (len(gene_sets)))
+	else:
+		gene_sets = []
+
+	# include the set of all genes if specified
+	if args.full:
+		gene_sets.append(("FULL", df_genes))
 
 	# initialize output file
 	outfile = open(args.outfile, "w")
