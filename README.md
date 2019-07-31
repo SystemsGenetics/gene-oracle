@@ -49,10 +49,10 @@ Sample3	4.444	5.551	6.102	0.013
 
 For large GEM files, it is recommended that you convert the GEM to numpy format using `convert.py` from the [GEMprep](https://github.com/SystemsGenetics/GEMprep) repo, as TSPG can load this binary format much more quickly than it does the plaintext format. The `convert.py` script can also transpose your GEM if it is arranged the wrong way:
 ```bash
-python bin/convert.py GEM.txt GEM.npy --transpose
+python bin/convert.py GEM.emx.txt GEM.emx.npy --transpose
 ```
 
-This example will create three files: `GEM.npy`, `GEM.rownames.txt`, and `GEM.colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
+This example will create three files: `GEM.emx.npy`, `GEM.emx.rownames.txt`, and `GEM.emx.colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
 
 The __label file__ should contain a label for each sample, corresponding to something such as a condition or phenotype state for the sample. This file should contain two columns, the first being the sample names and the second being the labels. Values in each row should be separated by tabs.
 ```
@@ -94,8 +94,8 @@ input/
   {dataset1}.emx.txt
   {dataset1}.labels.txt
   {dataset2}.emx.npy
-  {dataset2}.rownames.txt
-  {dataset2}.colnames.txt
+  {dataset2}.emx.rownames.txt
+  {dataset2}.emx.colnames.txt
   {dataset2}.labels.txt
   ...
   {genesets1}.genesets.txt
