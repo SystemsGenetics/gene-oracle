@@ -7,8 +7,8 @@
  */
 DATA_TXT_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.data_txt}", size: 1, flat: true)
 DATA_NPY_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.data_npy}", size: 1, flat: true)
-ROWNAME_FILES = Channel.fromFilePairs("${params.input.dir}/*_rownames.txt", size: 1, flat: true)
-COLNAME_FILES = Channel.fromFilePairs("${params.input.dir}/*_colnames.txt", size: 1, flat: true)
+ROWNAME_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.rownames}", size: 1, flat: true)
+COLNAME_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.colnames}", size: 1, flat: true)
 LABEL_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.labels}", size: 1, flat: true)
 GMT_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.gmt_files}", size: 1, flat: true)
 

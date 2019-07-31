@@ -10,11 +10,11 @@ python bin/make-input-data.py \
 
 # evaluate gene sets
 python bin/phase1-evaluate.py \
-	--dataset      example_data.txt \
-	--labels       example_labels.txt \
+	--dataset      example.emx.txt \
+	--labels       example.labels.txt \
 	--model-config example/models.json \
 	--model        lr \
-	--gene-sets    example_genesets.txt \
+	--gene-sets    example.genesets.txt \
 	--random \
 	--random-iters 10 \
 	--cv           5 \
@@ -24,15 +24,15 @@ python bin/phase1-evaluate.py \
 # select gene sets which score higher over random
 python bin/phase1-select.py \
 	--scores    phase1-scores.txt \
-	--gene-sets example_genesets.txt \
+	--gene-sets example.genesets.txt \
 	--threshold 1 \
 	--n-sets 5 \
 	--outfile phase1-genesets.txt
 
 # perform combinatorial analysis on selected gene sets
 python bin/phase2-evaluate.py \
-	--dataset      example_data.txt \
-	--labels       example_labels.txt \
+	--dataset      example.emx.txt \
+	--labels       example.labels.txt \
 	--model-config example/models.json \
 	--model        lr \
 	--gene-sets    phase1-genesets.txt \
@@ -49,8 +49,8 @@ python bin/phase2-select.py \
 
 # select candidate genes using random forest
 python bin/phase2-rf.py \
-	--dataset   example_data.txt \
-	--labels    example_labels.txt \
+	--dataset   example.emx.txt \
+	--labels    example.labels.txt \
 	--gene-sets phase1-genesets.txt \
 	--n-jobs    1 \
 	--threshold 75 \

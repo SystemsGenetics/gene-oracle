@@ -52,7 +52,7 @@ For large GEM files, it is recommended that you convert the GEM to numpy format 
 python bin/convert.py GEM.txt GEM.npy --transpose
 ```
 
-This example will create three files: `GEM.npy`, `GEM_rownames.txt`, and `GEM_colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
+This example will create three files: `GEM.npy`, `GEM.rownames.txt`, and `GEM.colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
 
 The __label file__ should contain a label for each sample, corresponding to something such as a condition or phenotype state for the sample. This file should contain two columns, the first being the sample names and the second being the labels. Values in each row should be separated by tabs.
 ```
@@ -91,15 +91,15 @@ This repository also provides a Nextflow pipeline for running Gene Oracle. All y
 The nextflow pipeline assumes you have your input data arranged as follows:
 ```
 input/
-  {dataset1}_data.txt
-  {dataset1}_labels.txt
-  {dataset2}.npy
-  {dataset2}_rownames.txt
-  {dataset2}_colnames.txt
-  {dataset2}_labels.txt
+  {dataset1}.emx.txt
+  {dataset1}.labels.txt
+  {dataset2}.emx.npy
+  {dataset2}.rownames.txt
+  {dataset2}.colnames.txt
+  {dataset2}.labels.txt
   ...
-  {genesets1}_genesets.txt
-  {genesets2}_genesets.txt
+  {genesets1}.genesets.txt
+  {genesets2}.genesets.txt
   ...
 ```
 

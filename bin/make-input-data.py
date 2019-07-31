@@ -15,9 +15,9 @@ if __name__ == "__main__":
 	parser.add_argument("--n-genes", help="number of genes", type=int, default=20)
 	parser.add_argument("--n-classes", help="number of classes", type=int, default=2)
 	parser.add_argument("--n-sets", help="number of gene sets", type=int, default=10)
-	parser.add_argument("--dataset", help="name of dataset file", default="example_data.txt")
-	parser.add_argument("--labels", help="name of label file", default="example_labels.txt")
-	parser.add_argument("--gene-sets", help="name of gene sets file", default="example_genesets.txt")
+	parser.add_argument("--dataset", help="name of dataset file", default="example.emx.txt")
+	parser.add_argument("--labels", help="name of label file", default="example.labels.txt")
+	parser.add_argument("--gene-sets", help="name of gene sets file", default="example.genesets.txt")
 
 	args = parser.parse_args()
 
