@@ -2,6 +2,8 @@
 
 This repository contains the code for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes using gene expression data. Gene Oracle identifies gene sets which provide the most predictive power, based on how well they classify samples in a gene expression dataset.
 
+For more information, refer to the paper "Uncovering biomarker genes with enriched classification potential from Hallmark gene sets" (https://www.nature.com/articles/s41598-019-46059-1).
+
 ## Installation
 
 All of Gene Oracle's dependencies can be installed via Anaconda. On a shared system (such as a university research cluster), it is recommended that you install everything in an Anaconda environment:
