@@ -8,6 +8,7 @@ import sklearn.linear_model
 import sklearn.model_selection
 import sklearn.neighbors
 import sklearn.neural_network
+import sklearn.pipeline
 import sklearn.preprocessing
 import sklearn.svm
 import sklearn.utils
@@ -114,13 +115,13 @@ def load_classifier(config_file, name):
 
 	# define dictionary of classifiers
 	classifiers = {
-		"dummy": sklearn.dummy.DummyClassifier,
-		"knn": sklearn.neighbors.KNeighborsClassifier,
-		"lr": sklearn.linear_model.LogisticRegression,
-		"mlp": sklearn.neural_network.MLPClassifier,
+		"dummy":  sklearn.dummy.DummyClassifier,
+		"knn":    sklearn.neighbors.KNeighborsClassifier,
+		"lr":     sklearn.linear_model.LogisticRegression,
+		"mlp":    sklearn.neural_network.MLPClassifier,
 		"mlp-tf": models.TensorflowMLP,
-		"rf": sklearn.ensemble.RandomForestClassifier,
-		"svm": sklearn.svm.SVC
+		"rf":     sklearn.ensemble.RandomForestClassifier,
+		"svm":    sklearn.svm.SVC
 	}
 
 	# initialize classifier
@@ -132,6 +133,12 @@ def load_classifier(config_file, name):
 		print("error: classifier \"%s\" not recognized" % name)
 		sys.exit(1)
 
+	# add preprocessing step to classifier
+	clf = sklearn.pipeline.Pipeline([
+		("scaler", sklearn.preprocessing.MaxAbsScaler()),
+		(name, clf)
+	])
+
 	return clf
 
 
@@ -140,8 +147,8 @@ def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=1):
 	# extract dataset
 	X = data[genes]
 
-	# normalize dataset
-	X = sklearn.preprocessing.MaxAbsScaler().fit_transform(X)
+	# initialize classifier by deep copy
+	clf = copy.deepcopy(clf)
 
 	# enable parallel backend
 	with sklearn.utils.parallel_backend("loky", n_jobs=n_jobs):
@@ -151,7 +158,6 @@ def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=1):
 			X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, labels, test_size=0.3)
 
 			# evaluate gene set
-			clf = copy.deepcopy(clf)
 			clf.fit(X_train, y_train)
 
 			return [clf.score(X_test, y_test)]

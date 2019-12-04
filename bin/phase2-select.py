@@ -97,7 +97,7 @@ if __name__ == "__main__":
 	parser.add_argument("--logdir", help="directory where logs are stored", required=True)
 	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float, default=-1)
 	parser.add_argument("--visualize", help="visualize frequency heatmap and candidate threshold", action="store_true")
-	parser.add_argument("--outfile", help="output file to save results", required=True)
+	parser.add_argument("--output-dir", help="output directory", default=".")
 
 	args = parser.parse_args()
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 	gene_sets = utils.load_gene_sets(args.gene_sets)
 
 	# initialize output file
-	outfile = open(args.outfile, "w")
+	outfile = open("%s/phase2-genesets.txt" % (args.output_dir), "w")
 
 	# select candidate genes for each gene set
 	for name, genes in gene_sets:
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 		if args.visualize:
 			sns.heatmap(freq_matrix, xticklabels=genes, yticklabels=range(1, len(genes) + 1))
 			plt.title(name)
-			plt.savefig("%s-frequency-heatmap.png" % (name))
+			plt.savefig("%s/%s-frequency-heatmap.png" % (args.output_dir, name))
 			plt.close()
 
 		# compute aggregate frequency of each gene
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 				y = [ymin, ymax / 2]
 				plt.plot([threshold, threshold], y, "r")
 				plt.title(name)
-				plt.savefig("%s-candidate-threshold.png" % (name))
+				plt.savefig("%s/%s-candidate-threshold.png" % (args.output_dir, name))
 				plt.close()
 			except:
 				print("warning: failed to plot candidate threshold for %s" % (name))

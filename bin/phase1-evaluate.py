@@ -17,16 +17,15 @@ def evaluate_curated(data, labels, clf, name, genes, cv=5, n_jobs=None, verbose=
 	# evaluate gene set
 	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
 
-	# compute stats
-	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
-
 	# print results
 	if verbose:
+		n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
 		print("%-40s %3d %8.3f %8.3f" % (name, n, mu, sigma))
 
 	# write results to output file
 	if outfile:
-		outfile.write("%s\t%d\t%.3f\t%.3f\n" % (name, n, mu, sigma))
+		for score in scores:
+			outfile.write("%s\t%.3f\n" % (name, score))
 
 
 
@@ -41,16 +40,15 @@ def evaluate_random(data, labels, clf, n_genes, n_iters=100, cv=5, n_jobs=None, 
 		# evaluate gene set
 		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
 
-	# compute stats
-	n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
-
 	# print results
 	if verbose:
+		n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
 		print("%-40s %3d %8.3f %8.3f" % (str(n_genes), n, mu, sigma))
 
 	# write results to output file
 	if outfile:
-		outfile.write("%s\t%d\t%.3f\t%.3f\n" % (str(n_genes), n, mu, sigma))
+		for score in scores:
+			outfile.write("%s\t%.3f\n" % (str(n_genes), score))
 
 
 
@@ -129,7 +127,7 @@ if __name__ == "__main__":
 	# initialize output file
 	if args.outfile:
 		outfile = open(args.outfile, "w")
-		outfile.write("%s\t%s\t%s\t%s\n" % ("name", "n", "sigma", "mu"))
+		outfile.write("%s\t%s\n" % ("name", "score"))
 
 	# evaluate curated gene sets
 	for (name, genes) in curated_sets:

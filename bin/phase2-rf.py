@@ -58,7 +58,7 @@ if __name__ == "__main__":
 	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
 	parser.add_argument("--threshold", help="manual threshold based on percentile (0-100)", type=float, default=-1)
 	parser.add_argument("--visualize", help="visualize candidate threshold", action="store_true")
-	parser.add_argument("--outfile", help="output file to save results", required=True)
+	parser.add_argument("--output-dir", help="output directory", default=".")
 
 	args = parser.parse_args()
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 		gene_sets.append(("FULL", df_genes))
 
 	# initialize output file
-	outfile = open(args.outfile, "w")
+	outfile = open("%s/phase2-rf-genesets.txt" % (args.output_dir), "w")
 
 	# select candidate genes for each gene set
 	for name, genes in gene_sets:
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 			y = [ymin, ymax / 2]
 			plt.plot([threshold, threshold], y, "r")
 			plt.title(name)
-			plt.savefig("%s-rf-candidate-threshold.png" % (name))
+			plt.savefig("%s/%s-rf-candidate-threshold.png" % (args.output_dir, name))
 			plt.close()
 
 		# save results to output file

@@ -1,10 +1,16 @@
+#!/usr/bin/env python3
+
 import argparse
-import utils
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
 import sklearn.datasets
+import sklearn.manifold
 import sys
+
+import utils
 
 
 
@@ -18,6 +24,7 @@ if __name__ == "__main__":
 	parser.add_argument("--dataset", help="name of dataset file", default="example.emx.txt")
 	parser.add_argument("--labels", help="name of label file", default="example.labels.txt")
 	parser.add_argument("--gene-sets", help="name of gene sets file", default="example.genesets.txt")
+	parser.add_argument("--visualize", help="create t-SNE plot of dataset", action="store_true")
 
 	args = parser.parse_args()
 
@@ -25,7 +32,13 @@ if __name__ == "__main__":
 	n_informative = args.n_genes // 10
 	n_redundant = args.n_genes - n_informative
 
-	x, y = sklearn.datasets.make_classification(args.n_samples, args.n_genes, n_informative=n_informative, n_redundant=n_redundant, n_classes=args.n_classes)
+	x, y = sklearn.datasets.make_classification(
+		args.n_samples,
+		args.n_genes,
+		n_informative=n_informative,
+		n_redundant=n_redundant,
+		n_classes=args.n_classes,
+		n_clusters_per_class=1)
 
 	# initialize class names
 	classes = ["class-%02d" % i for i in range(args.n_classes)]
@@ -47,6 +60,25 @@ if __name__ == "__main__":
 		genes = random.sample(x_genes, n_genes)
 
 		gene_sets.append(["gene-set-%03d" % i] + genes)
+
+	# visualize dataset if specified
+	if args.visualize:
+		# compute t-SNE embedding
+		x_tsne = sklearn.manifold.TSNE().fit_transform(x)
+
+		# plot t-SNE embedding by class
+		fig, ax = plt.subplots()
+		colors = cm.rainbow(np.linspace(0, 1, len(classes)))
+
+		for c in classes:
+			indices = (y[0] == c)
+			ax.scatter(x_tsne[indices, 0], x_tsne[indices, 1], label=c, alpha=0.75)
+
+		plt.subplots_adjust(right=0.75)
+		ax.set_axis_off()
+		ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
+		plt.savefig("%s.tsne.png" % (args.dataset.split(".")[0]))
+		plt.close()
 
 	# save dataset to file
 	utils.save_dataframe(args.dataset, x)

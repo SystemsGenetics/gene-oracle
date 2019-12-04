@@ -12,7 +12,7 @@ All of Gene Oracle's dependencies can be installed via Anaconda. On a shared sys
 # specific to Clemson's Palmetto cluster
 module add anaconda3/5.1.0
 
-conda create -n gene-oracle python=3.6 tensorflow-gpu=1.13.1 matplotlib numpy pandas scikit-learn seaborn
+conda create -n gene-oracle python=3.6 tensorflow-gpu=1.15.0 matplotlib numpy pandas scikit-learn seaborn
 ```
 
 You must then "activate" your environment in order to use it:
@@ -74,7 +74,7 @@ GeneSet2	Gene2	Gene4	Gene5	Gene6
 
 The script `phase1-evaluate.py` takes a list of gene sets and evaluates each gene set by training and evaluating a classifier on the input dataset with only the genes in the set. This script can also evaluate the entire set of genes in the input dataset, as well as random gene sets.
 
-The script `phase1-select.py` takes evaluation results for gene sets and compares them to results for random sets of equal size. It uses Welch's _t_-test (Student's _t_-test) to determine the statistical significance of a gene set's score as compared to a null distribution for the given set size. Larger gene sets tend to yield higher classification accuracies, so the _t_-test is used to eliminate this bias when selecting gene sets for subset analysis.
+The script `phase1-select.py` takes evaluation results for gene sets and compares them to results for random sets of equal size. It uses Student's _t_-test to determine the statistical significance of a gene set's score as compared to a null distribution for the given set size. Larger gene sets tend to yield higher classification accuracies, so the _t_-test is used to eliminate this bias when selecting gene sets for subset analysis.
 
 ### Phase 2: Gene Subset Analysis
 
