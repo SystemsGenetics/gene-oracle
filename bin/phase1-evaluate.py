@@ -4,23 +4,57 @@
 This script evaluates the classification potential of gene sets on a dataset.
 """
 import argparse
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
+import seaborn as sns
+import sklearn.metrics
 import sys
 
 import utils
 
 
 
-def evaluate_curated(data, labels, clf, name, genes, cv=5, n_jobs=None, verbose=True, outfile=None):
-	# evaluate gene set
-	scores = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
+def rotate_xticklabels(angle):
+	for tick in plt.gca().get_xticklabels():
+		tick.set_horizontalalignment("right")
+		tick.set_rotation(angle)
+
+
+
+def plot_confusion_matrix(name, y_true, y_pred, classes, output_dir="."):
+	cnf_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred)
+
+	sns.heatmap(cnf_matrix, annot=True, fmt="d", xticklabels=classes, yticklabels=classes)
+	plt.tight_layout()
+	rotate_xticklabels(45)
+	plt.title("Confusion Matrix")
+	plt.xlabel("Expected")
+	plt.ylabel("Measured")
+	plt.savefig("%s/%s.confusion_matrix.png" % (output_dir, name))
+	plt.close()
+
+
+
+def evaluate_curated(data, labels, clf, name, genes, n_iters=10, cv=5, n_jobs=None, verbose=True, visualize=False, outfile=None):
+	# evaluate gene set n_iters times
+	scores = []
+
+	for i in range(n_iters):
+		# evaluate gene set
+		score, y_true, y_pred = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
+
+		scores.append(score)
 
 	# print results
 	if verbose:
 		n, mu, sigma = len(scores), np.mean(scores), np.std(scores)
 		print("%-40s %3d %8.3f %8.3f" % (name, n, mu, sigma))
+
+	# visualize results
+	if visualize:
+		plot_confusion_matrix(name, y_true, y_pred, classes, output_dir=args.output_dir)
 
 	# write results to output file
 	if outfile:
@@ -38,7 +72,9 @@ def evaluate_random(data, labels, clf, n_genes, n_iters=100, cv=5, n_jobs=None, 
 		genes = random.sample(list(data.columns), n_genes)
 
 		# evaluate gene set
-		scores += utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
+		score, _, _ = utils.evaluate_gene_set(data, labels, clf, genes, cv=cv, n_jobs=n_jobs)
+
+		scores.append(score)
 
 	# print results
 	if verbose:
@@ -59,7 +95,6 @@ if __name__ == "__main__":
 	parser.add_argument("--labels", help="list of sample labels", required=True)
 	parser.add_argument("--model-config", help="model configuration file (JSON)", required=True)
 	parser.add_argument("--model", help="classifier model to use", default="mlp-tf")
-	parser.add_argument("--outfile", help="output file to save results")
 	parser.add_argument("--gene-sets", help="list of curated gene sets")
 	parser.add_argument("--full", help="Evaluate the set of all genes in the dataset", action="store_true")
 	parser.add_argument("--random", help="Evaluate random gene sets", action="store_true")
@@ -67,6 +102,8 @@ if __name__ == "__main__":
 	parser.add_argument("--random-iters", help="number of iterations to perform for random classification", type=int, default=100)
 	parser.add_argument("--n-jobs", help="number of parallel jobs to use", type=int, default=1)
 	parser.add_argument("--cv", help="number of folds for k-fold cross validation", type=int, default=5)
+	parser.add_argument("--visualize", help="visualize confusion matrix for each gene set", action="store_true")
+	parser.add_argument("--output-dir", help="output directory", default=".")
 
 	args = parser.parse_args()
 
@@ -125,13 +162,12 @@ if __name__ == "__main__":
 	print("evaluating gene sets...")
 
 	# initialize output file
-	if args.outfile:
-		outfile = open(args.outfile, "w")
-		outfile.write("%s\t%s\n" % ("name", "score"))
+	outfile = open("%s/phase1-scores.txt" % (args.output_dir), "w")
+	outfile.write("%s\t%s\n" % ("name", "score"))
 
 	# evaluate curated gene sets
 	for (name, genes) in curated_sets:
-		evaluate_curated(df, labels, clf, name, genes, cv=args.cv, n_jobs=args.n_jobs, outfile=outfile)
+		evaluate_curated(df, labels, clf, name, genes, cv=args.cv, n_jobs=args.n_jobs, visualize=args.visualize, outfile=outfile)
 
 	# evaluate random gene sets
 	for n_genes in random_sets:

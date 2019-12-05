@@ -143,7 +143,15 @@ def load_classifier(config_file, name):
 
 
 
-def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=1):
+def evaluate_gene_set(data, labels, clf, genes, scoring="acc", cv=None, n_jobs=1):
+	# select scoring method
+	score_methods = {
+		"acc": sklearn.metrics.accuracy_score,
+		"f1": sklearn.metrics.f1_score
+	}
+
+	score_method = score_methods[scoring]
+
 	# extract dataset
 	X = data[genes]
 
@@ -159,12 +167,15 @@ def evaluate_gene_set(data, labels, clf, genes, cv=None, n_jobs=1):
 
 			# evaluate gene set
 			clf.fit(X_train, y_train)
+			y_pred = clf.predict(X_test)
+			score = score_method(y_test, y_pred)
 
-			return [clf.score(X_test, y_test)]
+			return score, y_test, y_pred
 
 		# otherwise use cross-validation
 		else:
 			# evaluate gene set
-			scores = sklearn.model_selection.cross_val_score(clf, X, y=labels, cv=cv)
+			y_pred = sklearn.model_selection.cross_val_predict(clf, X, y=labels, cv=cv)
+			score = score_method(labels, y_pred)
 
-			return list(scores)
+			return score, labels, y_pred

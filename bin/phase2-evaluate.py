@@ -21,7 +21,7 @@ def load_scores(filename):
 	lines = [line.strip() for line in infile]
 	lines = [line.split("\t") for line in lines]
 	subsets = [(line[0].split(","), float(line[1])) for line in lines]
-	
+
 	return subsets
 
 
@@ -89,9 +89,8 @@ def chunk_select(genes, k, infile=None):
 
 def chunk_evaluate(df, labels, clf, subsets, outfile):
 	# evaluate each subset
-	scores = [utils.evaluate_gene_set(df, labels, clf, subset, n_jobs=args.n_jobs) for subset, _ in subsets]
-	scores = [s[0] for s in scores]
-	subsets = [(subset, score) for ((subset, _), score) in zip(subsets, scores)]
+	results = [utils.evaluate_gene_set(df, labels, clf, genes, n_jobs=args.n_jobs) for genes, _ in subsets]
+	subsets = [(genes, score) for ((genes, _), (score, _, _)) in zip(subsets, results)]
 
 	# save results to output file
 	save_scores(outfile, subsets)

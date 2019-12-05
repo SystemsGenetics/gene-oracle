@@ -35,7 +35,8 @@ python bin/phase1-evaluate.py \
 	--random-iters 10 \
 	--cv           5 \
 	--n-jobs       1 \
-	--outfile      ${OUTPUT_DIR}/phase1-scores.txt
+	--visualize \
+	--output-dir   ${OUTPUT_DIR}
 
 # select gene sets which score higher over random
 python bin/phase1-select.py \
