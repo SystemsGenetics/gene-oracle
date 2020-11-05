@@ -7,7 +7,7 @@ MAINTAINER Colin Targonski <ctargon@clemson.edu>
 ENV DEBIAN_FRONTEND=noninteractive 
 
 RUN apt-get update -qq \
-	&& apt-get install -qq -y git python3-pip python-tk
+    && apt-get install -qq -y git python3-pip python-tk
 
 # install python dependencies
 RUN pip3 install -q matplotlib numpy pandas scikit-learn seaborn
@@ -17,7 +17,7 @@ WORKDIR /opt
 RUN git clone -q https://github.com/SystemsGenetics/gene-oracle.git
 
 ENV GENEORACLE_PATH "/opt/gene-oracle"
-ENV PYTHONPATH "$PYTHONPATH:$GENEORACLE_PATH"
+ENV PYTHONPATH "${PYTHONPATH}:${GENEORACLE_PATH}"
 
 # initialize default work directory
 WORKDIR /workspace
