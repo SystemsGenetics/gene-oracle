@@ -15,6 +15,7 @@
 *.e*
 
 # folders
+.ipynb_checkpoints
 .nextflow*
 data
 input

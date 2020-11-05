@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.13.2-gpu-py3
+FROM tensorflow/tensorflow:1.15.4-gpu-py3
 MAINTAINER Cole McKnight <cbmckni@clemson.edu>
 MAINTAINER Ben Shealy <btsheal@g.clemson.edu>
 MAINTAINER Colin Targonski <ctargon@clemson.edu>
@@ -7,7 +7,7 @@ MAINTAINER Colin Targonski <ctargon@clemson.edu>
 ENV DEBIAN_FRONTEND=noninteractive 
 
 RUN apt-get update -qq \
-    && apt-get install -qq -y git python3-pip python-tk
+    && apt-get install -qq -y git python3-pip
 
 # install python dependencies
 RUN pip3 install -q matplotlib numpy pandas scikit-learn seaborn

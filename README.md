@@ -10,7 +10,7 @@ All of Gene Oracle's dependencies can be installed via Anaconda. On a shared sys
 
 ```bash
 # specific to Clemson's Palmetto cluster
-module add anaconda3/5.1.0
+module load anaconda3/5.1.0-gcc/8.3.1
 
 conda create -n gene-oracle python=3.6 tensorflow-gpu=1.15.0 matplotlib numpy pandas scikit-learn seaborn
 ```
