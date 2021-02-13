@@ -27,7 +27,7 @@ DATA_TXT_FILES
     .mix(LABEL_FILES_FOR_TXT)
     .groupTuple(size: 2)
     .map { [it[0], it[1].sort()] }
-    .map { [it[0], it[1][0], it[1][1]] }
+    .map { [it[0], it[1][1], it[1][0]] }
     .set { DATA_TXT_COMBINED }
 
 DATA_NPY_FILES
@@ -79,6 +79,9 @@ process phase1_split {
 
     script:
         """
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
+
         split -d -n l/${params.chunks} ${gmt_file} ""
         """
 }
@@ -112,7 +115,12 @@ process phase1_fg {
 
     script:
         """
-        taskset -c 0-1 phase1-evaluate.py \
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
+        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+
+        phase1-evaluate.py \
             --dataset      ${data_files[0]} \
             --labels       ${labels} \
             --model-config ${baseDir}/example/models.json \
@@ -143,17 +151,21 @@ process phase1_bg {
 
     script:
         """
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+
         START=${params.phase1.random_min + index}
         STOP=${params.phase1.random_max}
         STEP=${params.chunks}
 
-        taskset -c 0-1 phase1-evaluate.py \
+        phase1-evaluate.py \
             --dataset      ${data_files[0]} \
             --labels       ${labels} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase1.model} \
             --random \
-            --random-range \$START \$STOP \$STEP \
+            --random-range \${START} \${STOP} \${STEP} \
             --random-iters ${params.phase1.random_iters} \
             --outfile      \$(printf "%04d" ${index}).log
         """
@@ -234,12 +246,14 @@ process phase1_select {
 
     script:
         """
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
+
         phase1-select.py \
             --scores    ${scores} \
             --gene-sets ${gmt_file} \
             --threshold ${params.phase1.threshold} \
             --n-sets    ${params.phase1.n_sets} \
-            --outfile   phase1-genesets.txt \
             > phase1-select-${gmt_name}.log
         """
 }
@@ -309,7 +323,7 @@ process phase2_evaluate {
 
     script:
         """
-        taskset -c 0-1 phase2-evaluate.py \
+        phase2-evaluate.py \
             --dataset      ${data_files[0]} \
             --labels       ${labels} \
             --model-config ${baseDir}/example/models.json \
@@ -358,8 +372,7 @@ process phase2_select {
             --gene-sets phase1-genesets.txt \
             --logdir    . \
             --threshold ${params.phase2.threshold} \
-            ${params.phase2.visualize ? "--visualize" : ""} \
-            --outfile   phase2-genesets.txt
+            ${params.phase2.visualize ? "--visualize" : ""}
         """
 }
 
@@ -387,13 +400,17 @@ process phase2_rf {
 
     script:
         """
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE gmt_lines=`cat phase1-genesets.txt | wc -l`"
+        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+
         phase2-rf.py \
             --dataset   ${data_files[0]} \
             --labels    ${labels} \
             --gene-sets phase1-genesets.txt \
             --n-jobs    1 \
             --threshold ${params.phase2_rf.threshold} \
-            ${params.phase2_rf.visualize ? "--visualize" : ""} \
-            --outfile   phase2-rf-genesets.txt
+            ${params.phase2_rf.visualize ? "--visualize" : ""}
         """
 }

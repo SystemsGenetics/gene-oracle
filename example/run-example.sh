@@ -9,7 +9,7 @@ GMT_FILE="example.genesets.txt"
 OUTPUT_DIR="example/output"
 
 # use conda environment
-source activate gene-oracle
+source activate mlbd
 
 # remove old output data
 rm -rf ${OUTPUT_DIR}
@@ -48,22 +48,22 @@ python bin/phase1-select.py \
     --output-dir ${OUTPUT_DIR}
 
 # perform combinatorial analysis on selected gene sets
-python bin/phase2-evaluate.py \
-    --dataset      ${DATASET} \
-    --labels       ${LABELS} \
-    --model-config ${MODEL_CONFIG} \
-    --model        ${MODEL} \
-    --gene-sets    ${OUTPUT_DIR}/phase1-genesets.txt \
-    --n-jobs       1 \
-    --logdir       ${OUTPUT_DIR}/logs
+# python bin/phase2-evaluate.py \
+#     --dataset      ${DATASET} \
+#     --labels       ${LABELS} \
+#     --model-config ${MODEL_CONFIG} \
+#     --model        ${MODEL} \
+#     --gene-sets    ${OUTPUT_DIR}/phase1-genesets.txt \
+#     --n-jobs       1 \
+#     --logdir       ${OUTPUT_DIR}/logs
 
 # select candidate genes for each gene set
-python bin/phase2-select.py \
-    --gene-sets  ${OUTPUT_DIR}/phase1-genesets.txt \
-    --logdir     ${OUTPUT_DIR}/logs \
-    --threshold  75 \
-    --visualize  \
-    --output-dir ${OUTPUT_DIR}
+# python bin/phase2-select.py \
+#     --gene-sets  ${OUTPUT_DIR}/phase1-genesets.txt \
+#     --logdir     ${OUTPUT_DIR}/logs \
+#     --threshold  75 \
+#     --visualize  \
+#     --output-dir ${OUTPUT_DIR}
 
 # select candidate genes using random forest
 python bin/phase2-rf.py \

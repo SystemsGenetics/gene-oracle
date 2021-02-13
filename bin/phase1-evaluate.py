@@ -6,6 +6,7 @@ This script evaluates the classification potential of gene sets on a dataset.
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import random
 import seaborn as sns
@@ -104,6 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('--cv', help='number of folds for k-fold cross validation', type=int, default=5)
     parser.add_argument('--visualize', help='visualize confusion matrix for each gene set', action='store_true')
     parser.add_argument('--output-dir', help='output directory', default='.')
+    parser.add_argument('--outfile', help='output filename', default='phase1-scores.txt')
 
     args = parser.parse_args()
 
@@ -162,7 +164,7 @@ if __name__ == '__main__':
     print('evaluating gene sets...')
 
     # initialize output file
-    outfile = open('%s/phase1-scores.txt' % (args.output_dir), 'w')
+    outfile = open(os.path.join(args.output_dir, args.outfile), 'w')
     outfile.write('%s\t%s\n' % ('name', 'score'))
 
     # evaluate curated gene sets
