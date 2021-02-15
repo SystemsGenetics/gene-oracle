@@ -37,6 +37,10 @@ example/run-example.sh
 
 Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-input-data.py`.
 
+### Model Configuration
+
+Gene Oracle can use any classifier provided by scikit-learn, as well as a custom neural network (implemented in TensorFlow), to evaluate gene sets. Several classifiers are defined with sensible default parameters in `example/models.json`. Consult the [scikit-learn](https://scikit-learn.org/stable/supervised_learning.html#supervised-learning) documention on to see the list of parameters for each classifier. The example run script uses a linear model, which is one of the simplest classifiers available. Other models such as the neural network or random forest may perform better but will take longer to train.
+
 ### Input Data
 
 Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM), (2) a list of sample labels, and (3) a list of gene sets. These inputs are described below.
@@ -122,4 +126,4 @@ To use Docker or Singularity, run nextflow with the `-with-docker` or `-with-sin
 
 ### Kubernetes
 
-You can run this pipeline, as well as any other Nextflow pipeline, on a [Kubernetes](https://kubernetes.io/) cluster with minimal effort. Consult the [kube-runner](https://github.com/SystemsGenetics/kube-runner) repo for instructions.
+You can run this pipeline, as well as any other Nextflow pipeline, on a [Kubernetes](https://kubernetes.io/) cluster with minimal effort. Consult the [kube-runner](https://github.com/SystemsGenetics/kube-runner) repo for a command-line approach and [Nextflow-API](https://github.com/SciDAS/nextflow-api) for a browser-based approach.
