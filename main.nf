@@ -5,43 +5,23 @@
 /**
  * Create channels for input files.
  */
-DATA_TXT_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.data_txt}", size: 1, flat: true)
-DATA_NPY_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.data_npy}", size: 1, flat: true)
-ROWNAME_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.rownames}", size: 1, flat: true)
-COLNAME_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.colnames}", size: 1, flat: true)
-LABEL_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.labels}", size: 1, flat: true)
+EMX_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.emx_files}", size: 1, flat: true)
+LABEL_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.label_files}", size: 1, flat: true)
 GMT_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.gmt_files}", size: 1, flat: true)
 
 
 
 /**
- * Group dataset files by dataset.
+ * Group dataset files by name.
  */
-LABEL_FILES.into {
-    LABEL_FILES_FOR_TXT;
-    LABEL_FILES_FOR_NPY
-}
+DATASETS = EMX_FILES.join(LABEL_FILES)
 
-DATA_TXT_FILES
-    .map { [it[0], [it[1]]] }
-    .mix(LABEL_FILES_FOR_TXT)
-    .groupTuple(size: 2)
-    .map { [it[0], it[1].sort()] }
-    .map { [it[0], it[1][1], it[1][0]] }
-    .set { DATA_TXT_COMBINED }
 
-DATA_NPY_FILES
-    .mix(ROWNAME_FILES, COLNAME_FILES)
-    .groupTuple()
-    .map { [it[0], it[1].sort()] }
-    .mix(LABEL_FILES_FOR_NPY)
-    .groupTuple(size: 2)
-    .map { [it[0], it[1].sort()] }
-    .map { [it[0], it[1][1], it[1][0]] }
-    .set { DATA_NPY_COMBINED }
 
-Channel.empty()
-    .mix(DATA_TXT_COMBINED, DATA_NPY_COMBINED)
+/**
+ * Send dataset files to each process that uses them.
+ */
+DATASETS
     .into {
         DATASETS_FOR_PHASE1_FG;
         DATASETS_FOR_PHASE1_BG;
@@ -105,7 +85,7 @@ process phase1_fg {
     label "gpu"
 
     input:
-        set val(dataset), file(data_files), file(labels), val(gmt_name), file(gmt_file) from PHASE1_FG_CHUNKS_COMBINED
+        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE1_FG_CHUNKS_COMBINED
 
     output:
         set val(dataset), val(gmt_name), file("*.log") into PHASE1_FG_SCORE_CHUNKS
@@ -117,12 +97,12 @@ process phase1_fg {
         """
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
-        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
-        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+        echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
 
         phase1-evaluate.py \
-            --dataset      ${data_files[0]} \
-            --labels       ${labels} \
+            --dataset      ${emx_file} \
+            --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase1.model} \
             --gene-sets    ${gmt_file} \
@@ -140,7 +120,7 @@ process phase1_bg {
     label "gpu"
 
     input:
-        set val(dataset), file(data_files), file(labels) from DATASETS_FOR_PHASE1_BG
+        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE1_BG
         each(index) from Channel.from( 0 .. params.chunks-1 )
 
     output:
@@ -152,16 +132,16 @@ process phase1_bg {
     script:
         """
         echo "#TRACE chunks=${params.chunks}"
-        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
-        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+        echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
 
         START=${params.phase1.random_min + index}
         STOP=${params.phase1.random_max}
         STEP=${params.chunks}
 
         phase1-evaluate.py \
-            --dataset      ${data_files[0]} \
-            --labels       ${labels} \
+            --dataset      ${emx_file} \
+            --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase1.model} \
             --random \
@@ -313,7 +293,7 @@ process phase2_evaluate {
     label "gpu"
 
     input:
-        set val(dataset), file(data_files), file(labels), val(gmt_name), file(gmt_file) from PHASE2_EVALUATE_CHUNKS_COMBINED
+        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE2_EVALUATE_CHUNKS_COMBINED
 
     output:
         set val(dataset), val(gmt_name), file("*_scores_*.txt") optional true into PHASE2_SCORE_CHUNKS
@@ -324,8 +304,8 @@ process phase2_evaluate {
     script:
         """
         phase2-evaluate.py \
-            --dataset      ${data_files[0]} \
-            --labels       ${labels} \
+            --dataset      ${emx_file} \
+            --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase2.model} \
             --gene-sets    ${gmt_file} \
@@ -388,7 +368,7 @@ process phase2_rf {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), file(data_files), file(labels) from DATASETS_FOR_PHASE2_RF
+        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE2_RF
         set val(dataset), val(gmt_name), file("phase1-genesets.txt") from GENESETS_FOR_PHASE2_RF
 
     output:
@@ -402,12 +382,12 @@ process phase2_rf {
         """
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat phase1-genesets.txt | wc -l`"
-        echo "#TRACE n_rows=`tail -n +1 ${data_files[0]} | wc -l`"
-        echo "#TRACE n_cols=`head -n +1 ${data_files[0]} | wc -w`"
+        echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
+        echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
 
         phase2-rf.py \
-            --dataset   ${data_files[0]} \
-            --labels    ${labels} \
+            --dataset   ${emx_file} \
+            --labels    ${label_file} \
             --gene-sets phase1-genesets.txt \
             --n-jobs    1 \
             --threshold ${params.phase2_rf.threshold} \
