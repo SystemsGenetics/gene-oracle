@@ -120,6 +120,9 @@ if __name__ == '__main__':
 
     print('loaded input dataset (%s genes, %s samples)' % (df.shape[1], df.shape[0]))
 
+    # impute missing values
+    df.fillna(value=df.min().min(), inplace=True)
+
     # initialize classifier
     print('initializing classifier...')
 
