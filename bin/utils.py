@@ -115,13 +115,14 @@ def load_classifier(config_file, name):
 
     # define dictionary of classifiers
     classifiers = {
-        'dummy':  sklearn.dummy.DummyClassifier,
-        'knn':    sklearn.neighbors.KNeighborsClassifier,
-        'lr':     sklearn.linear_model.LogisticRegression,
-        'mlp':    sklearn.neural_network.MLPClassifier,
-        'mlp-tf': models.TensorflowMLP,
-        'rf':     sklearn.ensemble.RandomForestClassifier,
-        'svm':    sklearn.svm.SVC
+        'dummy':     sklearn.dummy.DummyClassifier,
+        'knn':       sklearn.neighbors.KNeighborsClassifier,
+        'lr':        sklearn.linear_model.LogisticRegression,
+        'mlp-keras': models.KerasMLP,
+        'mlp-skl':   sklearn.neural_network.MLPClassifier,
+        'mlp-tf':    models.TensorflowMLP,
+        'rf':        sklearn.ensemble.RandomForestClassifier,
+        'svm':       sklearn.svm.SVC
     }
 
     # initialize classifier

@@ -31,8 +31,8 @@ def plot_confusion_matrix(name, y_true, y_pred, classes, output_dir='.'):
     plt.tight_layout()
     rotate_xticklabels(45)
     plt.title('Confusion Matrix')
-    plt.xlabel('Expected')
-    plt.ylabel('Measured')
+    plt.ylabel('Expected')
+    plt.xlabel('Predicted')
     plt.savefig('%s/%s.confusion_matrix.png' % (output_dir, name))
     plt.close()
 
