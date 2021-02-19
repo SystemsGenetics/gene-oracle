@@ -17,7 +17,7 @@ rm -rf ${OUTPUT_DIR}
 mkdir -p ${OUTPUT_DIR}
 
 # create synthetic input data
-python bin/make-input-data.py \
+python bin/make-example.py \
     --n-samples 1000 \
     --n-genes   200 \
     --n-classes 10 \
