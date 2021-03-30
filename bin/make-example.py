@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-genes', help='number of genes', type=int, default=20)
     parser.add_argument('--n-classes', help='number of classes', type=int, default=2)
     parser.add_argument('--n-sets', help='number of gene sets', type=int, default=10)
+    parser.add_argument('--p-missing', help='proportion of missing genes', type=float, default=0.1)
     parser.add_argument('--dataset', help='name of dataset file', default='example.emx.txt')
     parser.add_argument('--labels', help='name of label file', default='example.labels.txt')
     parser.add_argument('--gene-sets', help='name of gene sets file', default='example.genesets.txt')
@@ -51,6 +52,12 @@ if __name__ == '__main__':
     # initialize dataframes
     x = pd.DataFrame(x, index=x_samples, columns=x_genes)
     y = pd.DataFrame(y, index=x_samples)
+
+    # remove "missing" genes from dataset if specified
+    n_missing = int(len(x_genes) * args.p_missing)
+    missing_genes = np.random.choice(x_genes, n_missing, replace=False)
+
+    x.drop(columns=missing_genes, inplace=True)
 
     # create synthetic gene sets
     gene_sets = []

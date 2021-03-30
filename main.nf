@@ -25,6 +25,7 @@ DATASETS
     .into {
         DATASETS_FOR_PHASE1_FG;
         DATASETS_FOR_PHASE1_BG;
+        DATASETS_FOR_PHASE1_SELECT;
         DATASETS_FOR_PHASE2_EVALUATE;
         DATASETS_FOR_PHASE2_RF
     }
@@ -99,6 +100,7 @@ process phase1_fg {
         echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
+        echo "#TRACE model=${params.phase1.model}"
 
         phase1-evaluate.py \
             --dataset      ${emx_file} \
@@ -134,6 +136,7 @@ process phase1_bg {
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
+        echo "#TRACE model=${params.phase1.model}"
 
         START=${params.phase1.random_min + index}
         STOP=${params.phase1.random_max}
@@ -214,8 +217,9 @@ process phase1_select {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), val(gmt_name), file(scores) from PHASE1_SCORES
+        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE1_SELECT
         set val(gmt_name), file(gmt_file) from GMT_FILES_FOR_PHASE1_SELECT
+        set val(dataset), val(gmt_name), file(scores) from PHASE1_SCORES
 
     output:
         set val(dataset), val(gmt_name), file("phase1-genesets.txt") into PHASE1_GENESETS
@@ -230,8 +234,9 @@ process phase1_select {
         echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
 
         phase1-select.py \
-            --scores    ${scores} \
+            --dataset   ${emx_file} \
             --gene-sets ${gmt_file} \
+            --scores    ${scores} \
             --threshold ${params.phase1.threshold} \
             --n-sets    ${params.phase1.n_sets} \
             > phase1-select-${gmt_name}.log

@@ -88,8 +88,9 @@ def plot_delta_boxplots(scores, gene_sets, outfile):
 if __name__ == '__main__':
     # parse command-line arguments
     parser = argparse.ArgumentParser(description='Select gene sets which perform significantly better than equivalent random sets.')
+    parser.add_argument('--dataset', help='input dataset (samples x genes)', required=True)
+    parser.add_argument('--gene-sets', help='list of curated gene sets', required=True)
     parser.add_argument('--scores', help='list of scores for curated and random gene sets', required=True)
-    parser.add_argument('--gene-sets', help='list of curated gene sets')
     parser.add_argument('--threshold', help='maximum p-value required for a gene set to be selected', type=float, default=1)
     parser.add_argument('--n-sets', help='maximum number of gene sets that can be selected', type=int, default=-1)
     parser.add_argument('--visualize', help='visualize confusion matrix and ROC for each gene set', action='store_true')
@@ -97,9 +98,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # load input files
-    scores = pd.read_csv(args.scores, sep='\t')
+    # load input dataset
+    df = utils.load_dataframe(args.dataset)
+    df_genes = df.columns
+
+    # load gene sets file
     gene_sets = utils.load_gene_sets(args.gene_sets)
+    gene_sets = utils.filter_gene_sets(gene_sets, df_genes)
+
+    # load scores file
+    scores = pd.read_csv(args.scores, sep='\t')
 
     # evaluate each curated gene set
     results = []
@@ -131,5 +139,5 @@ if __name__ == '__main__':
     # save selected gene sets to output file
     outfile = open('%s/phase1-genesets.txt' % (args.output_dir), 'w')
 
-    for (name, genes) in results:
+    for name, genes in results:
         outfile.write('\t'.join([name] + genes) + '\n')

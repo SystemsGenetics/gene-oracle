@@ -1,6 +1,8 @@
 #!/bin/bash
 # Example usage of gene-oracle on a synthetic dataset.
 
+set -e
+
 DATASET="example.emx.txt"
 LABELS="example.labels.txt"
 MODEL_CONFIG="example/models.json"
@@ -40,8 +42,9 @@ python bin/phase1-evaluate.py \
 
 # select gene sets which score higher over random
 python bin/phase1-select.py \
-    --scores     ${OUTPUT_DIR}/phase1-scores.txt \
+    --dataset    ${DATASET} \
     --gene-sets  ${GMT_FILE} \
+    --scores     ${OUTPUT_DIR}/phase1-scores.txt \
     --threshold  1 \
     --n-sets     5 \
     --visualize \

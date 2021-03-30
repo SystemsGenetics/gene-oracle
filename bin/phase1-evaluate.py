@@ -171,7 +171,7 @@ if __name__ == '__main__':
     outfile.write('%s\t%s\n' % ('name', 'score'))
 
     # evaluate curated gene sets
-    for (name, genes) in curated_sets:
+    for name, genes in curated_sets:
         evaluate_curated(df, labels, clf, name, genes, cv=args.cv, n_jobs=args.n_jobs, visualize=args.visualize, outfile=outfile)
 
     # evaluate random gene sets
