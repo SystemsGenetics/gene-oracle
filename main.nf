@@ -191,7 +191,7 @@ process phase1_merge {
         set val(dataset), val(gmt_name), file(chunks) from PHASE1_SCORE_CHUNKS
 
     output:
-        set val(dataset), val(gmt_name), file("phase1-scores.txt") into PHASE1_SCORES
+        set val(dataset), val(gmt_name), file("phase1-evaluate-*.log") into PHASE1_SCORES
 
     when:
         params.phase1.enabled == true
@@ -201,13 +201,13 @@ process phase1_merge {
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat ${chunks} | wc -l`"
 
-        head -n +1 ${chunks[0]} > phase1-scores.txt
+        head -n +1 ${chunks[0]} > phase1-evaluate-${gmt_name}.log
 
         for f in ${chunks}; do
             tail -n +2 \$f >> temp
         done
 
-        sort -V temp >> phase1-scores.txt
+        sort -V temp >> phase1-evaluate-${gmt_name}.log
         """
 }
 
