@@ -98,6 +98,7 @@ process phase1_fg {
         """
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
+        echo "#TRACE gmt_genes=`cat ${gmt_file} | wc -w`"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
         echo "#TRACE model=${params.phase1.model}"
@@ -134,6 +135,7 @@ process phase1_bg {
     script:
         """
         echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE index=${index}"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
         echo "#TRACE model=${params.phase1.model}"
@@ -196,6 +198,9 @@ process phase1_merge {
 
     script:
         """
+        echo "#TRACE chunks=${params.chunks}"
+        echo "#TRACE gmt_lines=`cat ${chunks} | wc -l`"
+
         head -n +1 ${chunks[0]} > phase1-scores.txt
 
         for f in ${chunks}; do
@@ -232,6 +237,7 @@ process phase1_select {
         """
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat ${gmt_file} | wc -l`"
+        echo "#TRACE gmt_genes=`cat ${gmt_file} | wc -w`"
 
         phase1-select.py \
             --dataset   ${emx_file} \
@@ -387,6 +393,7 @@ process phase2_rf {
         """
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE gmt_lines=`cat phase1-genesets.txt | wc -l`"
+        echo "#TRACE gmt_genes=`cat phase1-genesets.txt | wc -w`"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
 
