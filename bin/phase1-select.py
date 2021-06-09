@@ -133,8 +133,10 @@ if __name__ == '__main__':
 
     # select gene sets
     results.sort(key=operator.itemgetter(2))
-    results = results[0:args.n_sets]
     results = [(name, genes) for (name, genes, p) in results if p <= args.threshold]
+
+    if args.n_sets != -1:
+        results = results[0:args.n_sets]
 
     # save selected gene sets to output file
     outfile = open('%s/phase1-genesets.txt' % (args.output_dir), 'w')
