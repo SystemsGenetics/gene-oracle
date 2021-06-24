@@ -124,11 +124,12 @@ if __name__ == '__main__':
 
         # plot distribution of gene scores
         if args.visualize:
-            sns.distplot(scores)
+            sns.histplot(scores, kde=True)
             ymin, ymax = plt.gca().get_ylim()
             y = [ymin, ymax / 2]
             plt.plot([threshold, threshold], y, 'r')
             plt.title(name)
+            plt.tight_layout()
             plt.savefig('%s/%s-rf-candidate-threshold.png' % (args.output_dir, name))
             plt.close()
 

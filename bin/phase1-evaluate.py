@@ -28,11 +28,11 @@ def plot_confusion_matrix(name, y_true, y_pred, classes, output_dir='.'):
     cnf_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred)
 
     sns.heatmap(cnf_matrix, annot=True, fmt='d', xticklabels=classes, yticklabels=classes)
-    plt.tight_layout()
     rotate_xticklabels(45)
     plt.title('Confusion Matrix')
     plt.ylabel('Expected')
     plt.xlabel('Predicted')
+    plt.tight_layout()
     plt.savefig('%s/%s.confusion_matrix.png' % (output_dir, name))
     plt.close()
 
