@@ -11,7 +11,7 @@ GMT_FILE="example.genesets.txt"
 OUTPUT_DIR="example/output"
 
 # use conda environment
-source activate mlbd
+source activate gene-oracle
 
 # remove old output data
 rm -rf ${OUTPUT_DIR}

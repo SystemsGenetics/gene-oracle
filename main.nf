@@ -5,9 +5,9 @@
 /**
  * Create channels for input files.
  */
-EMX_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.emx_files}", size: 1, flat: true)
-LABEL_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.label_files}", size: 1, flat: true)
-GMT_FILES = Channel.fromFilePairs("${params.input.dir}/${params.input.gmt_files}", size: 1, flat: true)
+EMX_FILES = Channel.fromFilePairs("${params.input_dir}/${params.emx_files}", size: 1, flat: true)
+LABEL_FILES = Channel.fromFilePairs("${params.input_dir}/${params.label_files}", size: 1, flat: true)
+GMT_FILES = Channel.fromFilePairs("${params.input_dir}/${params.gmt_files}", size: 1, flat: true)
 
 
 
@@ -38,7 +38,8 @@ DATASETS
 GMT_FILES.into {
     GMT_FILES_FOR_PHASE1_FG;
     GMT_FILES_FOR_PHASE1_BG;
-    GMT_FILES_FOR_PHASE1_SELECT
+    GMT_FILES_FOR_PHASE1_SELECT;
+    GMT_FILES_FOR_PHASE2_RF
 }
 
 
@@ -56,7 +57,7 @@ process phase1_split {
         set val(gmt_name), file("*") into PHASE1_FG_CHUNKS mode flatten
 
     when:
-        params.phase1.enabled == true
+        params.phase1_enabled == true
 
     script:
         """
@@ -70,8 +71,8 @@ process phase1_split {
 
 
 /**
- * Combine the datasets and gene set chunks using the cartesian product
- * in order to trigger the phase1_fg process for each input and each chunk.
+ * Combine the datasets and gmt chunks using the cartesian product
+ * in order to trigger the phase1_fg process for each dataset and each gmt chunk.
  */
 PHASE1_FG_CHUNKS_COMBINED = DATASETS_FOR_PHASE1_FG.combine(PHASE1_FG_CHUNKS)
 
@@ -92,7 +93,7 @@ process phase1_fg {
         set val(dataset), val(gmt_name), file("*.log") into PHASE1_FG_SCORE_CHUNKS
 
     when:
-        params.phase1.enabled == true
+        params.phase1_enabled == true
 
     script:
         """
@@ -101,13 +102,13 @@ process phase1_fg {
         echo "#TRACE gmt_genes=`cat ${gmt_file} | wc -w`"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
-        echo "#TRACE model=${params.phase1.model}"
+        echo "#TRACE model=${params.phase1_model}"
 
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
-            --model        ${params.phase1.model} \
+            --model        ${params.phase1_model} \
             --gene-sets    ${gmt_file} \
             --outfile      ${gmt_file}.log
         """
@@ -130,28 +131,30 @@ process phase1_bg {
         set val(dataset), file("*.log") into PHASE1_BG_SCORE_CHUNKS_RAW
 
     when:
-        params.phase1.enabled == true
+        params.phase1_enabled == true
 
     script:
         """
+        echo "#TRACE random_min=${params.phase1_random_min}"
+        echo "#TRACE random_max=${params.phase1_random_max}"
         echo "#TRACE chunks=${params.chunks}"
         echo "#TRACE index=${index}"
         echo "#TRACE n_rows=`tail -n +1 ${emx_file} | wc -l`"
         echo "#TRACE n_cols=`head -n +1 ${emx_file} | wc -w`"
-        echo "#TRACE model=${params.phase1.model}"
+        echo "#TRACE model=${params.phase1_model}"
 
-        START=${params.phase1.random_min + index}
-        STOP=${params.phase1.random_max}
+        START=${params.phase1_random_min + index}
+        STOP=${params.phase1_random_max}
         STEP=${params.chunks}
 
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
-            --model        ${params.phase1.model} \
+            --model        ${params.phase1_model} \
             --random \
             --random-range \${START} \${STOP} \${STEP} \
-            --random-iters ${params.phase1.random_iters} \
+            --random-iters ${params.phase1_random_iters} \
             --outfile      \$(printf "%04d" ${index}).log
         """
 }
@@ -184,7 +187,7 @@ Channel.empty()
  * and merges them into a score file for each dataset/GMT pair.
  */
 process phase1_merge {
-    publishDir "${params.output.dir}/${dataset}", mode: "copy"
+    publishDir "${params.output_dir}/${dataset}", mode: "copy"
     tag "${dataset}/${gmt_name}"
 
     input:
@@ -194,7 +197,7 @@ process phase1_merge {
         set val(dataset), val(gmt_name), file("phase1-evaluate-*.log") into PHASE1_SCORES
 
     when:
-        params.phase1.enabled == true
+        params.phase1_enabled == true
 
     script:
         """
@@ -214,16 +217,22 @@ process phase1_merge {
 
 
 /**
+ * Combine the datasets and gmt files using the cartesian product
+ * in order to trigger the phase1_select process for each dataset and each gmt file.
+ */
+PHASE1_SELECT_INPUTS_COMBINED = DATASETS_FOR_PHASE1_SELECT.combine(GMT_FILES_FOR_PHASE1_SELECT)
+
+
+
+/**
  * The phase1_select process takes a score file for a dataset / GMT and selects
  * gene sets which score significantly higher over background.
  */
 process phase1_select {
-    publishDir "${params.output.dir}/${dataset}", mode: "copy"
-    tag "${dataset}/${gmt_name}"
+    publishDir "${params.output_dir}/${dataset}", mode: "copy"
 
     input:
-        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE1_SELECT
-        set val(gmt_name), file(gmt_file) from GMT_FILES_FOR_PHASE1_SELECT
+        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE1_SELECT_INPUTS_COMBINED
         set val(dataset), val(gmt_name), file(scores) from PHASE1_SCORES
 
     output:
@@ -231,7 +240,7 @@ process phase1_select {
         file("phase1-select-${gmt_name}.log")
 
     when:
-        params.phase1.enabled == true
+        params.phase1_enabled == true
 
     script:
         """
@@ -243,8 +252,8 @@ process phase1_select {
             --dataset   ${emx_file} \
             --gene-sets ${gmt_file} \
             --scores    ${scores} \
-            --threshold ${params.phase1.threshold} \
-            --n-sets    ${params.phase1.n_sets} \
+            --threshold ${params.phase1_threshold} \
+            --n-sets    ${params.phase1_n_sets} \
             > phase1-select-${gmt_name}.log
         """
 }
@@ -275,7 +284,7 @@ process phase2_split {
         set val(dataset), val(gmt_name), file("*") into PHASE2_EVALUATE_CHUNKS mode flatten
 
     when:
-        params.phase2.enabled == true
+        params.phase2_enabled == true
 
     script:
         """
@@ -299,7 +308,7 @@ DATASETS_FOR_PHASE2_EVALUATE
  * The phase2_evaluate process performs subset analysis on a gene set.
  */
 process phase2_evaluate {
-    publishDir "${params.output.dir}/${dataset}", mode: "copy"
+    publishDir "${params.output_dir}/${dataset}", mode: "copy"
     tag "${dataset}/${gmt_name}/${gmt_file.name}"
     label "gpu"
 
@@ -310,7 +319,7 @@ process phase2_evaluate {
         set val(dataset), val(gmt_name), file("*_scores_*.txt") optional true into PHASE2_SCORE_CHUNKS
 
     when:
-        params.phase2.enabled == true
+        params.phase2_enabled == true
 
     script:
         """
@@ -318,7 +327,7 @@ process phase2_evaluate {
             --dataset      ${emx_file} \
             --labels       ${label_file} \
             --model-config ${baseDir}/example/models.json \
-            --model        ${params.phase2.model} \
+            --model        ${params.phase2_model} \
             --gene-sets    ${gmt_file} \
             --n-jobs       1 \
             --logdir       .
@@ -343,7 +352,7 @@ PHASE2_SCORE_CHUNKS
  * gene set.
  */
 process phase2_select {
-    publishDir "${params.output.dir}/${dataset}", mode: "copy"
+    publishDir "${params.output_dir}/${dataset}", mode: "copy"
     tag "${dataset}/${gmt_name}"
 
     input:
@@ -355,17 +364,25 @@ process phase2_select {
         file("*.png") optional true into PHASE2_PLOTS
 
     when:
-        params.phase2.enabled == true
+        params.phase2_enabled == true
 
     script:
         """
         phase2-select.py \
             --gene-sets phase1-genesets.txt \
             --logdir    . \
-            --threshold ${params.phase2.threshold} \
-            ${params.phase2.visualize ? "--visualize" : ""}
+            --threshold ${params.phase2_threshold} \
+            ${params.phase2_visualize ? "--visualize" : ""}
         """
 }
+
+
+
+/**
+ * Combine the datasets and gmt files using the cartesian product
+ * in order to trigger the phase2_rf process for each dataset and each gmt file.
+ */
+PHASE2_RF_INPUTS_COMBINED = DATASETS_FOR_PHASE2_RF.combine(GMT_FILES_FOR_PHASE2_RF)
 
 
 
@@ -375,11 +392,11 @@ process phase2_select {
  * for each gene set.
  */
 process phase2_rf {
-    publishDir "${params.output.dir}/${dataset}", mode: "copy"
+    publishDir "${params.output_dir}/${dataset}", mode: "copy"
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE2_RF
+        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE2_RF_INPUTS_COMBINED
         set val(dataset), val(gmt_name), file("phase1-genesets.txt") from GENESETS_FOR_PHASE2_RF
 
     output:
@@ -387,7 +404,7 @@ process phase2_rf {
         file("*.png") optional true into PHASE2_RF_PLOTS
 
     when:
-        params.phase2_rf.enabled == true
+        params.phase2_rf_enabled == true
 
     script:
         """
@@ -402,7 +419,7 @@ process phase2_rf {
             --labels    ${label_file} \
             --gene-sets phase1-genesets.txt \
             --n-jobs    1 \
-            --threshold ${params.phase2_rf.threshold} \
-            ${params.phase2_rf.visualize ? "--visualize" : ""}
+            --threshold ${params.phase2_rf_threshold} \
+            ${params.phase2_rf_visualize ? "--visualize" : ""}
         """
 }
