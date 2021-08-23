@@ -41,6 +41,8 @@ Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset an
 
 Gene Oracle can use any classifier provided by scikit-learn, as well as a custom neural network (implemented in TensorFlow), to evaluate gene sets. Several classifiers are defined with sensible default parameters in `example/models.json`. Consult the [scikit-learn](https://scikit-learn.org/stable/supervised_learning.html#supervised-learning) documention on to see the list of parameters for each classifier. The example run script uses a linear model, which is one of the simplest classifiers available. Other models such as the neural network or random forest may perform better but will take longer to train.
 
+_NOTE: A GPU is required only when using the mlp-tf model with tensorflow-gpu. A GPU might not provide significant speedup a over multicore CPU when training many small neural networks._
+
 ### Input Data
 
 Gene Oracle takes three primary inputs: (1) a gene expression matrix (GEM), (2) a list of sample labels, and (3) a list of gene sets. These inputs are described below.
