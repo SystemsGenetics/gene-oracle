@@ -9,10 +9,7 @@ For more information, refer to the paper "Uncovering biomarker genes with enrich
 All of Gene Oracle's dependencies can be installed via Anaconda. On a shared system (such as a university research cluster), it is recommended that you install everything in an Anaconda environment:
 
 ```bash
-# specific to Clemson's Palmetto cluster
-module load anaconda3/5.1.0-gcc/8.3.1
-
-conda create -n gene-oracle python=3.6 tensorflow-gpu=1.15.0 matplotlib numpy pandas scikit-learn seaborn
+conda env create -f environment.yml
 ```
 
 You must then "activate" your environment in order to use it:
@@ -27,9 +24,9 @@ conda deactivate
 After that, simply clone this repository to use Gene Oracle.
 ```bash
 git clone https://github.com/SystemsGenetics/gene-oracle.git
-cd gene-oracle
 
 # run the example
+cd gene-oracle
 example/run-example.sh
 ```
 
@@ -57,7 +54,7 @@ Sample3	4.444	5.551	6.102	0.013
 
 For large GEM files, it is recommended that you convert the GEM to numpy format using `convert.py` from the [GEMprep](https://github.com/SystemsGenetics/GEMprep) repo, as TSPG can load this binary format much more quickly than it does the plaintext format. The `convert.py` script can also transpose your GEM if it is arranged the wrong way:
 ```bash
-python bin/convert.py GEM.emx.txt GEM.emx.npy --transpose
+bin/convert.py GEM.emx.txt GEM.emx.npy --transpose
 ```
 
 This example will create three files: `GEM.emx.npy`, `GEM.emx.rownames.txt`, and `GEM.emx.colnames.txt`. The latter two files contain the row names and column names, respectively. Make sure that the rows are samples and the columns are genes!
@@ -117,14 +114,14 @@ This way, you can place as many gene subsets and datasets and the pipeline will 
 
 Here is a basic usage:
 ```
-nextflow run systemsgenetics/gene-oracle
+nextflow run systemsgenetics/gene-oracle -profile <conda|docker|singularity>
 ```
 
 This example will download this pipeline to your machine and use the default `nextflow.config` in this repo. It will assume that you have Gene Oracle installed natively, and it will process all input files in the `input` directory, saving all output files to the `output` directory, as defined in `nextflow.config`.
 
 You can also create your own `nextflow.config` file; nextflow will check for a config file in your current directory before defaulting to config file in this repo. You will most likely need to customize this config file as it provides options such as which experiments to run, how many chunks to use where applicable, and various other command-line parameters for Gene Oracle. The config file also allows you to define your own "profiles" for running this pipeline in different environments. Consult the Nextflow documentation for more information on what environments are supported.
 
-To use Docker or Singularity, run nextflow with the `-with-docker` or `-with-singularity` flag. You can resume a failed run with the `-resume` flag. Consult the Nextflow documentation for more information on these and other options.
+You can resume a failed run with the `-resume` flag. Consult the Nextflow documentation for more information on these and other options.
 
 ### Kubernetes
 

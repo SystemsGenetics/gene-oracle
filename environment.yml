@@ -1,0 +1,13 @@
+# You can use this file to create a conda environment for this pipeline:
+#   conda env create -f environment.yml
+name: gene-oracle
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - tensorflow-gpu=1.15.0
+  - matplotlib
+  - numpy
+  - pandas
+  - scikit-learn
+  - seaborn
