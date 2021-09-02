@@ -57,7 +57,7 @@ process phase1_split {
         set val(gmt_name), file("*") into PHASE1_FG_CHUNKS mode flatten
 
     when:
-        params.phase1_enabled == true
+        params.phase1 == true
 
     script:
         """
@@ -93,7 +93,7 @@ process phase1_fg {
         set val(dataset), val(gmt_name), file("*.log") into PHASE1_FG_SCORE_CHUNKS
 
     when:
-        params.phase1_enabled == true
+        params.phase1 == true
 
     script:
         """
@@ -131,7 +131,7 @@ process phase1_bg {
         set val(dataset), file("*.log") into PHASE1_BG_SCORE_CHUNKS_RAW
 
     when:
-        params.phase1_enabled == true
+        params.phase1 == true
 
     script:
         """
@@ -197,7 +197,7 @@ process phase1_merge {
         set val(dataset), val(gmt_name), file("phase1-evaluate-*.log") into PHASE1_SCORES
 
     when:
-        params.phase1_enabled == true
+        params.phase1 == true
 
     script:
         """
@@ -240,7 +240,7 @@ process phase1_select {
         file("phase1-select-${gmt_name}.log")
 
     when:
-        params.phase1_enabled == true
+        params.phase1 == true
 
     script:
         """
@@ -284,7 +284,7 @@ process phase2_split {
         set val(dataset), val(gmt_name), file("*") into PHASE2_EVALUATE_CHUNKS mode flatten
 
     when:
-        params.phase2_enabled == true
+        params.phase2 == true
 
     script:
         """
@@ -319,7 +319,7 @@ process phase2_evaluate {
         set val(dataset), val(gmt_name), file("*_scores_*.txt") optional true into PHASE2_SCORE_CHUNKS
 
     when:
-        params.phase2_enabled == true
+        params.phase2 == true
 
     script:
         """
@@ -364,7 +364,7 @@ process phase2_select {
         file("*.png") optional true into PHASE2_PLOTS
 
     when:
-        params.phase2_enabled == true
+        params.phase2 == true
 
     script:
         """
@@ -404,7 +404,7 @@ process phase2_rf {
         file("*.png") optional true into PHASE2_RF_PLOTS
 
     when:
-        params.phase2_rf_enabled == true
+        params.phase2_rf == true
 
     script:
         """
