@@ -1,63 +1,140 @@
 #!/usr/bin/env nextflow
 
-
-
-/**
- * Create channels for input files.
- */
-EMX_FILES = Channel.fromFilePairs("${params.input_dir}/${params.emx_files}", size: 1, flat: true)
-LABEL_FILES = Channel.fromFilePairs("${params.input_dir}/${params.label_files}", size: 1, flat: true)
-GMT_FILES = Channel.fromFilePairs("${params.input_dir}/${params.gmt_files}", size: 1, flat: true)
+nextflow.enable.dsl=2
 
 
 
-/**
- * Group dataset files by name.
- */
-DATASETS = EMX_FILES.join(LABEL_FILES)
-
-
-
-/**
- * Send dataset files to each process that uses them.
- */
-DATASETS
-    .into {
-        DATASETS_FOR_PHASE1_FG;
-        DATASETS_FOR_PHASE1_BG;
-        DATASETS_FOR_PHASE1_SELECT;
-        DATASETS_FOR_PHASE2_EVALUATE;
-        DATASETS_FOR_PHASE2_RF
+workflow {
+    // create synthetic data if specified
+    if ( params.make_inputs == true ) {
+        make_inputs()
+        emx_files    = make_inputs.out.dataset
+        labels_files = make_inputs.out.labels
+        gmt_files    = make_inputs.out.gmt_file
     }
 
+    // otherwise load input files
+    else {
+        emx_files    = Channel.fromFilePairs("${params.input_dir}/${params.emx_files}", size: 1, flat: true)
+        labels_files = Channel.fromFilePairs("${params.input_dir}/${params.labels_files}", size: 1, flat: true)
+        gmt_files    = Channel.fromFilePairs("${params.input_dir}/${params.gmt_files}", size: 1, flat: true)
+    }
 
+    // group dataset files by name
+    datasets = emx_files.join(labels_files)
 
-/**
- * Send GMT files to each process that uses them.
- */
-GMT_FILES.into {
-    GMT_FILES_FOR_PHASE1_FG;
-    GMT_FILES_FOR_PHASE1_BG;
-    GMT_FILES_FOR_PHASE1_SELECT;
-    GMT_FILES_FOR_PHASE2_RF
+    // combine datasets with gmt files via cartesian product
+    inputs_combined = datasets.combine(gmt_files)
+
+    // perform phase 1 if specified
+    if ( params.phase1 == true ) {
+        // split gmt files into chunks
+        phase1_split(gmt_files)
+        gmt_chunks = phase1_split.out.chunks
+            .flatMap { it[1].collect { c -> [it[0], c] } }
+
+        // combine datasets with gmt file chunks via cartesian product
+        fg_chunks = datasets.combine(gmt_chunks)
+
+        // perform foreground evaluation
+        phase1_fg(fg_chunks)
+        fg_scores = phase1_fg.out.score_chunks
+
+        // perform background evaluation
+        bg_chunks = Channel.from( 0 .. params.chunks-1 )
+        phase1_bg(datasets, bg_chunks)
+
+        // combine background scores with gmt files
+        bg_scores = phase1_bg.out.score_chunks
+            .combine(gmt_files)
+            .map { [it[0], it[2], it[1]] }
+
+        // combine fg and bg score chunks
+        // group score chunks by dataset and gmt file
+        score_chunks = Channel.empty()
+            .concat(fg_scores, bg_scores)
+            .groupTuple(by: [0, 1])
+            .map { [it[0], it[1], it[2].sort {it.name}] }
+
+        // merge score chunks
+        phase1_merge(score_chunks)
+        phase1_scores = phase1_merge.out.scores
+
+        // use scores to select gene sets
+        phase1_select(inputs_combined, phase1_scores)
+        gene_sets = phase1_select.out.gene_sets
+    }
+    else {
+        gene_sets = Channel.empty()
+    }
+
+    // perform phase 2 (combinatoric search) if specified
+    if ( params.phase2 == true ) {
+        // split gene sets into chunks
+        phase2_split(gene_sets)
+        geneset_chunks = phase2_split.out.chunks
+            .flatMap { it[1].collect { c -> [it[0], c] } }
+
+        // combine datasets with gene set chunks via cartesian product
+        phase2_chunks = datasets.combine(geneset_chunks, by: 0)
+
+        // evaluate gene sets via combinatoric search
+        phase2_evaluate(phase2_chunks)
+
+        // group scores by dataset and geneset list
+        phase2_scores = phase2_evaluate.out.score_chunks
+            .groupTuple(by: [0, 1])
+            .map { [it[0], it[1], it[2].flatten()] }
+
+        // use scores to select gene sets
+        phase2_select(gene_sets, phase2_scores)
+    }
+
+    // perform phase 2 (random forest) if specified
+    if ( params.phase2_rf == true ) {
+        phase2_rf(inputs_combined, gene_sets)
+    }
 }
 
 
 
 /**
- * The phase1_split process splits the input GMT file into chunks.
+ * The make_inputs process generates synthetic input data
+ * for an example run.
+ */
+process make_inputs {
+    publishDir "${params.output_dir}", mode: "copy"
+
+    output:
+        tuple val("example"), path("example.emx.txt"),      emit: dataset
+        tuple val("example"), path("example.labels.txt"),   emit: labels
+        tuple val("example"), path("example.genesets.txt"), emit: gmt_file
+        path("example.tsne.png")
+
+    script:
+        """
+        make-inputs.py \
+            --n-samples 1000 \
+            --n-genes   100 \
+            --n-classes 5 \
+            --n-sets    10 \
+            --visualize
+        """
+}
+
+
+
+/**
+ * The phase1_split process splits the input gmt file into chunks.
  */
 process phase1_split {
     tag "${gmt_name}"
 
     input:
-        set val(gmt_name), file(gmt_file) from GMT_FILES_FOR_PHASE1_FG
+        tuple val(gmt_name), path(gmt_file)
 
     output:
-        set val(gmt_name), file("*") into PHASE1_FG_CHUNKS mode flatten
-
-    when:
-        params.phase1 == true
+        tuple val(gmt_name), path("*"), emit: chunks
 
     script:
         """
@@ -71,29 +148,18 @@ process phase1_split {
 
 
 /**
- * Combine the datasets and gmt chunks using the cartesian product
- * in order to trigger the phase1_fg process for each dataset and each gmt chunk.
- */
-PHASE1_FG_CHUNKS_COMBINED = DATASETS_FOR_PHASE1_FG.combine(PHASE1_FG_CHUNKS)
-
-
-
-/**
- * The phase1_fg process performs experiments from a single chunk of a
- * GMT file.
+ * The phase1_fg process performs experiments from a single chunk
+ * of a gmt file.
  */
 process phase1_fg {
     tag "${dataset}/${gmt_name}/${gmt_file.name}"
     label "gpu"
 
     input:
-        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE1_FG_CHUNKS_COMBINED
+        tuple val(dataset), path(emx_file), path(labels_file), val(gmt_name), path(gmt_file)
 
     output:
-        set val(dataset), val(gmt_name), file("*.log") into PHASE1_FG_SCORE_CHUNKS
-
-    when:
-        params.phase1 == true
+        tuple val(dataset), val(gmt_name), path("*.log"), emit: score_chunks
 
     script:
         """
@@ -106,7 +172,7 @@ process phase1_fg {
 
         phase1-evaluate.py \
             --dataset      ${emx_file} \
-            --labels       ${label_file} \
+            --labels       ${labels_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase1_model} \
             --gene-sets    ${gmt_file} \
@@ -124,14 +190,11 @@ process phase1_bg {
     label "gpu"
 
     input:
-        set val(dataset), file(emx_file), file(label_file) from DATASETS_FOR_PHASE1_BG
-        each(index) from Channel.from( 0 .. params.chunks-1 )
+        tuple val(dataset), path(emx_file), path(labels_file)
+        each index
 
     output:
-        set val(dataset), file("*.log") into PHASE1_BG_SCORE_CHUNKS_RAW
-
-    when:
-        params.phase1 == true
+        tuple val(dataset), path("*.log"), emit: score_chunks
 
     script:
         """
@@ -149,7 +212,7 @@ process phase1_bg {
 
         phase1-evaluate.py \
             --dataset      ${emx_file} \
-            --labels       ${label_file} \
+            --labels       ${labels_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase1_model} \
             --random \
@@ -162,27 +225,6 @@ process phase1_bg {
 
 
 /**
- * Use the same background scores for each GMT file.
- */
-PHASE1_BG_SCORE_CHUNKS_RAW
-    .combine(GMT_FILES_FOR_PHASE1_BG)
-    .map { [it[0], it[2], it[1]] }
-    .set { PHASE1_BG_SCORE_CHUNKS }
-
-
-
-/**
- * Group output chunks by dataset and GMT file so that they can be merged.
- */
-Channel.empty()
-    .concat(PHASE1_FG_SCORE_CHUNKS, PHASE1_BG_SCORE_CHUNKS)
-    .groupTuple(by: [0, 1])
-    .map { [it[0], it[1], it[2].sort {it.name}] }
-    .set { PHASE1_SCORE_CHUNKS }
-
-
-
-/**
  * The phase1_merge process takes the output chunks from phase1_evaluate
  * and merges them into a score file for each dataset/GMT pair.
  */
@@ -191,13 +233,10 @@ process phase1_merge {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), val(gmt_name), file(chunks) from PHASE1_SCORE_CHUNKS
+        tuple val(dataset), val(gmt_name), path(chunks)
 
     output:
-        set val(dataset), val(gmt_name), file("phase1-evaluate-*.log") into PHASE1_SCORES
-
-    when:
-        params.phase1 == true
+        tuple val(dataset), val(gmt_name), path("phase1-evaluate-*.log"), emit: scores
 
     script:
         """
@@ -217,14 +256,6 @@ process phase1_merge {
 
 
 /**
- * Combine the datasets and gmt files using the cartesian product
- * in order to trigger the phase1_select process for each dataset and each gmt file.
- */
-PHASE1_SELECT_INPUTS_COMBINED = DATASETS_FOR_PHASE1_SELECT.combine(GMT_FILES_FOR_PHASE1_SELECT)
-
-
-
-/**
  * The phase1_select process takes a score file for a dataset / GMT and selects
  * gene sets which score significantly higher over background.
  */
@@ -232,15 +263,12 @@ process phase1_select {
     publishDir "${params.output_dir}/${dataset}", mode: "copy"
 
     input:
-        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE1_SELECT_INPUTS_COMBINED
-        set val(dataset), val(gmt_name), file(scores) from PHASE1_SCORES
+        tuple val(dataset), path(emx_file), path(labels_file), val(gmt_name), path(gmt_file)
+        tuple val(dataset), val(gmt_name), path(scores)
 
     output:
-        set val(dataset), val(gmt_name), file("phase1-genesets.txt") into PHASE1_GENESETS
-        file("phase1-select-${gmt_name}.log")
-
-    when:
-        params.phase1 == true
+        tuple val(dataset), val(gmt_name), path("phase1-genesets.txt"), emit: gene_sets
+        path("phase1-select-${gmt_name}.log")
 
     script:
         """
@@ -253,20 +281,9 @@ process phase1_select {
             --gene-sets ${gmt_file} \
             --scores    ${scores} \
             --threshold ${params.phase1_threshold} \
-            --n-sets    ${params.phase1_n_sets} \
+            --n-sets    ${params.phase1_nsets} \
             > phase1-select-${gmt_name}.log
         """
-}
-
-
-
-/**
- * Send phase 1 gene sets to each process that uses them.
- */
-PHASE1_GENESETS.into {
-    GENESETS_FOR_PHASE2_EVALUATE;
-    GENESETS_FOR_PHASE2_SELECT;
-    GENESETS_FOR_PHASE2_RF
 }
 
 
@@ -278,29 +295,16 @@ process phase2_split {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), val(gmt_name), file(gmt_file) from GENESETS_FOR_PHASE2_EVALUATE
+        tuple val(dataset), val(gmt_name), path(gmt_file)
 
     output:
-        set val(dataset), val(gmt_name), file("*") into PHASE2_EVALUATE_CHUNKS mode flatten
-
-    when:
-        params.phase2 == true
+        tuple val(dataset), val(gmt_name), path("*"), emit: chunks
 
     script:
         """
         split -d -l 1 ${gmt_file} ""
         """
 }
-
-
-
-/**
- * Combine the datasets and gene set chunks using the cartesian product
- * in order to trigger the phase2_evaluate process for each input and each chunk.
- */
-DATASETS_FOR_PHASE2_EVALUATE
-    .combine(PHASE2_EVALUATE_CHUNKS, by: 0)
-    .set { PHASE2_EVALUATE_CHUNKS_COMBINED }
 
 
 
@@ -313,19 +317,16 @@ process phase2_evaluate {
     label "gpu"
 
     input:
-        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE2_EVALUATE_CHUNKS_COMBINED
+        tuple val(dataset), path(emx_file), path(labels_file), val(gmt_name), path(gmt_file)
 
     output:
-        set val(dataset), val(gmt_name), file("*_scores_*.txt") optional true into PHASE2_SCORE_CHUNKS
-
-    when:
-        params.phase2 == true
+        tuple val(dataset), val(gmt_name), path("*_scores_*.txt"), optional: true, emit: score_chunks
 
     script:
         """
         phase2-evaluate.py \
             --dataset      ${emx_file} \
-            --labels       ${label_file} \
+            --labels       ${labels_file} \
             --model-config ${baseDir}/example/models.json \
             --model        ${params.phase2_model} \
             --gene-sets    ${gmt_file} \
@@ -333,16 +334,6 @@ process phase2_evaluate {
             --logdir       .
         """
 }
-
-
-
-/**
- * Group phase 2 scores by dataset and geneset list.
- */
-PHASE2_SCORE_CHUNKS
-    .groupTuple(by: [0, 1])
-    .map { [it[0], it[1], it[2].flatten()] }
-    .set { PHASE2_SCORES }
 
 
 
@@ -356,15 +347,12 @@ process phase2_select {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), val(gmt_name), file("phase1-genesets.txt") from GENESETS_FOR_PHASE2_SELECT
-        set val(dataset), val(gmt_name), file(scores) from PHASE2_SCORES
+        tuple val(dataset), val(gmt_name), path("phase1-genesets.txt")
+        tuple val(dataset), val(gmt_name), path(scores)
 
     output:
-        set val(dataset), val(gmt_name), file("phase2-genesets.txt") into PHASE2_GENESETS
-        file("*.png") optional true into PHASE2_PLOTS
-
-    when:
-        params.phase2 == true
+        tuple val(dataset), val(gmt_name), path("phase2-genesets.txt"), emit: gene_sets
+        path("*.png"), optional: true
 
     script:
         """
@@ -379,14 +367,6 @@ process phase2_select {
 
 
 /**
- * Combine the datasets and gmt files using the cartesian product
- * in order to trigger the phase2_rf process for each dataset and each gmt file.
- */
-PHASE2_RF_INPUTS_COMBINED = DATASETS_FOR_PHASE2_RF.combine(GMT_FILES_FOR_PHASE2_RF)
-
-
-
-/**
  * The phase2_rf process takes a list of gene sets selected by phase 1 and
  * uses the feature importances of a random forest to select candidate genes
  * for each gene set.
@@ -396,15 +376,12 @@ process phase2_rf {
     tag "${dataset}/${gmt_name}"
 
     input:
-        set val(dataset), file(emx_file), file(label_file), val(gmt_name), file(gmt_file) from PHASE2_RF_INPUTS_COMBINED
-        set val(dataset), val(gmt_name), file("phase1-genesets.txt") from GENESETS_FOR_PHASE2_RF
+        tuple val(dataset), path(emx_file), path(labels_file), val(gmt_name), path(gmt_file)
+        tuple val(dataset), val(gmt_name), path("phase1-genesets.txt")
 
     output:
-        set val(dataset), val(gmt_name), file("phase2-rf-genesets.txt") into PHASE2_RF_GENESETS
-        file("*.png") optional true into PHASE2_RF_PLOTS
-
-    when:
-        params.phase2_rf == true
+        tuple val(dataset), val(gmt_name), path("phase2-rf-genesets.txt"), emit: gene_sets
+        path("*.png"), optional: true
 
     script:
         """
@@ -416,7 +393,7 @@ process phase2_rf {
 
         phase2-rf.py \
             --dataset   ${emx_file} \
-            --labels    ${label_file} \
+            --labels    ${labels_file} \
             --gene-sets phase1-genesets.txt \
             --n-jobs    1 \
             --threshold ${params.phase2_rf_threshold} \
