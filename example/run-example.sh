@@ -19,11 +19,11 @@ rm -rf ${OUTPUT_DIR}
 mkdir -p ${OUTPUT_DIR}
 
 # create synthetic input data
-python bin/make-example.py \
+python bin/make-inputs.py \
     --n-samples 1000 \
-    --n-genes   200 \
-    --n-classes 10 \
-    --n-sets    20 \
+    --n-genes   100 \
+    --n-classes 5 \
+    --n-sets    10 \
     --visualize
 
 # evaluate gene sets
