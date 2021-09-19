@@ -73,7 +73,7 @@ workflow {
         // split gene sets into chunks
         phase2_split(gene_sets)
         geneset_chunks = phase2_split.out.chunks
-            .flatMap { it[1].collect { c -> [it[0], c] } }
+            .flatMap { it[2].collect { c -> [it[0], it[1], c] } }
 
         // combine datasets with gene set chunks via cartesian product
         phase2_chunks = datasets.combine(geneset_chunks, by: 0)
