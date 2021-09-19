@@ -5,15 +5,15 @@ set -e
 
 DATASET="example.emx.txt"
 LABELS="example.labels.txt"
-MODEL_CONFIG="example/models.json"
-MODEL="lr"
 GMT_FILE="example.genesets.txt"
-OUTPUT_DIR="example/output"
+MODEL_CONFIG="models.json"
+MODEL="lr"
+OUTPUT_DIR="output"
 
-# use conda environment
+# initialize environment
 source activate gene-oracle
 
-# remove old output data
+# initialize output directory
 rm -rf ${OUTPUT_DIR}
 
 mkdir -p ${OUTPUT_DIR}
@@ -30,9 +30,9 @@ python bin/make-inputs.py \
 python bin/phase1-evaluate.py \
     --dataset      ${DATASET} \
     --labels       ${LABELS} \
+    --gene-sets    ${GMT_FILE} \
     --model-config ${MODEL_CONFIG} \
     --model        ${MODEL} \
-    --gene-sets    ${GMT_FILE} \
     --random \
     --random-iters 10 \
     --cv           5 \
@@ -54,9 +54,9 @@ python bin/phase1-select.py \
 # python bin/phase2-evaluate.py \
 #     --dataset      ${DATASET} \
 #     --labels       ${LABELS} \
+#     --gene-sets    ${OUTPUT_DIR}/phase1-genesets.txt \
 #     --model-config ${MODEL_CONFIG} \
 #     --model        ${MODEL} \
-#     --gene-sets    ${OUTPUT_DIR}/phase1-genesets.txt \
 #     --n-jobs       1 \
 #     --logdir       ${OUTPUT_DIR}/logs
 

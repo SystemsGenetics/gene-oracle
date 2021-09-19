@@ -173,7 +173,7 @@ process phase1_fg {
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/example/models.json \
+            --model-config ${baseDir}/models.json \
             --model        ${params.phase1_model} \
             --gene-sets    ${gmt_file} \
             --outfile      ${gmt_file}.log
@@ -213,7 +213,7 @@ process phase1_bg {
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/example/models.json \
+            --model-config ${baseDir}/models.json \
             --model        ${params.phase1_model} \
             --random \
             --random-range \${START} \${STOP} \${STEP} \
@@ -327,7 +327,7 @@ process phase2_evaluate {
         phase2-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/example/models.json \
+            --model-config ${baseDir}/models.json \
             --model        ${params.phase2_model} \
             --gene-sets    ${gmt_file} \
             --n-jobs       1 \
