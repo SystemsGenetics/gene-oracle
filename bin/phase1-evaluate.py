@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-This script evaluates the classification potential of gene sets on a dataset.
+Evaluate the classification potential of gene sets on a dataset.
 '''
 import argparse
 import matplotlib.pyplot as plt
@@ -17,28 +17,39 @@ import utils
 
 
 
-def rotate_xticklabels(angle):
-    for tick in plt.gca().get_xticklabels():
-        tick.set_horizontalalignment('right')
-        tick.set_rotation(angle)
+def plot_confusion_matrix(
+    name,
+    y_true,
+    y_pred,
+    classes,
+    output_dir='.'):
 
-
-
-def plot_confusion_matrix(name, y_true, y_pred, classes, output_dir='.'):
     cnf_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred)
 
     sns.heatmap(cnf_matrix, annot=True, fmt='d', xticklabels=classes, yticklabels=classes)
-    rotate_xticklabels(45)
     plt.title('Confusion Matrix')
     plt.ylabel('Expected')
     plt.xlabel('Predicted')
+    plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig('%s/%s.confusion_matrix.png' % (output_dir, name))
     plt.close()
 
 
 
-def evaluate_curated(data, labels, clf, name, genes, n_iters=10, cv=5, n_jobs=None, verbose=True, visualize=False, outfile=None):
+def evaluate_curated(
+    data,
+    labels,
+    clf,
+    name,
+    genes,
+    n_iters=10,
+    cv=5,
+    n_jobs=None,
+    verbose=True,
+    visualize=False,
+    outfile=None):
+
     # evaluate gene set n_iters times
     scores = []
 
@@ -64,7 +75,17 @@ def evaluate_curated(data, labels, clf, name, genes, n_iters=10, cv=5, n_jobs=No
 
 
 
-def evaluate_random(data, labels, clf, n_genes, n_iters=100, cv=5, n_jobs=None, verbose=True, outfile=None):
+def evaluate_random(
+    data,
+    labels,
+    clf,
+    n_genes,
+    n_iters=100,
+    cv=5,
+    n_jobs=None,
+    verbose=True,
+    outfile=None):
+
     # evaluate n_iters random sets
     scores = []
 
@@ -94,9 +115,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluate classification potential of gene sets')
     parser.add_argument('--dataset', help='input dataset (samples x genes)', required=True)
     parser.add_argument('--labels', help='list of sample labels', required=True)
+    parser.add_argument('--gene-sets', help='list of curated gene sets')
     parser.add_argument('--model-config', help='model configuration file (JSON)', required=True)
     parser.add_argument('--model', help='classifier model to use', default='mlp-tf')
-    parser.add_argument('--gene-sets', help='list of curated gene sets')
     parser.add_argument('--full', help='Evaluate the set of all genes in the dataset', action='store_true')
     parser.add_argument('--random', help='Evaluate random gene sets', action='store_true')
     parser.add_argument('--random-range', help='range of random gene sizes to evaluate', nargs=3, type=int, metavar=('START', 'STOP', 'STEP'))
@@ -143,7 +164,7 @@ if __name__ == '__main__':
 
     # include the set of all genes if specified
     if args.full:
-        curated_sets.append(('FULL', df_genes))
+        curated_sets.append(('all_genes', df_genes))
 
     # initialize list of random set sizes
     if args.random:
@@ -172,8 +193,25 @@ if __name__ == '__main__':
 
     # evaluate curated gene sets
     for name, genes in curated_sets:
-        evaluate_curated(df, labels, clf, name, genes, cv=args.cv, n_jobs=args.n_jobs, visualize=args.visualize, outfile=outfile)
+        evaluate_curated(
+            df,
+            labels,
+            clf,
+            name,
+            genes,
+            cv=args.cv,
+            n_jobs=args.n_jobs,
+            visualize=args.visualize,
+            outfile=outfile)
 
     # evaluate random gene sets
     for n_genes in random_sets:
-        evaluate_random(df, labels, clf, n_genes, n_iters=args.random_iters, cv=args.cv, n_jobs=args.n_jobs, outfile=outfile)
+        evaluate_random(
+            df,
+            labels,
+            clf,
+            n_genes,
+            n_iters=args.random_iters,
+            cv=args.cv,
+            n_jobs=args.n_jobs,
+            outfile=outfile)

@@ -2,6 +2,7 @@ import copy
 import json
 import numpy as np
 import pandas as pd
+import re
 import sklearn.dummy
 import sklearn.ensemble
 import sklearn.linear_model
@@ -55,7 +56,7 @@ def save_dataframe(filename, df):
         df.to_csv(filename, sep='\t', na_rep='NA', float_format='%.8f')
     elif ext == 'npy':
         # save data matrix to binary file
-        np.save(filename, np.array(df.values, dtype=np.float32, order='F'))
+        np.save(filename, df.to_numpy(dtype=np.float32))
 
         # save row names and column names to text files
         np.savetxt('%s.rownames.txt' % basename, df.index, fmt='%s')
@@ -69,40 +70,39 @@ def save_dataframe(filename, df):
 def load_labels(filename):
     # load labels file
     labels = pd.read_csv(filename, sep='\t', header=None, index_col=0)
+    labels = labels[1].to_numpy()
+
+    # infer list of classes
+    classes = sorted(set(labels))
 
     # convert categorical labels to numerical labels
-    encoder = sklearn.preprocessing.LabelEncoder()
+    labels = np.array([classes.index(l) for l in labels])
 
-    labels = labels[1].values
-    labels = encoder.fit_transform(labels)
-
-    return labels, encoder.classes_
+    return labels, classes
 
 
 
 def load_gene_sets(filename):
     # load file into list
     lines = [line.strip() for line in open(filename, 'r')]
-    lines = [line.split('\t') for line in lines]
+    lines = [re.split(r'[\s,]+', line) for line in lines]
 
     # map each gene set into a tuple of the name and genes in the set
-    gene_sets = [(line[0], line[1:]) for line in lines]
-
-    return gene_sets
+    return {line[0]: set(line[1:]) for line in lines}
 
 
 
 def filter_gene_sets(gene_sets, df_genes):
-    # compute the union of all gene sets
-    genes = list(set(sum([genes for (name, genes) in gene_sets], [])))
-
-    # determine the genes which are not in the dataset
-    missing_genes = [g for g in genes if g not in df_genes]
+    # determine the set of genes which are in both
+    # the dataset and the list of gene sets
+    genes = set().union(*gene_sets.values())
+    df_genes = set(df_genes)
+    found_genes = genes.intersection(df_genes)
 
     # remove missing genes from each gene set
-    gene_sets = [(name, [g for g in genes if g in df_genes]) for (name, genes) in gene_sets]
+    gene_sets = [(name, sorted(gene_set.intersection(df_genes))) for name, gene_set in gene_sets.items()]
 
-    print('%d / %d genes from gene sets were not found in the input dataset' % (len(missing_genes), len(genes)))
+    print('%d / %d genes from gene sets are in the input dataset' % (len(found_genes), len(genes)))
 
     return gene_sets
 
@@ -115,14 +115,13 @@ def load_classifier(config_file, name):
 
     # define dictionary of classifiers
     classifiers = {
-        'dummy':     sklearn.dummy.DummyClassifier,
-        'knn':       sklearn.neighbors.KNeighborsClassifier,
-        'lr':        sklearn.linear_model.LogisticRegression,
-        'mlp-keras': models.KerasMLP,
-        'mlp-skl':   sklearn.neural_network.MLPClassifier,
-        'mlp-tf':    models.TensorflowMLP,
-        'rf':        sklearn.ensemble.RandomForestClassifier,
-        'svm':       sklearn.svm.SVC
+        'dummy':   sklearn.dummy.DummyClassifier,
+        'knn':     sklearn.neighbors.KNeighborsClassifier,
+        'lr':      sklearn.linear_model.LogisticRegression,
+        'mlp-skl': sklearn.neural_network.MLPClassifier,
+        'mlp-tf':  models.TensorflowMLP,
+        'rf':      sklearn.ensemble.RandomForestClassifier,
+        'svm':     sklearn.svm.SVC
     }
 
     # initialize classifier

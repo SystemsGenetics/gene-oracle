@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-This script decomposes a gene set into subsets and evaluates them in order to
+Decompose a gene set into subsets and evaluates them in order to
 identify the subsets with the highest classification potential.
 '''
 import argparse
@@ -102,9 +102,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate and evaluate subsets of a gene set.')
     parser.add_argument('--dataset', help='input dataset (samples x genes)', required=True)
     parser.add_argument('--labels', help='list of sample labels', required=True)
+    parser.add_argument('--gene-sets', help='list of curated gene sets')
     parser.add_argument('--model-config', help='model configuration file (JSON)', required=True)
     parser.add_argument('--model', help='classifier model to use', default='mlp-tf')
-    parser.add_argument('--gene-sets', help='list of curated gene sets')
     parser.add_argument('--random', help='Evaluate random gene sets', action='store_true')
     parser.add_argument('--random-range', help='range of random gene sizes to evaluate', nargs=2, type=int)
     parser.add_argument('--n-jobs', help='number of parallel jobs to use', type=int, default=1)

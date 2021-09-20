@@ -2,7 +2,7 @@
 
 This repository contains the code for the Gene Oracle project. Gene Oracle is an ongoing research effort to discover biomarker genes using gene expression data. Gene Oracle identifies gene sets which provide the most predictive power, based on how well they classify samples in a gene expression dataset.
 
-For more information, refer to the paper "Uncovering biomarker genes with enriched classification potential from Hallmark gene sets" (https://www.nature.com/articles/s41598-019-46059-1).
+For more information, refer to the paper: [Uncovering biomarker genes with enriched classification potential from Hallmark gene sets](https://www.nature.com/articles/s41598-019-46059-1)
 
 ## Installation
 
@@ -27,16 +27,16 @@ git clone https://github.com/SystemsGenetics/gene-oracle.git
 
 # run the example
 cd gene-oracle
-example/run-example.sh
+scripts/run-example.sh
 ```
 
 ## Usage
 
-Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-input-data.py`.
+Gene Oracle consists of two phases, (1) gene set analysis and (2) gene subset analysis. This process encompasses multiple scripts which are run in sequence. The easiest way to learn how to run these scripts, as well as the input / output data involved, is to run the example script as shown above. It demonstrates how to run Gene Oracle on synthetic input data from `make-inputs.py`.
 
 ### Model Configuration
 
-Gene Oracle can use any classifier provided by scikit-learn, as well as a custom neural network (implemented in TensorFlow), to evaluate gene sets. Several classifiers are defined with sensible default parameters in `example/models.json`. Consult the [scikit-learn](https://scikit-learn.org/stable/supervised_learning.html#supervised-learning) documention on to see the list of parameters for each classifier. The example run script uses a linear model, which is one of the simplest classifiers available. Other models such as the neural network or random forest may perform better but will take longer to train.
+Gene Oracle can use any classifier provided by scikit-learn, as well as a custom neural network (implemented in TensorFlow), to evaluate gene sets. Several classifiers are defined with sensible default parameters in `models.json`. Consult the [scikit-learn](https://scikit-learn.org/stable/supervised_learning.html#supervised-learning) documention on to see the list of parameters for each classifier. The example run script uses a linear model, which is one of the simplest classifiers available. Other models such as the neural network or random forest may perform better but will take longer to train.
 
 _NOTE: A GPU is required only when using the mlp-tf model with tensorflow-gpu. A GPU might not provide significant speedup a over multicore CPU when training many small neural networks._
 
@@ -98,9 +98,7 @@ The nextflow pipeline assumes you have your input data arranged as follows:
 input/
   {dataset1}.emx.txt
   {dataset1}.labels.txt
-  {dataset2}.emx.npy
-  {dataset2}.emx.rownames.txt
-  {dataset2}.emx.colnames.txt
+  {dataset2}.emx.txt
   {dataset2}.labels.txt
   ...
   {genesets1}.genesets.txt

@@ -1,8 +1,6 @@
 import numpy as np
-import os
 import sklearn.base
 import sys
-import tensorflow as tf
 
 from tensorflow import keras
 
@@ -10,267 +8,89 @@ from tensorflow import keras
 
 class TensorflowMLP(sklearn.base.BaseEstimator):
 
-    def __init__(self, layers=[100], activations=['relu'], \
-        dropout=False, lr=0.001, epochs=50, batch_size=32, \
-        load=False, save=False, verbose=False):
+    def __init__(self,
+                 hidden_layer_sizes=[512, 256, 128],
+                 activation='relu',
+                 lr=0.001,
+                 epochs=50,
+                 batch_size=32,
+                 verbose=False):
 
-        self.layers = layers
-        self.activations = activations
-        self.dropout = dropout
-        self.lr = lr
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.load = load
-        self.save = save
-        self.verbose = verbose
-
-
-
-    def __del__(self):
-        if hasattr(self, '_session'):
-            self._session.close()
-
-
-
-    def _initialize(self, n_input, n_classes):
-        x = tf.placeholder('float', [None, n_input])
-        y = tf.placeholder('float', [None, n_classes])
-
-        # initialize weights and biases
-        layer_sizes = [n_input] + [n for n in self.layers] + [n_classes]
-        weights = {}
-        biases = {}
-
-        for i in range(1, len(self.layers) + 1):
-            w = 'h%d' % i
-            b = 'b%d' % i
-            weights[w] = tf.get_variable(w, shape=[layer_sizes[i - 1], layer_sizes[i]], initializer=tf.contrib.layers.xavier_initializer())
-            biases[b] = tf.get_variable(b, shape=[layer_sizes[i]], initializer=tf.contrib.layers.xavier_initializer())
-
-        weights['out'] = tf.get_variable('out_w', shape=[self.layers[-1], n_classes], initializer=tf.contrib.layers.xavier_initializer())
-        biases['out'] = tf.get_variable('out_b', shape=[n_classes], initializer=tf.contrib.layers.xavier_initializer())
-
-        # initialize computational graph
-        model = x
-
-        for i in range(1, len(self.layers) + 1):
-            # append weights and biases
-            w = 'h%d' % i
-            b = 'b%d' % i
-            model = tf.add(tf.matmul(model, weights[w]), biases[b])
-
-            # append activation function
-            activation = self.activations[i - 1]
-
-            if activation == 'relu':
-                model = tf.nn.relu(model)
-            elif activation == 'sigmoid':
-                model = tf.nn.sigmoid(model)
-            else:
-                print('error: unrecognized activation function %s' % activation)
-                sys.exit(1)
-
-            # append dropout layer
-            if self.dropout:
-                model = tf.nn.dropout(model, 0.5)
-
-        # append output layer
-        logits = tf.add(tf.matmul(model, weights['out']), biases['out'])
-        model = tf.nn.softmax(logits)
-
-        # define learning rate, loss, optimizer
-        global_step = tf.Variable(0, trainable=False)
-        learning_rate = tf.train.exponential_decay(self.lr, global_step=global_step, decay_steps=500, decay_rate=0.96, staircase=True)
-        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=y))
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
-
-        # save tf objects
-        self._model = model
-        self._lr = learning_rate
-        self._loss = loss
-        self._optimizer = optimizer
-        self._x = x
-        self._y = y
-
-        # initialize tf variables
-        init = tf.global_variables_initializer()
-        self._session.run(init)
-
-
-
-    def _onehot_encode(self, y):
-        return np.array([self._classes == y_i for y_i in y])
-
-
-
-    def _shuffle(self, x, y):
-        indices = np.arange(x.shape[0])
-        np.random.shuffle(indices)
-
-        return x[indices], y[indices]
-
-
-
-    def _next_batch(self, x, y, batch_size, index):
-        a = index * batch_size
-        b = index * batch_size + batch_size
-
-        return x[a:b], y[a:b]
-
-
-
-    def fit(self, x, y):
-        n_samples = x.shape[0]
-        n_input = x.shape[1]
-
-        # transform labels to one-hot encoding
-        self._classes = np.array(list(set(y)))
-
-        n_classes = len(self._classes)
-        y = self._onehot_encode(y)
-
-        # initialize tf graph and session
-        if not hasattr(self, '_graph'):
-            os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-            self._graph = tf.Graph()
-            self._session = tf.Session(graph=self._graph)
-
-        with self._graph.as_default():
-            # initialize model
-            self._initialize(n_input, n_classes)
-
-            # initialize checkpoint saver
-            saver = tf.train.Saver()
-
-            # restore checkpoint if specified
-            if self.load:
-                saver.restore(self._session, '../checkpoints/dataset_nn')
-
-            # perform training
-            for epoch in range(self.epochs):
-                # shuffle training data
-                x, y = self._shuffle(x, y)
-
-                # determine number of batches
-                n_batches = int(n_samples / self.batch_size)
-                avg_loss = 0
-
-                # train on each batch
-                for i in range(n_batches):
-                    # extract batch
-                    batch_x, batch_y = self._next_batch(x, y, self.batch_size, i)
-
-                    # compute loss
-                    _, loss, _ = self._session.run([self._optimizer, self._loss, self._model], feed_dict={ self._x: batch_x, self._y: batch_y })
-
-                    avg_loss += loss / n_batches
-
-                # print results
-                if self.verbose:
-                    print('epoch: %04d, lr: %0.6f, loss: %0.6f' % (epoch + 1, self._lr.eval(feed_dict=None, session=self._session), avg_loss))
-
-            # save checkpoint if specified
-            if self.save:
-                saver.save(self._session, '../checkpoints/dataset_nn')
-
-
-
-    def predict(self, x):
-        return self._model.eval({ self._x: x }, session=self._session)
-
-
-
-    def score(self, x, y):
-        # transform labels to one-hot encoding
-        y = self._onehot_encode(y)
-
-        with self._graph.as_default():
-            # compute accuracy of model on test data
-            accuracy = tf.equal(tf.argmax(self._model, 1), tf.argmax(self._y, 1))
-            accuracy = tf.reduce_mean(tf.cast(accuracy, 'float'))
-
-            return accuracy.eval({ self._x: x, self._y: y }, session=self._session)
-
-
-
-class KerasMLP(sklearn.base.BaseEstimator):
-
-    def __init__(self, layers=[100], activations=['relu'], \
-        dropout=False, lr=0.001, epochs=50, batch_size=32, \
-        verbose=False):
-
-        self.layers = layers
-        self.activations = activations
-        self.dropout = dropout
+        # save attributes
+        self.hidden_layer_sizes = hidden_layer_sizes
+        self.activation = activation
         self.lr = lr
         self.epochs = epochs
         self.batch_size = batch_size
         self.verbose = verbose
 
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    def _build(self, n_inputs, n_classes):
+        # save attributes
+        self.n_inputs = n_inputs
+        self.n_classes = n_classes
 
+        # delete previous model
+        keras.backend.clear_session()
 
+        # define input layer
+        x_input = keras.Input(shape=n_inputs)
 
-    def _initialize(self, n_input, n_classes):
-        # initialize layers
-        model = keras.models.Sequential()
+        # define hidden layers
+        x = x_input
+        for units in self.hidden_layer_sizes:
+            x = keras.layers.Dense(units=units, activation=self.activation)(x)
 
-        for i, (units, activation) in enumerate(zip(self.layers, self.activations)):
-            if i == 0:
-                model.add(keras.layers.Dense(units=units, activation=activation, input_shape=(n_input,)))
-            else:
-                model.add(keras.layers.Dense(units=units, activation=activation))
-            
-            if self.dropout:
-                model.add(keras.layers.Dropout(0.5))
+        # define output layer
+        y_output = keras.layers.Dense(units=n_classes, activation='softmax')(x)
 
-        model.add(keras.layers.Dense(units=n_classes, activation='softmax'))
+        # define model
+        model = keras.models.Model(x_input, y_output)
 
-        # initialize training method
-        optimizer = keras.optimizers.Adam(lr=self.lr)
-        loss = 'categorical_crossentropy'
-
-        model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+        # define training parameters
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=self.lr),
+            loss='categorical_crossentropy',
+            metrics=['accuracy'])
 
         # save model
         self._model = model
 
-
-
     def _onehot_encode(self, y):
-        return np.array([self._classes == y_i for y_i in y])
-
-
+        return keras.utils.to_categorical(y, num_classes=self.n_classes)
 
     def fit(self, x, y):
-        n_samples = x.shape[0]
-        n_input = x.shape[1]
+        # build model
+        n_inputs = x.shape[1]
+        n_classes = len(set(y))
+
+        self._build(n_inputs, n_classes)
 
         # transform labels to one-hot encoding
-        self._classes = np.array(list(set(y)))
-
-        n_classes = len(self._classes)
         y = self._onehot_encode(y)
 
-        # initialize model
-        self._initialize(n_input, n_classes)
-
         # train model
-        self._model.fit(x=x, y=y, batch_size=self.batch_size, epochs=self.epochs, verbose=self.verbose)
-
-
+        return self._model.fit(
+            x=x,
+            y=y,
+            batch_size=self.batch_size,
+            epochs=self.epochs,
+            verbose=self.verbose)
 
     def predict(self, x):
-        return self._model.predict(x)
+        # get predictions
+        y_pred = self._model.predict(x)
 
+        # decode predictions from one-hot
+        y_pred = np.argmax(y_pred, axis=1)
 
+        return y_pred
 
     def score(self, x, y):
         # transform labels to one-hot encoding
         y = self._onehot_encode(y)
 
         # evaluate model
-        metrics = self._model.evaluate(x, y, verbose=self.verbose)
+        loss, accuracy = self._model.evaluate(x, y)
 
         # return accuracy
-        return metrics[1]
+        return accuracy

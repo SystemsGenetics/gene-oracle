@@ -74,16 +74,22 @@ if __name__ == '__main__':
         x_tsne = sklearn.manifold.TSNE().fit_transform(x)
 
         # plot t-SNE embedding by class
-        fig, ax = plt.subplots()
-        colors = cm.rainbow(np.linspace(0, 1, len(classes)))
+        plt.axis('off')
 
         for c in classes:
             indices = (y[0] == c)
-            ax.scatter(x_tsne[indices, 0], x_tsne[indices, 1], label=c, alpha=0.75)
+            plt.scatter(
+                x_tsne[indices, 0],
+                x_tsne[indices, 1],
+                alpha=0.75,
+                label=c)
 
+        # plot legend
         plt.subplots_adjust(right=0.75)
-        ax.set_axis_off()
-        ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+
+        # save figure
+        plt.tight_layout()
         plt.savefig('%s.tsne.png' % (args.dataset.split('.')[0]))
         plt.close()
 

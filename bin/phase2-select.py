@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-This script takes the subset scores for a gene set and measures the saliency of
+Take the subset scores for a gene set and measure the saliency of
 each individual gene by how frequently it occurs in all subsets that were
 evaluated. Genes with a higher 'aggregate frequency' are selected as 'candidate'
 genes, while the other genes are labeled as 'non-candidate' genes.

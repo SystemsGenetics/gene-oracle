@@ -2,6 +2,7 @@
 # Example usage of gene-oracle on a synthetic dataset.
 
 set -e
+export TF_CPP_MIN_LOG_LEVEL="3"
 
 DATASET="example.emx.txt"
 LABELS="example.labels.txt"

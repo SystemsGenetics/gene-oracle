@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-This script uses a random forest classifier to measure the saliency of each
+Use a random forest classifier to measure the saliency of each
 gene in a gene set. Genes with a higher 'importance' are selected as 'candidate'
 genes, while the other genes are labeled as 'non-candidate' genes.
 '''

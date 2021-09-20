@@ -13,9 +13,8 @@
         "max_iter": 10000
     },
     "mlp-tf": {
-        "layers": [512, 256, 128],
-        "activations": ["relu", "relu", "relu"],
-        "dropout": false,
+        "hidden_layer_sizes": [512, 256, 128],
+        "activation": "relu",
         "lr": 0.001,
         "epochs": 50,
         "batch_size": 256,

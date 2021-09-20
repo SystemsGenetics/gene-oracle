@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-This script uses Student's t-test to determine whether a gene set exhibits
+Use Student's t-test to determine whether a gene set exhibits
 significantly higher classification accuracy over equivalent random sets. The
 script takes three inputs -- a list of curated sets and their scores, a list of
 random sets and their scores, and a list of gene sets and their member
