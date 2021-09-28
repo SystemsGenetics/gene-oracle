@@ -52,8 +52,8 @@ workflow {
         // combine fg and bg score chunks
         // group score chunks by dataset and gmt file
         score_chunks = Channel.empty()
-            .concat(fg_scores, bg_scores)
-            .groupTuple(by: [0, 1])
+            .mix(fg_scores, bg_scores)
+            .groupTuple(by: [0, 1], size: 2 * params.chunks)
             .map { [it[0], it[1], it[2].sort {it.name}] }
 
         // merge score chunks
@@ -173,7 +173,7 @@ process phase1_fg {
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/models.json \
+            --model-config ${projectDir}/models.json \
             --model        ${params.phase1_model} \
             --gene-sets    ${gmt_file} \
             --outfile      ${gmt_file}.log
@@ -213,7 +213,7 @@ process phase1_bg {
         phase1-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/models.json \
+            --model-config ${projectDir}/models.json \
             --model        ${params.phase1_model} \
             --random \
             --random-range \${START} \${STOP} \${STEP} \
@@ -327,7 +327,7 @@ process phase2_evaluate {
         phase2-evaluate.py \
             --dataset      ${emx_file} \
             --labels       ${labels_file} \
-            --model-config ${baseDir}/models.json \
+            --model-config ${projectDir}/models.json \
             --model        ${params.phase2_model} \
             --gene-sets    ${gmt_file} \
             --n-jobs       1 \
