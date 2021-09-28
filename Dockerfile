@@ -1,6 +1,6 @@
 FROM tensorflow/tensorflow:1.15.4-gpu-py3
 MAINTAINER Cole McKnight <cbmckni@clemson.edu>
-MAINTAINER Ben Shealy <btsheal@g.clemson.edu>
+MAINTAINER Ben Shealy <btsheal@clemson.edu>
 MAINTAINER Colin Targonski <ctargon@clemson.edu>
 
 # install package dependencies
